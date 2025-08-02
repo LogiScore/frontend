@@ -1,5 +1,5 @@
 // API service for LogiScore backend
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://logiscore-backend.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://logiscorebe.onrender.com';
 
 export interface FreightForwarder {
   id: string;
