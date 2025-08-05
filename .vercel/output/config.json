@@ -1,0 +1,55 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"src": "/_app/immutable/.+",
+			"headers": {
+				"cache-control": "public, immutable, max-age=31536000"
+			}
+		},
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/?(?:/__data.json)?$",
+			"dest": "/"
+		},
+		{
+			"src": "^/8x7k9m2p/?(?:/__data.json)?$",
+			"dest": "/8x7k9m2p"
+		},
+		{
+			"src": "^/about/?(?:/__data.json)?$",
+			"dest": "/about"
+		},
+		{
+			"src": "^/callback/?(?:/__data.json)?$",
+			"dest": "/callback"
+		},
+		{
+			"src": "^/contact/?(?:/__data.json)?$",
+			"dest": "/contact"
+		},
+		{
+			"src": "^/help/?(?:/__data.json)?$",
+			"dest": "/help"
+		},
+		{
+			"src": "^/how-it-works/?(?:/__data.json)?$",
+			"dest": "/how-it-works"
+		},
+		{
+			"src": "^/pricing/?(?:/__data.json)?$",
+			"dest": "/pricing"
+		},
+		{
+			"src": "^/search/?(?:/__data.json)?$",
+			"dest": "/search"
+		},
+		{
+			"src": "/.*",
+			"dest": "/![-]/catchall"
+		}
+	],
+	"overrides": {}
+}
