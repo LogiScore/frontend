@@ -1,5 +1,10 @@
 {
   "env": {
     "VITE_API_BASE_URL": "https://logiscorebe.onrender.com"
+  },
+  "build": {
+    "env": {
+      "VERCEL_FORCE_NO_BUILD_CACHE": "1"
+    }
   }
 } 
