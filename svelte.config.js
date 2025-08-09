@@ -14,7 +14,8 @@ const config = {
 		adapter: adapter({
 			runtime: 'nodejs20.x',
 			precompress: false,
-			split: false
+			split: false,
+			external: []
 		})
 	}
 };

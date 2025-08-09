@@ -5,7 +5,8 @@
   "build": {
     "env": {
       "VERCEL_BUILD_CACHE": "false",
-      "VERCEL_FORCE_NO_BUILD_CACHE": "1"
+      "VERCEL_FORCE_NO_BUILD_CACHE": "1",
+      "VERCEL_FORCE_NO_CACHE": "1"
     }
   },
   "functions": {
@@ -13,6 +14,8 @@
       "runtime": "nodejs20.x"
     }
   },
-  "buildCommand": "npm run build",
-  "outputDirectory": ".svelte-kit/output"
+  "buildCommand": "npm run build:clean",
+  "outputDirectory": ".svelte-kit/output",
+  "regions": ["iad1"],
+  "framework": "sveltekit"
 } 
