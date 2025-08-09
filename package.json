@@ -5,8 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
-		"build:clean": "rm -rf .svelte-kit && rm -rf .vercel && npm run build",
+		"build": "node build-timestamp.js && vite build",
+		"build:clean": "rm -rf .svelte-kit && rm -rf .vercel && rm -rf node_modules/.cache && npm run build",
+		"build:force": "rm -rf .svelte-kit && rm -rf .vercel && rm -rf node_modules/.cache && npm install --force && npm run build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
