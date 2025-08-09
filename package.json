@@ -3,6 +3,8 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"description": "LogiScore - Freight Forwarder Review Platform",
+	"keywords": ["svelte", "sveltekit", "vercel", "logistics", "reviews"],
 	"engines": {
 		"node": ">=20.0.0"
 	},
@@ -12,7 +14,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"vercel-build": "vite build"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",
