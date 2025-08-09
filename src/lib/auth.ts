@@ -2,3 +2,4 @@
 export const auth = {
 	user: null as any
 };
+
