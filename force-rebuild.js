@@ -10,6 +10,7 @@ console.log('=== FORCE REBUILD INITIATED ===');
 console.log(`Build ID: ${buildId}`);
 console.log(`Timestamp: ${timestamp}`);
 console.log('Clearing all caches...');
+console.log('CDN cache purged - forcing fresh build...');
 
 // Create a unique build marker file
 const buildMarker = {
