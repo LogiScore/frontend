@@ -4,22 +4,12 @@
   },
   "build": {
     "env": {
-      "VERCEL_BUILD_CACHE": "false",
-      "VERCEL_FORCE_NO_BUILD_CACHE": "1",
-      "VERCEL_FORCE_NO_CACHE": "1",
-      "VERCEL_FORCE_NO_PREBUILT": "1",
-      "VERCEL_FORCE_REBUILD": "1"
+      "VERCEL_BUILD_CACHE": "false"
     }
   },
   "functions": {
     "**/*.js": {
       "runtime": "nodejs20.x"
     }
-  },
-  "buildCommand": "npm run build:force",
-  "outputDirectory": ".svelte-kit/output",
-  "regions": ["iad1"],
-  "framework": "sveltekit",
-  "ignoreCommand": "echo 'Forcing rebuild'",
-  "installCommand": "npm install --force"
+  }
 } 
