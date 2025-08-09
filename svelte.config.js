@@ -13,7 +13,8 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({
 			runtime: 'nodejs20.x',
-			precompress: false
+			precompress: false,
+			split: false
 		})
 	}
 };

@@ -1,3 +1,7 @@
+<script>
+	import { BUILD_ID } from '$lib/build-cache-buster.js';
+</script>
+
 <slot />
 
 <style>
