@@ -1,8 +1,17 @@
 import { writable } from 'svelte/store';
 import { apiClient } from './api';
+import type { User } from './api';
+
+// Define the auth store type
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
 
 // Create a writable store for authentication state
-export const auth = writable({
+export const auth = writable<AuthState>({
   user: null,
   token: null,
   isLoading: false,
@@ -15,7 +24,7 @@ export const authMethods = {
     auth.update(state => ({ ...state, isLoading: true, error: null }));
     
     try {
-      const response = await apiClient.login(credentials);
+      const response = await apiClient.signin(credentials.email, credentials.password);
       auth.update(state => ({
         ...state,
         user: response.user,
@@ -47,7 +56,7 @@ export const authMethods = {
     auth.update(state => ({ ...state, isLoading: true, error: null }));
     
     try {
-      const response = await apiClient.register(userData);
+      const response = await apiClient.signup(userData.email, userData.password, userData.full_name);
       auth.update(state => ({
         ...state,
         user: response.user,
@@ -68,7 +77,7 @@ export const authMethods = {
 
   getCurrentUser: async (token?: string) => {
     try {
-      const currentState = get(auth);
+      const currentState = get<AuthState>(auth);
       const authToken = token || currentState.token;
       
       if (!authToken) {
@@ -94,7 +103,7 @@ export const authMethods = {
 
   checkAuth: async () => {
     try {
-      const currentState = get(auth);
+      const currentState = get<AuthState>(auth);
       if (currentState.token) {
         await authMethods.getCurrentUser(currentState.token);
       }
@@ -105,6 +114,28 @@ export const authMethods = {
         user: null,
         token: null
       }));
+    }
+  },
+
+  handleGitHubCallback: async (code: string) => {
+    try {
+      // Exchange the authorization code for an access token
+      const response = await apiClient.handleGitHubCallback(code);
+      auth.update(state => ({
+        ...state,
+        user: response.user,
+        token: response.access_token,
+        isLoading: false,
+        error: null
+      }));
+      return { success: true };
+    } catch (error: any) {
+      auth.update(state => ({
+        ...state,
+        isLoading: false,
+        error: error.message || 'GitHub authentication failed'
+      }));
+      throw error;
     }
   }
 };

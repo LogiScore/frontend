@@ -48,13 +48,22 @@
         expiry_date: expiryDate,
         cvv: cvv,
         cardholder_name: cardholderName
-      });
+      }) as { message: string };
 
       success = result.message || 'Payment processed successfully!';
       
       // Update user subscription
-      if (auth.user) {
-        auth.user.subscription_tier = selectedPlan.name.toLowerCase().replace(' ', '_');
+      const currentAuth = $auth;
+      if (currentAuth.user) {
+        const updatedUser = {
+          ...currentAuth.user,
+          subscription_tier: selectedPlan.name.toLowerCase().replace(' ', '_')
+        };
+        // Update the store
+        auth.update(state => ({
+          ...state,
+          user: updatedUser
+        }));
       }
       
       // Close modal after success

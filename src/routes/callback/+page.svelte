@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
 
   let isLoading = true;
@@ -27,7 +27,7 @@
       }
 
       // Handle the GitHub callback
-      await auth.handleGitHubCallback(code);
+      await authMethods.handleGitHubCallback(code);
       
       // Redirect to home page
       goto('/');

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
   import AuthModal from '$lib/components/AuthModal.svelte';
   import { onMount } from 'svelte';
@@ -27,7 +27,7 @@
   }
 
   function handleLogout() {
-    auth.logout();
+    authMethods.logout();
   }
 
   // Admin state

@@ -214,10 +214,10 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ email, password, name, company, user_type: userType }),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup failed:', error);
       // Check if it's a duplicate user error
-      if (error.message.includes('duplicate key') || error.message.includes('already exists')) {
+      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('A user with this email or username already exists. Please try signing in instead.');
       }
       throw new Error('Signup failed. Please try again later.');
@@ -231,20 +231,20 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to request verification code:', error);
       console.error('Error message:', error.message);
       console.error('Error type:', typeof error);
       
       // Check if it's a CORS or network error
-      if (error.message.includes('Failed to fetch') || error.message.includes('access control checks')) {
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
         // Provide fallback verification code system for demo purposes
         console.log('Using fallback verification code system');
         return { message: 'Verification code sent to your email (demo mode)' };
       }
       
       // If the endpoint doesn't exist (404), provide fallback
-      if (error.message.includes('404') || error.message.includes('Not Found')) {
+      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
         console.log('Backend verification code endpoint not implemented, using fallback');
         return { message: 'Verification code sent to your email (demo mode)' };
       }
@@ -255,6 +255,23 @@ class ApiClient {
     }
   }
 
+  // Complete signup with verification code
+  async completeSignup(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
+    try {
+      return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/complete-signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, code, name, company, user_type: userType }),
+      });
+    } catch (error: any) {
+      console.error('Complete signup failed:', error);
+      // Check if it's a duplicate user error
+      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
+        throw new Error('A user with this email already exists. Please try signing in instead.');
+      }
+      throw new Error('Signup completion failed. Please try again later.');
+    }
+  }
+
   // Sign in with verification code
   async signinWithCode(email: string, code: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
@@ -262,13 +279,13 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ email, code }),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signin with code failed:', error);
       console.error('Error message:', error.message);
       console.error('Error type:', typeof error);
       
       // Check if it's a CORS or network error
-      if (error.message.includes('Failed to fetch') || error.message.includes('access control checks')) {
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
         // Provide fallback authentication for demo purposes
         console.log('Using fallback verification code authentication');
         return {
@@ -288,7 +305,7 @@ class ApiClient {
       }
       
       // If the endpoint doesn't exist (404), provide fallback
-      if (error.message.includes('404') || error.message.includes('Not Found')) {
+      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
         console.log('Backend verification code endpoint not implemented, using fallback');
         return {
           user: {
@@ -311,19 +328,19 @@ class ApiClient {
       return {
         user: {
           id: 'demo-user',
-          username: 'Demo User',
-          full_name: 'Demo User',
-          email: email,
-          user_type: 'shipper',
-          subscription_tier: 'free',
-          is_verified: true,
-          is_active: true
-        },
-        access_token: 'demo-token',
-        token_type: 'bearer'
-      };
+            username: 'Demo User',
+            full_name: 'Demo User',
+            email: email,
+            user_type: 'shipper',
+            subscription_tier: 'free',
+            is_verified: true,
+            is_active: true
+          },
+          access_token: 'demo-token',
+          token_type: 'bearer'
+        };
+      }
     }
-  }
 
   // Legacy signin method (for demo account)
   async signin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
@@ -332,11 +349,11 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signin failed:', error);
       
       // Check if it's a CORS or network error
-      if (error.message.includes('Failed to fetch') || error.message.includes('access control checks')) {
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
         // Provide fallback authentication for demo purposes
         if (email === 'demo@example.com' && password === 'demo123') {
           console.log('Using fallback demo authentication');
@@ -359,7 +376,7 @@ class ApiClient {
       }
       
       // Check if it's an authentication error
-      if (error.message.includes('401') || error.message.includes('Invalid email or password')) {
+      if (error.message?.includes('401') || error.message?.includes('Invalid email or password')) {
         throw new Error('Invalid email or password. Please check your credentials and try again. You can also try signing up with a new account.');
       }
       throw new Error('Signin failed. Please try again later or sign up for a new account.');

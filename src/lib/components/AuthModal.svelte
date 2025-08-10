@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { auth, authMethods } from '../auth';
+  import { apiClient } from '../api';
 
   export let isOpen = false;
   export let mode = 'signin'; // 'signin' or 'signup'
@@ -8,14 +9,51 @@
   const dispatch = createEventDispatcher();
 
   let email = '';
-  let password = '';
+  let verificationCode = '';
   let confirmPassword = '';
   let fullName = '';
   let isLoading = false;
   let errorMessage = '';
+  let successMessage = '';
+  let codeRequested = false;
+  let codeSent = false;
 
   function closeModal() {
     dispatch('close');
+    // Reset state when closing
+    resetForm();
+  }
+
+  function resetForm() {
+    email = '';
+    verificationCode = '';
+    confirmPassword = '';
+    fullName = '';
+    errorMessage = '';
+    successMessage = '';
+    codeRequested = false;
+    codeSent = false;
+  }
+
+  async function requestCode() {
+    if (!email) {
+      errorMessage = 'Please enter your email address';
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = '';
+
+    try {
+      const result = await apiClient.requestVerificationCode(email);
+      successMessage = result.message;
+      codeRequested = true;
+      codeSent = true;
+    } catch (error: any) {
+      errorMessage = error.message || 'Failed to send verification code';
+    } finally {
+      isLoading = false;
+    }
   }
 
   async function handleSubmit() {
@@ -24,26 +62,61 @@
 
     try {
       if (mode === 'signin') {
-        const result = await authMethods.login({ email, password });
-        if (result.success) {
-          closeModal();
-        } else {
-          errorMessage = result.error || 'Login failed';
-        }
-      } else {
-        if (password !== confirmPassword) {
-          errorMessage = 'Passwords do not match';
+        if (!codeSent) {
+          await requestCode();
           return;
         }
-        const result = await authMethods.register({ 
-          email, 
-          password, 
-          full_name: fullName 
-        });
-        if (result.success) {
+        
+        if (!verificationCode) {
+          errorMessage = 'Please enter the verification code';
+          return;
+        }
+
+        const result = await apiClient.signinWithCode(email, verificationCode);
+        if (result.user && result.access_token) {
+          // Update auth store
+          auth.update(state => ({
+            ...state,
+            user: result.user,
+            token: result.access_token,
+            isLoading: false,
+            error: null
+          }));
           closeModal();
         } else {
-          errorMessage = result.error || 'Registration failed';
+          errorMessage = 'Invalid verification code';
+        }
+      } else {
+        // For signup, we'll use the same email + code system
+        if (!codeSent) {
+          await requestCode();
+          return;
+        }
+        
+        if (!verificationCode) {
+          errorMessage = 'Please enter the verification code';
+          return;
+        }
+
+        if (!fullName) {
+          errorMessage = 'Please enter your full name';
+          return;
+        }
+
+        // For signup, complete the signup process with the verification code
+        const result = await apiClient.completeSignup(email, verificationCode, fullName);
+        if (result.user && result.access_token) {
+          // Update auth store
+          auth.update(state => ({
+            ...state,
+            user: result.user,
+            token: result.access_token,
+            isLoading: false,
+            error: null
+          }));
+          closeModal();
+        } else {
+          errorMessage = 'Registration failed';
         }
       }
     } catch (error: any) {
@@ -55,7 +128,15 @@
 
   function switchMode() {
     mode = mode === 'signin' ? 'signup' : 'signin';
+    resetForm();
+  }
+
+  function resendCode() {
+    codeSent = false;
+    codeRequested = false;
+    verificationCode = '';
     errorMessage = '';
+    successMessage = '';
   }
 </script>
 
@@ -77,6 +158,7 @@
               bind:value={fullName}
               required
               disabled={isLoading}
+              placeholder="Enter your full name"
             />
           </div>
         {/if}
@@ -88,50 +170,64 @@
             id="email"
             bind:value={email}
             required
-            disabled={isLoading}
+            disabled={isLoading || codeSent}
+            placeholder="Enter your email address"
           />
         </div>
-        
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            bind:value={password}
-            required
-            minlength="6"
-            disabled={isLoading}
-          />
-        </div>
-        
-        {#if mode === 'signup'}
+
+        {#if !codeSent}
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
+              Cancel
+            </button>
+            <button type="button" class="btn-primary" on:click={requestCode} disabled={isLoading}>
+              {isLoading ? 'Sending...' : 'Send Verification Code'}
+            </button>
+          </div>
+        {:else}
           <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
+            <label for="verificationCode">6-Digit Verification Code</label>
             <input
-              type="password"
-              id="confirmPassword"
-              bind:value={confirmPassword}
+              type="text"
+              id="verificationCode"
+              bind:value={verificationCode}
               required
-              minlength="6"
               disabled={isLoading}
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              inputmode="numeric"
             />
+            <small class="help-text">Enter the 6-digit code sent to your email</small>
+          </div>
+
+          {#if successMessage}
+            <div class="success-message">
+              {successMessage}
+            </div>
+          {/if}
+          
+          {#if errorMessage}
+            <div class="error-message">
+              {errorMessage}
+            </div>
+          {/if}
+          
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" disabled={isLoading}>
+              {isLoading ? 'Verifying...' : (mode === 'signin' ? 'Sign In' : 'Sign Up')}
+            </button>
+          </div>
+
+          <div class="resend-section">
+            <button type="button" class="link-btn" on:click={resendCode} disabled={isLoading}>
+              Send New Code
+            </button>
           </div>
         {/if}
-        
-        {#if errorMessage}
-          <div class="error-message">
-            {errorMessage}
-          </div>
-        {/if}
-        
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
-            Cancel
-          </button>
-          <button type="submit" class="btn-primary" disabled={isLoading}>
-            {isLoading ? 'Loading...' : (mode === 'signin' ? 'Sign In' : 'Sign Up')}
-          </button>
-        </div>
       </form>
       
       <div class="modal-footer">
@@ -237,6 +333,22 @@
     cursor: not-allowed;
   }
 
+  .help-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
   .error-message {
     background: #f8d7da;
     color: #721c24;
@@ -316,6 +428,13 @@
 
   .link-btn:hover {
     color: #0056b3;
+  }
+
+  .resend-section {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
   }
 </style>
 
