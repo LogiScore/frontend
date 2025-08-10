@@ -4,7 +4,6 @@
   
   let featuredCompanies: any[] = [];
   let isLoading = true;
-  let showAllCompanies = false;
   
   onMount(async () => {
     try {
@@ -17,19 +16,6 @@
       isLoading = false;
     }
   });
-
-  async function refreshCompanies() {
-    try {
-      isLoading = true;
-      // Load a new random selection of up to 18 freight forwarders
-      const companies = await apiClient.getFreightForwarders(18, true);
-      featuredCompanies = companies;
-    } catch (error) {
-      console.error('Failed to refresh companies:', error);
-    } finally {
-      isLoading = false;
-    }
-  }
 </script>
 
 <svelte:head>
@@ -85,12 +71,6 @@
   <section class="featured-companies">
     <div class="container">
       <h2>Featured Freight Forwarders</h2>
-      <p class="section-description">Browse up to 18 freight forwarding companies from our database</p>
-      {#if featuredCompanies.length > 0 && featuredCompanies.length < 18}
-        <p class="random-note">Showing all {featuredCompanies.length} available companies</p>
-      {:else if featuredCompanies.length >= 18}
-        <p class="random-note">Showing 18 companies randomly selected from our database</p>
-      {/if}
       {#if isLoading}
         <div class="loading">Loading freight forwarders...</div>
       {:else if featuredCompanies.length > 0}
@@ -105,7 +85,6 @@
                 {/if}
               </div>
               <div class="company-info">
-                <h3>{company.name}</h3>
                 {#if company.rating}
                   <div class="rating">
                     <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
@@ -115,18 +94,17 @@
                 {#if company.review_count}
                   <p class="review-count">{company.review_count} reviews</p>
                 {/if}
+                {#if company.website}
+                  <a href={company.website} target="_blank" rel="noopener noreferrer" class="company-website">
+                    Visit Website
+                  </a>
+                {/if}
               </div>
             </div>
           {/each}
         </div>
         <div class="text-center">
           <a href="/search" class="btn btn-outline">Search & Filter Companies</a>
-          <button class="btn btn-primary" on:click={() => showAllCompanies = true}>
-            View All {featuredCompanies.length} Companies
-          </button>
-          <button class="btn btn-secondary" on:click={refreshCompanies}>
-            🔄 Refresh Selection
-          </button>
         </div>
       {:else}
         <p class="no-data">No companies available at the moment.</p>
@@ -216,17 +194,6 @@
     color: #667eea;
   }
 
-  .btn-secondary:not(.hero .btn-secondary) {
-    background: #6c757d;
-    color: white;
-    border: 2px solid #6c757d;
-  }
-
-  .btn-secondary:not(.hero .btn-secondary):hover {
-    background: #5a6268;
-    border-color: #5a6268;
-  }
-
   .btn-outline {
     background: transparent;
     color: #667eea;
@@ -236,6 +203,18 @@
   .btn-outline:hover {
     background: #667eea;
     color: white;
+  }
+
+  .hero .btn {
+    margin: 0 0.5rem;
+  }
+
+  .hero .btn:first-child {
+    margin-left: 0;
+  }
+
+  .hero .btn:last-child {
+    margin-right: 0;
   }
 
   /* Features Section */
@@ -293,18 +272,8 @@
   .featured-companies h2 {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: #333;
-  }
-
-  .section-description {
-    text-align: center;
-    font-size: 1.1rem;
-    color: #666;
     margin-bottom: 3rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    color: #333;
   }
 
   .companies-grid {
@@ -332,23 +301,23 @@
   }
 
   .company-logo img {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     border-radius: 8px;
     object-fit: cover;
   }
 
   .logo-placeholder {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     background: #667eea;
     color: white;
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: bold;
+    border-radius: 8px;
   }
 
   .company-info h3 {
@@ -376,6 +345,22 @@
     color: #666;
     font-size: 0.9rem;
     margin: 0;
+  }
+
+  .company-website {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 8px 12px;
+    background-color: #667eea;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .company-website:hover {
+    background-color: #5a6268;
   }
 
   /* CTA Section */
@@ -409,18 +394,6 @@
     text-align: center;
   }
 
-  .text-center .btn {
-    margin: 0 0.5rem;
-  }
-
-  .text-center .btn:first-child {
-    margin-left: 0;
-  }
-
-  .text-center .btn:last-child {
-    margin-right: 0;
-  }
-
   .loading {
     text-align: center;
     padding: 2rem;
@@ -432,16 +405,6 @@
     padding: 2rem;
     color: #666;
     font-style: italic;
-  }
-
-  .random-note {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 2rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   /* Responsive Design */
@@ -472,13 +435,6 @@
     .company-logo {
       margin-right: 0;
       margin-bottom: 1rem;
-    }
-
-    .text-center .btn {
-      display: block;
-      margin: 0.5rem auto;
-      width: 100%;
-      max-width: 300px;
     }
   }
 </style>
