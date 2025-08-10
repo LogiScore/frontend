@@ -163,6 +163,14 @@
                   Change Password
                 </button>
                 <div class="dropdown-divider"></div>
+                <a href="/admin" class="dropdown-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3h18v18H3z"/>
+                    <path d="M9 9h6v6H9z"/>
+                  </svg>
+                  Admin Dashboard
+                </a>
+                <div class="dropdown-divider"></div>
                 <button class="dropdown-item logout" on:click={handleLogout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
