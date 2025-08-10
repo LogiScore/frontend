@@ -4,18 +4,32 @@
   
   let featuredCompanies: any[] = [];
   let isLoading = true;
+  let showAllCompanies = false;
   
   onMount(async () => {
     try {
-      // Load featured companies for the homepage
-      const companies = await apiClient.getFreightForwarders();
-      featuredCompanies = companies.slice(0, 6); // Show top 6
+      // Load up to 18 freight forwarders with random selection
+      const companies = await apiClient.getFreightForwarders(18, true);
+      featuredCompanies = companies;
     } catch (error) {
       console.error('Failed to load homepage data:', error);
     } finally {
       isLoading = false;
     }
   });
+
+  async function refreshCompanies() {
+    try {
+      isLoading = true;
+      // Load a new random selection of up to 18 freight forwarders
+      const companies = await apiClient.getFreightForwarders(18, true);
+      featuredCompanies = companies;
+    } catch (error) {
+      console.error('Failed to refresh companies:', error);
+    } finally {
+      isLoading = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -70,9 +84,15 @@
   <!-- Featured Companies Section -->
   <section class="featured-companies">
     <div class="container">
-      <h2>Global Freight Forwarders</h2>
+      <h2>Featured Freight Forwarders</h2>
+      <p class="section-description">Browse up to 18 freight forwarding companies from our database</p>
+      {#if featuredCompanies.length > 0 && featuredCompanies.length < 18}
+        <p class="random-note">Showing all {featuredCompanies.length} available companies</p>
+      {:else if featuredCompanies.length >= 18}
+        <p class="random-note">Showing 18 companies randomly selected from our database</p>
+      {/if}
       {#if isLoading}
-        <div class="loading">Loading featured companies...</div>
+        <div class="loading">Loading freight forwarders...</div>
       {:else if featuredCompanies.length > 0}
         <div class="companies-grid">
           {#each featuredCompanies as company}
@@ -100,7 +120,13 @@
           {/each}
         </div>
         <div class="text-center">
-          <a href="/search" class="btn btn-outline">View All Companies</a>
+          <a href="/search" class="btn btn-outline">Search & Filter Companies</a>
+          <button class="btn btn-primary" on:click={() => showAllCompanies = true}>
+            View All {featuredCompanies.length} Companies
+          </button>
+          <button class="btn btn-secondary" on:click={refreshCompanies}>
+            🔄 Refresh Selection
+          </button>
         </div>
       {:else}
         <p class="no-data">No companies available at the moment.</p>
@@ -190,6 +216,17 @@
     color: #667eea;
   }
 
+  .btn-secondary:not(.hero .btn-secondary) {
+    background: #6c757d;
+    color: white;
+    border: 2px solid #6c757d;
+  }
+
+  .btn-secondary:not(.hero .btn-secondary):hover {
+    background: #5a6268;
+    border-color: #5a6268;
+  }
+
   .btn-outline {
     background: transparent;
     color: #667eea;
@@ -256,8 +293,18 @@
   .featured-companies h2 {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 3rem;
+    margin-bottom: 1rem;
     color: #333;
+  }
+
+  .section-description {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .companies-grid {
@@ -362,6 +409,18 @@
     text-align: center;
   }
 
+  .text-center .btn {
+    margin: 0 0.5rem;
+  }
+
+  .text-center .btn:first-child {
+    margin-left: 0;
+  }
+
+  .text-center .btn:last-child {
+    margin-right: 0;
+  }
+
   .loading {
     text-align: center;
     padding: 2rem;
@@ -373,6 +432,16 @@
     padding: 2rem;
     color: #666;
     font-style: italic;
+  }
+
+  .random-note {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* Responsive Design */
@@ -403,6 +472,13 @@
     .company-logo {
       margin-right: 0;
       margin-bottom: 1rem;
+    }
+
+    .text-center .btn {
+      display: block;
+      margin: 0.5rem auto;
+      width: 100%;
+      max-width: 300px;
     }
   }
 </style>
