@@ -16,9 +16,13 @@ class FreightForwarderResponse(BaseModel):
     name: str
     website: Optional[str]
     logo_url: Optional[str]
+    description: Optional[str]
+    services: Optional[str]
+    specializations: Optional[str]
     rating: Optional[float]
     review_count: Optional[int]
     created_at: datetime
+    category_scores: Optional[List[dict]] = []
 
     class Config:
         from_attributes = True
@@ -74,6 +78,9 @@ async def get_freight_forwarders(
             'name': result.FreightForwarder.name,
             'website': result.FreightForwarder.website,
             'logo_url': result.FreightForwarder.logo_url,
+            'description': result.FreightForwarder.description,
+            'services': result.FreightForwarder.services,
+            'specializations': result.FreightForwarder.specializations,
             'rating': float(result.avg_rating) if result.avg_rating else None,
             'review_count': int(result.review_count) if result.review_count else 0,
             'created_at': result.FreightForwarder.created_at
@@ -87,7 +94,7 @@ async def get_freight_forwarder(
     freight_forwarder_id: str,
     db: Session = Depends(get_db)
 ):
-    """Get specific freight forwarder by ID with rating info"""
+    """Get specific freight forwarder by ID with rating info and category scores"""
     # Query with rating and review count
     result = db.query(
         FreightForwarder,
@@ -101,15 +108,55 @@ async def get_freight_forwarder(
     if not result:
         raise HTTPException(status_code=404, detail="Freight forwarder not found")
     
+    # Get review category scores
+    category_scores = db.query(
+        func.avg(Review.service_quality).label('service_quality'),
+        func.avg(Review.reliability).label('reliability'),
+        func.avg(Review.communication).label('communication'),
+        func.avg(Review.pricing).label('pricing'),
+        func.avg(Review.overall_rating).label('overall'),
+        func.count(Review.id).label('review_count')
+    ).filter(Review.freight_forwarder_id == freight_forwarder_id).first()
+    
     # Convert to response format
     ff_data = {
         'id': result.FreightForwarder.id,
         'name': result.FreightForwarder.name,
         'website': result.FreightForwarder.website,
         'logo_url': result.FreightForwarder.logo_url,
+        'description': result.FreightForwarder.description,
+        'services': result.FreightForwarder.services,
+        'specializations': result.FreightForwarder.specializations,
         'rating': float(result.avg_rating) if result.avg_rating else None,
         'review_count': int(result.review_count) if result.review_count else 0,
-        'created_at': result.FreightForwarder.created_at
+        'created_at': result.FreightForwarder.created_at,
+        'category_scores': [
+            {
+                'category_name': 'Service Quality',
+                'average_score': float(category_scores.service_quality) if category_scores.service_quality else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            },
+            {
+                'category_name': 'Reliability',
+                'average_score': float(category_scores.reliability) if category_scores.reliability else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            },
+            {
+                'category_name': 'Communication',
+                'average_score': float(category_scores.communication) if category_scores.communication else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            },
+            {
+                'category_name': 'Pricing',
+                'average_score': float(category_scores.pricing) if category_scores.pricing else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            },
+            {
+                'category_name': 'Overall',
+                'average_score': float(category_scores.overall) if category_scores.overall else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            }
+        ] if category_scores else []
     }
     
     return FreightForwarderResponse(**ff_data)
