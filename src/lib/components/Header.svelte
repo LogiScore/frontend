@@ -266,7 +266,7 @@
   }
 
   .logo {
-    height: 42px; /* Increased from 32px by 30% (32 * 1.3 = 41.6, rounded to 42px) */
+    height: 84px; /* Doubled from 42px to 84px */
     width: auto;
     background: transparent !important;
     filter: brightness(1.1) contrast(1.1);
