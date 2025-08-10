@@ -4,11 +4,19 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://logiscorebe.o
 export interface FreightForwarder {
   id: string;
   name: string;
-  website?: string;
+  website?: string | null;
   logo_url?: string | null;
-  description?: string;
-  rating?: number;
-  review_count?: number;
+  description?: string | null;
+  services?: string | null;
+  specializations?: string | null;
+  rating?: number | null;
+  review_count?: number | null;
+  created_at?: string | null;
+  category_scores?: Array<{
+    category_name: string;
+    average_score: number;
+    review_count: number;
+  }> | null;
 }
 
 export interface Review {
@@ -113,47 +121,17 @@ class ApiClient {
       return await this.request<FreightForwarder[]>(endpoint);
     } catch (error: any) {
       console.error('Failed to fetch freight forwarders:', error);
-      
-      // Check if it's a CORS or network error
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
-        console.log('Using fallback freight forwarders data');
-      }
-      
-      // Return mock data as fallback
-      return [
-        {
-          id: '1',
-          name: 'DHL Supply Chain',
-          website: 'https://www.dhl.com',
-          logo_url: null,
-          description: 'Global logistics leader with comprehensive supply chain solutions',
-          rating: 4.8,
-          review_count: 156
-        },
-        {
-          id: '2',
-          name: 'Kuehne + Nagel',
-          website: 'https://www.kuehne-nagel.com',
-          logo_url: null,
-          description: 'International logistics company with extensive global network',
-          rating: 4.7,
-          review_count: 142
-        },
-        {
-          id: '3',
-          name: 'DB Schenker',
-          website: 'https://www.dbschenker.com',
-          logo_url: null,
-          description: 'Reliable global logistics provider with innovative solutions',
-          rating: 4.6,
-          review_count: 128
-        }
-      ];
+      throw error;
     }
   }
 
-  async getFreightForwarder(id: string): Promise<FreightForwarder> {
-    return this.request<FreightForwarder>(`/api/freight-forwarders/${id}`);
+  async getFreightForwarder(id: string): Promise<any> {
+    try {
+      return await this.request<any>(`/api/freight-forwarders/${id}`);
+    } catch (error: any) {
+      console.error('Failed to fetch freight forwarder details:', error);
+      throw error;
+    }
   }
 
   // Reviews
