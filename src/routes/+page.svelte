@@ -56,7 +56,7 @@
         <div class="feature-card">
           <div class="feature-icon">🔍</div>
           <h3>Easy Comparison</h3>
-          <p>Compare multiple freight forwarders side-by-side to find your perfect match</p>
+          <p>Compare multiple freight forwarders to find your perfect match</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">💼</div>
@@ -70,7 +70,7 @@
   <!-- Featured Companies Section -->
   <section class="featured-companies">
     <div class="container">
-      <h2>Top Rated Freight Forwarders</h2>
+      <h2>Global Freight Forwarders</h2>
       {#if isLoading}
         <div class="loading">Loading featured companies...</div>
       {:else if featuredCompanies.length > 0}
