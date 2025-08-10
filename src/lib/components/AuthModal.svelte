@@ -195,8 +195,12 @@
               disabled={isLoading}
               placeholder="Enter 6-digit code"
               maxlength="6"
-              pattern="[0-9]{6}"
               inputmode="numeric"
+              on:input={(e) => {
+                // Only allow numeric input
+                const target = e.target as HTMLInputElement;
+                verificationCode = target.value.replace(/[^0-9]/g, '');
+              }}
             />
             <small class="help-text">Enter the 6-digit code sent to your email</small>
           </div>
