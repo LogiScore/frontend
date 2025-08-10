@@ -97,9 +97,20 @@ class ApiClient {
   }
 
   // Freight forwarders
-  async getFreightForwarders(): Promise<FreightForwarder[]> {
+  async getFreightForwarders(limit?: number, randomSelect: boolean = false): Promise<FreightForwarder[]> {
     try {
-      return await this.request<FreightForwarder[]>('/api/freight-forwarders/');
+      const params = new URLSearchParams();
+      if (limit) {
+        params.append('limit', limit.toString());
+      }
+      if (randomSelect) {
+        params.append('random_select', 'true');
+      }
+      
+      const queryString = params.toString();
+      const endpoint = `/api/freight-forwarders/${queryString ? '?' + queryString : ''}`;
+      
+      return await this.request<FreightForwarder[]>(endpoint);
     } catch (error: any) {
       console.error('Failed to fetch freight forwarders:', error);
       
@@ -162,9 +173,21 @@ class ApiClient {
   }
 
   // Search
-  async searchFreightForwarders(query: string): Promise<FreightForwarder[]> {
+  async searchFreightForwarders(query: string, limit?: number, randomSelect: boolean = false): Promise<FreightForwarder[]> {
     try {
-      return await this.request<FreightForwarder[]>(`/api/search/freight-forwarders?q=${encodeURIComponent(query)}`);
+      const params = new URLSearchParams();
+      params.append('q', query);
+      if (limit) {
+        params.append('limit', limit.toString());
+      }
+      if (randomSelect) {
+        params.append('random_select', 'true');
+      }
+      
+      const queryString = params.toString();
+      const endpoint = `/api/search/freight-forwarders?${queryString}`;
+      
+      return await this.request<FreightForwarder[]>(endpoint);
     } catch (error: any) {
       console.error('Search failed:', error);
       // Return filtered mock data as fallback
@@ -198,12 +221,14 @@ class ApiClient {
         }
       ];
       
-      // Simple client-side search as fallback
-      const lowerQuery = query.toLowerCase();
-      return mockData.filter(item => 
-        item.name.toLowerCase().includes(lowerQuery) ||
-        item.description?.toLowerCase().includes(lowerQuery)
-      );
+      // Filter mock data based on query
+      if (query) {
+        return mockData.filter(company => 
+          company.name.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+      
+      return mockData;
     }
   }
 
