@@ -6,10 +6,5 @@
     "env": {
       "VERCEL_FORCE_NO_BUILD_CACHE": "1"
     }
-  },
-  "functions": {
-    "**/*.js": {
-      "runtime": "nodejs20.x"
-    }
   }
 } 
