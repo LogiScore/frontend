@@ -289,7 +289,7 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     transition: box-shadow 0.3s ease;
-    min-height: 200px;
+    min-height: 35px;
     justify-content: center;
   }
 
@@ -311,8 +311,8 @@
   }
 
   .company-logo img {
-    width: 80px;
-    height: 80px;
+    width: 160px;
+    height: 160px;
     border-radius: 8px;
     object-fit: contain;
     max-width: 100%;
@@ -320,8 +320,8 @@
   }
 
   .logo-placeholder {
-    width: 80px;
-    height: 80px;
+    width: 160px;
+    height: 160px;
     background: #667eea;
     color: white;
     display: flex;
@@ -439,8 +439,8 @@
 
     .company-logo img,
     .logo-placeholder {
-      width: 70px;
-      height: 70px;
+      width: 140px;
+      height: 140px;
     }
   }
 </style>
