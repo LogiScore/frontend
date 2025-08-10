@@ -76,31 +76,28 @@
       {:else if featuredCompanies.length > 0}
         <div class="companies-grid">
           {#each featuredCompanies as company}
-            <div class="company-card">
-              <div class="company-logo">
-                {#if company.logo_url}
-                  <img src={company.logo_url} alt="{company.name} logo" />
-                {:else}
-                  <div class="logo-placeholder">{company.name.charAt(0)}</div>
-                {/if}
+            <a href="/freight-forwarder/{company.id}" class="company-card-link">
+              <div class="company-card">
+                <div class="company-logo">
+                  {#if company.logo_url}
+                    <img src={company.logo_url} alt="{company.name} logo" />
+                  {:else}
+                    <div class="logo-placeholder">{company.name.charAt(0)}</div>
+                  {/if}
+                </div>
+                <div class="company-info">
+                  {#if company.rating}
+                    <div class="rating">
+                      <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
+                      <span class="rating-text">{company.rating.toFixed(1)}</span>
+                    </div>
+                  {/if}
+                  {#if company.review_count}
+                    <p class="review-count">{company.review_count} reviews</p>
+                  {/if}
+                </div>
               </div>
-              <div class="company-info">
-                {#if company.rating}
-                  <div class="rating">
-                    <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
-                    <span class="rating-text">{company.rating.toFixed(1)}</span>
-                  </div>
-                {/if}
-                {#if company.review_count}
-                  <p class="review-count">{company.review_count} reviews</p>
-                {/if}
-                {#if company.website}
-                  <a href={company.website} target="_blank" rel="noopener noreferrer" class="company-website">
-                    Visit Website
-                  </a>
-                {/if}
-              </div>
-            </div>
+            </a>
           {/each}
         </div>
         <div class="text-center">
@@ -292,7 +289,13 @@
     transition: box-shadow 0.3s ease;
   }
 
-  .company-card:hover {
+  .company-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .company-card-link:hover .company-card {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
@@ -345,22 +348,6 @@
     color: #666;
     font-size: 0.9rem;
     margin: 0;
-  }
-
-  .company-website {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 8px 12px;
-    background-color: #667eea;
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-
-  .company-website:hover {
-    background-color: #5a6268;
   }
 
   /* CTA Section */
