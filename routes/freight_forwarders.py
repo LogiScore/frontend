@@ -99,7 +99,7 @@ async def get_freight_forwarder(
     db: Session = Depends(get_db)
 ):
     """Get specific freight forwarder by ID with rating info and category scores"""
-    # Query with rating and review count
+    # Query with rating and review count 
     result = db.query(
         FreightForwarder,
         func.avg(Review.overall_rating).label('avg_rating'),
