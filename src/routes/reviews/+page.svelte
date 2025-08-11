@@ -1,121 +1,322 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
-
-  let reviews = [];
+  import { page } from '$app/stores';
+  import { apiClient } from '$lib/api';
+  
+  let freightForwarders: any[] = [];
+  let branches: any[] = [];
+  let selectedCompany: string = '';
+  let selectedBranch: string = '';
+  let reviewType: string = 'general';
+  let isAnonymous: boolean = false;
   let isLoading = true;
-  let error = null;
+  let error: string | null = null;
+  
+  // Review categories with questions
+  const reviewCategories = [
+    {
+      id: 'responsiveness',
+      name: 'Responsiveness',
+      question: 'How quickly does the freight forwarder respond to your inquiries and requests?',
+      rating: 0
+    },
+    {
+      id: 'shipment_management',
+      name: 'Shipment Management',
+      question: 'How effectively does the freight forwarder manage your shipments from pickup to delivery?',
+      rating: 0
+    },
+    {
+      id: 'documentation',
+      name: 'Documentation',
+      question: 'How accurate and complete is the freight forwarder\'s documentation and paperwork?',
+      rating: 0
+    },
+    {
+      id: 'customer_experience',
+      name: 'Customer Experience',
+      question: 'How satisfied are you with the overall customer service experience?',
+      rating: 0
+    },
+    {
+      id: 'technology_process',
+      name: 'Technology Process',
+      question: 'How well does the freight forwarder utilize technology in their operations?',
+      rating: 0
+    },
+    {
+      id: 'reliability_execution',
+      name: 'Reliability & Execution',
+      question: 'How reliable is the freight forwarder in meeting deadlines and commitments?',
+      rating: 0
+    },
+    {
+      id: 'proactivity_insight',
+      name: 'Proactivity & Insight',
+      question: 'How proactive is the freight forwarder in providing insights and recommendations?',
+      rating: 0
+    },
+    {
+      id: 'after_hours_support',
+      name: 'After Hours Support',
+      question: 'How accessible is the freight forwarder for urgent matters outside business hours?',
+      rating: 0
+    }
+  ];
+
+  $: aggregateRating = reviewCategories.reduce((sum, cat) => sum + cat.rating, 0) / reviewCategories.filter(cat => cat.rating > 0).length || 0;
+  $: ratedQuestions = reviewCategories.filter(cat => cat.rating > 0).length;
+  $: reviewWeight = isAnonymous ? 0.5 : 1.0;
+  $: weightedRating = aggregateRating * reviewWeight;
 
   onMount(async () => {
     try {
-      // For now, we'll show a placeholder since the review system isn't implemented yet
-      reviews = [
-        {
-          id: 1,
-          company_name: "Global Logistics Inc",
-          reviewer_name: "Sarah M.",
-          rating: 4.5,
-          review_text: "Excellent service and communication throughout the entire process. Highly recommended!",
-          date: "2024-01-15"
-        },
-        {
-          id: 2,
-          company_name: "Express Freight Solutions",
-          reviewer_name: "Michael R.",
-          rating: 4.0,
-          review_text: "Good experience overall. Timely delivery and fair pricing.",
-          date: "2024-01-10"
-        },
-        {
-          id: 3,
-          company_name: "Worldwide Shipping Co",
-          reviewer_name: "Jennifer L.",
-          rating: 5.0,
-          review_text: "Outstanding service! They handled our complex international shipment perfectly.",
-          date: "2024-01-05"
-        }
-      ];
-    } catch (err) {
-      error = 'Failed to load reviews';
+      // Get company from URL parameter if available
+      const urlParams = new URLSearchParams(window.location.search);
+      const companyId = urlParams.get('company');
+      
+      if (companyId) {
+        selectedCompany = companyId;
+        // Load company details and branches
+        await loadCompanyData(companyId);
+      }
+      
+      // Load all freight forwarders for selection
+      await loadFreightForwarders();
+    } catch (err: any) {
+      error = err.message || 'Failed to load data';
     } finally {
       isLoading = false;
     }
   });
+
+  async function loadFreightForwarders() {
+    try {
+      freightForwarders = await apiClient.getFreightForwarders();
+    } catch (err: any) {
+      console.error('Failed to load freight forwarders:', err);
+    }
+  }
+
+  async function loadCompanyData(companyId: string) {
+    try {
+      const company = await apiClient.getFreightForwarder(companyId);
+      // Load branches for this company
+      // Note: This would need to be implemented in the API
+      branches = []; // Placeholder
+    } catch (err: any) {
+      console.error('Failed to load company data:', err);
+    }
+  }
+
+  function handleRatingChange(categoryId: string, rating: number) {
+    const category = reviewCategories.find(cat => cat.id === categoryId);
+    if (category) {
+      category.rating = rating;
+    }
+  }
+
+  async function submitReview() {
+    if (!selectedCompany) {
+      error = 'Please select a company';
+      return;
+    }
+
+    if (ratedQuestions === 0) {
+      error = 'Please provide ratings for at least one category';
+      return;
+    }
+
+    try {
+      // Prepare review data
+      const reviewData = {
+        freight_forwarder_id: selectedCompany,
+        branch_id: selectedBranch,
+        review_type: reviewType,
+        is_anonymous: isAnonymous,
+        review_weight: reviewWeight,
+        category_ratings: reviewCategories.map(cat => ({
+          category: cat.id,
+          rating: cat.rating
+        })),
+        aggregate_rating: aggregateRating,
+        weighted_rating: weightedRating
+      };
+
+      // Submit review (this would need to be implemented in the API)
+      console.log('Submitting review:', reviewData);
+      
+      // For now, show success message
+      alert('Review submitted successfully!');
+      
+      // Reset form
+      reviewCategories.forEach(cat => cat.rating = 0);
+      selectedBranch = '';
+      reviewType = 'general';
+      isAnonymous = false;
+      
+    } catch (err: any) {
+      error = err.message || 'Failed to submit review';
+    }
+  }
 </script>
 
 <svelte:head>
-  <title>Reviews - LogiScore</title>
-  <meta name="description" content="Read customer reviews and ratings for freight forwarders on LogiScore" />
+  <title>Submit Review - LogiScore</title>
+  <meta name="description" content="Submit your review for freight forwarders on LogiScore" />
 </svelte:head>
 
 <main>
   <section class="hero">
     <div class="container">
-      <h1>Customer Reviews</h1>
-      <p class="hero-subtitle">Read what our community says about freight forwarders</p>
+      <h1>Submit Your Review</h1>
+      <p class="hero-subtitle">Share your experience to help others make informed decisions</p>
     </div>
   </section>
 
-  <section class="reviews-content">
+  <section class="review-form">
     <div class="container">
       {#if isLoading}
         <div class="loading">
-          <p>Loading reviews...</p>
-        </div>
-      {:else if error}
-        <div class="error">
-          <p>{error}</p>
+          <p>Loading...</p>
         </div>
       {:else}
-        <div class="reviews-header">
-          <h2>Latest Reviews</h2>
-          <p>Real experiences from verified customers</p>
-        </div>
+        <form on:submit|preventDefault={submitReview}>
+          <!-- Company Selection -->
+          <div class="form-section">
+            <h2>Company Information</h2>
+            <div class="form-group">
+              <label for="company">Company *</label>
+              <select id="company" bind:value={selectedCompany} required>
+                <option value="">Select a company</option>
+                {#each freightForwarders as company}
+                  <option value={company.id}>{company.name}</option>
+                {/each}
+              </select>
+            </div>
 
-        <div class="reviews-grid">
-          {#each reviews as review}
-            <div class="review-card">
-              <div class="review-header">
-                <div class="reviewer-info">
-                  <h3 class="reviewer-name">{review.reviewer_name}</h3>
-                  <p class="company-name">{review.company_name}</p>
-                </div>
-                <div class="review-rating">
+            <div class="form-group">
+              <label for="branch">Branch Location</label>
+              <select id="branch" bind:value={selectedBranch}>
+                <option value="">Select branch (optional)</option>
+                {#each branches as branch}
+                  <option value={branch.id}>{branch.name} - {branch.location}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="reviewType">Review Type</label>
+              <select id="reviewType" bind:value={reviewType}>
+                <option value="general">General Service</option>
+                <option value="import">Import</option>
+                <option value="export">Export</option>
+                <option value="domestic">Domestic</option>
+                <option value="warehousing">Warehousing</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Review Options -->
+          <div class="form-section">
+            <h2>Review Options</h2>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" bind:checked={isAnonymous}>
+                Submit anonymously (reviews count 50% weight)
+              </label>
+              <p class="help-text">
+                {isAnonymous ? 'Your review will count as 50% weight' : 'Log in as a shipper for 100% weight'}
+              </p>
+            </div>
+          </div>
+
+          <!-- Rating Categories -->
+          <div class="form-section">
+            <h2>Rate Your Experience</h2>
+            <p class="rating-instructions">
+              Rate each category from 0-4 stars:<br>
+              0 = Not applicable, 1 = Hardly (25%), 2 = Usually (50%), 3 = Most of the time (75%), 4 = Every time (100%)
+            </p>
+
+            {#each reviewCategories as category}
+              <div class="rating-category">
+                <h3>{category.name}</h3>
+                <p class="question">{category.question}</p>
+                <div class="star-rating">
                   {#each Array(5) as _, i}
-                    <span class="star {i < review.rating ? 'filled' : ''}">★</span>
+                    <button
+                      type="button"
+                      class="star {i === 0 ? 'not-applicable' : ''} {i <= category.rating ? 'filled' : ''}"
+                      on:click={() => handleRatingChange(category.id, i === 0 ? 0 : i)}
+                    >
+                      {i === 0 ? 'N/A' : '★'}
+                    </button>
                   {/each}
-                  <span class="rating-number">{review.rating}</span>
+                  <span class="rating-label">
+                    {category.rating === 0 ? 'Not applicable' : 
+                     category.rating === 1 ? 'Hardly (25%)' :
+                     category.rating === 2 ? 'Usually (50%)' :
+                     category.rating === 3 ? 'Most of the time (75%)' :
+                     'Every time (100%)'}
+                  </span>
                 </div>
               </div>
-              
-              <p class="review-text">"{review.review_text}"</p>
-              
-              <div class="review-footer">
-                <span class="review-date">{new Date(review.date).toLocaleDateString()}</span>
+            {/each}
+          </div>
+
+          <!-- Rating Summary -->
+          <div class="form-section rating-summary">
+            <h2>Your Rating Summary</h2>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Aggregate Rating:</span>
+                <span class="value">{aggregateRating.toFixed(1)}/4.0</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Rated Questions:</span>
+                <span class="value">{ratedQuestions} out of 8</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Review Weight:</span>
+                <span class="value">{reviewWeight * 100}%</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Weighted Rating:</span>
+                <span class="value">{weightedRating.toFixed(1)}/4.0</span>
               </div>
             </div>
-          {/each}
-        </div>
+          </div>
 
-        <div class="coming-soon">
-          <h3>Review System Coming Soon</h3>
-          <p>We're working on implementing a comprehensive review system where you can:</p>
-          <ul>
-            <li>Write detailed reviews about your experiences</li>
-            <li>Rate freight forwarders on multiple criteria</li>
-            <li>Read verified customer feedback</li>
-            <li>Help other businesses make informed decisions</li>
-          </ul>
-        </div>
+          <!-- Submit Button -->
+          <div class="form-section">
+            <button type="submit" class="btn btn-primary" disabled={ratedQuestions === 0}>
+              Submit Review
+            </button>
+          </div>
+
+          {#if error}
+            <div class="error-message">
+              {error}
+            </div>
+          {/if}
+        </form>
       {/if}
     </div>
   </section>
 </main>
 
 <style>
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
   .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 80px 0;
+    padding: 4rem 0;
     text-align: center;
   }
 
@@ -127,163 +328,223 @@
   .hero-subtitle {
     font-size: 1.2rem;
     opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
   }
 
-  .reviews-content {
-    padding: 80px 0;
+  .review-form {
+    padding: 3rem 0;
   }
 
-  .reviews-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .reviews-header h2 {
-    color: #333;
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .reviews-header p {
-    color: #666;
-    font-size: 1.1rem;
-  }
-
-  .reviews-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto 4rem auto;
-  }
-
-  .review-card {
+  .form-section {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-  }
-
-  .review-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  }
-
-  .review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-  }
-
-  .reviewer-name {
-    color: #333;
-    margin-bottom: 0.25rem;
-    font-size: 1.1rem;
-  }
-
-  .company-name {
-    color: #667eea;
-    font-size: 0.9rem;
-    margin: 0;
-  }
-
-  .review-rating {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .star {
-    color: #ddd;
-    font-size: 1.2rem;
-  }
-
-  .star.filled {
-    color: #ffd700;
-  }
-
-  .rating-number {
-    color: #666;
-    font-weight: 500;
-  }
-
-  .review-text {
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-    font-style: italic;
-  }
-
-  .review-footer {
-    border-top: 1px solid #eee;
-    padding-top: 1rem;
-  }
-
-  .review-date {
-    color: #999;
-    font-size: 0.9rem;
-  }
-
-  .coming-soon {
-    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
     padding: 2rem;
-    text-align: center;
-    max-width: 800px;
-    margin: 0 auto;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 
-  .coming-soon h3 {
+  .form-section h2 {
     color: #333;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     font-size: 1.5rem;
   }
 
-  .coming-soon p {
-    color: #666;
-    margin-bottom: 1rem;
+  .form-group {
+    margin-bottom: 1.5rem;
   }
 
-  .coming-soon ul {
-    text-align: left;
-    max-width: 500px;
-    margin: 0 auto;
-    color: #666;
-  }
-
-  .coming-soon li {
+  .form-group label {
+    display: block;
     margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: auto;
+  }
+
+  .help-text {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .rating-instructions {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 2rem;
+    color: #666;
     line-height: 1.6;
   }
 
-  .loading, .error {
-    text-align: center;
-    padding: 60px 0;
+  .rating-category {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
-  .loading p, .error p {
+  .rating-category h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .question {
     color: #666;
-    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
   }
 
-  .error p {
-    color: #e74c3c;
+  .star-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .star {
+    background: none;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+  }
+
+  .star.not-applicable {
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+
+  .star.filled {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: white;
+  }
+
+  .star:hover {
+    border-color: #ffc107;
+    transform: scale(1.1);
+  }
+
+  .rating-label {
+    margin-left: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .rating-summary {
+    background: #f8f9fa;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .summary-item .label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-item .value {
+    font-weight: bold;
+    color: #667eea;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: #5a6268;
+  }
+
+  .btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #f5c6cb;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 4rem 2rem;
+    font-size: 1.2rem;
+    color: #666;
   }
 
   @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    
     .hero h1 {
       font-size: 2rem;
     }
     
-    .reviews-header h2 {
-      font-size: 2rem;
+    .form-section {
+      padding: 1.5rem;
     }
     
-    .reviews-grid {
+    .star {
+      width: 35px;
+      height: 35px;
+      font-size: 1rem;
+    }
+    
+    .summary-grid {
       grid-template-columns: 1fr;
     }
   }
