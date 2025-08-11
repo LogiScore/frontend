@@ -12,30 +12,35 @@
   let isLoading = true;
   let error: string | null = null;
   
-  // Review categories with multiple questions each
+  // Review categories with detailed questions from documentation
   const reviewCategories = [
     {
       id: 'responsiveness',
       name: 'Responsiveness',
       questions: [
         {
-          id: 'initial_response',
-          text: 'How quickly does the freight forwarder respond to your initial inquiries?',
+          id: 'acknowledges_requests',
+          text: 'Acknowledges receipt of requests (for quotation or information) within 30 minutes (even if full response comes later)',
           rating: 0
         },
         {
-          id: 'follow_up_speed',
-          text: 'How fast is their follow-up communication?',
+          id: 'estimated_response_time',
+          text: 'Provides clear estimated response time if immediate resolution is not possible',
           rating: 0
         },
         {
-          id: 'business_hours',
-          text: 'How available are they during business hours?',
+          id: 'same_region_response',
+          text: 'Responds within 6 hours to rate requests to/from locations within the same region',
+          rating: 0
+        },
+        {
+          id: 'other_region_response',
+          text: 'Responds within 24 hours to rate requests to/from other regions (e.g. Asia to US, US to Europe)',
           rating: 0
         },
         {
           id: 'emergency_response',
-          text: 'How capable are they in emergency response situations?',
+          text: 'Responds to emergency requests (e.g., urgent shipment delay, customs issues) within 30 minutes',
           rating: 0
         }
       ]
@@ -45,23 +50,28 @@
       name: 'Shipment Management',
       questions: [
         {
-          id: 'tracking_visibility',
-          text: 'How effective is their tracking and shipment visibility?',
+          id: 'proactive_milestones',
+          text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
           rating: 0
         },
         {
-          id: 'issue_resolution',
-          text: 'How proactive are they in resolving shipment issues?',
+          id: 'pre_alerts',
+          text: 'Sends pre-alerts before vessel ETA',
           rating: 0
         },
         {
-          id: 'delivery_accuracy',
-          text: 'How accurate are their delivery estimates and execution?',
+          id: 'pod_delivery',
+          text: 'Provides POD (proof of delivery) within 24 hours of delivery',
           rating: 0
         },
         {
-          id: 'documentation_handling',
-          text: 'How well do they handle shipment documentation?',
+          id: 'delay_notifications',
+          text: 'Proactively notifies delays or disruptions',
+          rating: 0
+        },
+        {
+          id: 'recovery_plans',
+          text: 'Offers recovery plans in case of delays or missed transshipments',
           rating: 0
         }
       ]
@@ -71,23 +81,23 @@
       name: 'Documentation',
       questions: [
         {
-          id: 'customs_docs',
-          text: 'How accurate and complete is their customs documentation?',
+          id: 'draft_bl_issuance',
+          text: 'Issues draft B/L or HAWB within 24 hours of cargo departure',
           rating: 0
         },
         {
-          id: 'shipping_docs',
-          text: 'How complete are their shipping documents?',
+          id: 'final_invoices',
+          text: 'Sends final invoices within 48 hours of shipment completion',
+          rating: 0
+        },
+        {
+          id: 'documentation_accuracy',
+          text: 'Ensures documentation is accurate and complete on first submission (error rate < X%)',
           rating: 0
         },
         {
           id: 'invoice_accuracy',
-          text: 'How accurate are their invoices and billing documents?',
-          rating: 0
-        },
-        {
-          id: 'compliance_requirements',
-          text: 'How well do they meet compliance requirements?',
+          text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct)',
           rating: 0
         }
       ]
@@ -97,23 +107,28 @@
       name: 'Customer Experience',
       questions: [
         {
-          id: 'staff_professionalism',
-          text: 'How professional is their staff?',
+          id: 'follow_up_issues',
+          text: 'Follows up on pending issues without the need for reminders',
           rating: 0
         },
         {
-          id: 'communication_clarity',
-          text: 'How clear is their communication?',
+          id: 'documentation_rectification',
+          text: 'Rectifies documentation (shipping documents and invoices/credit notes) within 48 hours',
           rating: 0
         },
         {
-          id: 'problem_resolution',
-          text: 'How effective are they at resolving problems?',
+          id: 'named_contacts',
+          text: 'Provides named contact person(s) for operations and customer service',
           rating: 0
         },
         {
-          id: 'service_consistency',
-          text: 'How consistent is their service quality?',
+          id: 'escalation_contact',
+          text: 'Offers single point of contact for issue escalation',
+          rating: 0
+        },
+        {
+          id: 'professional_tone',
+          text: 'Replies in professional tone, avoids jargon unless relevant',
           rating: 0
         }
       ]
@@ -123,23 +138,23 @@
       name: 'Technology Process',
       questions: [
         {
-          id: 'online_tracking',
-          text: 'How effective are their online tracking systems?',
+          id: 'track_and_trace',
+          text: 'Offers track-and-trace (either via portal or manual milestone emails)',
           rating: 0
         },
         {
-          id: 'digital_documentation',
-          text: 'How well do they utilize digital documentation?',
+          id: 'document_portal',
+          text: 'Has an online document portal or can deliver documents in a single zipped file on request',
           rating: 0
         },
         {
-          id: 'communication_platforms',
-          text: 'How effective are their communication platforms?',
+          id: 'system_integration',
+          text: 'Integrates with customer systems (e.g., EDI/API) where required',
           rating: 0
         },
         {
-          id: 'process_automation',
-          text: 'How well do they automate their processes?',
+          id: 'regular_reporting',
+          text: 'Able to provide regular reporting (e.g., weekly shipment report, KPI report)',
           rating: 0
         }
       ]
@@ -149,23 +164,33 @@
       name: 'Reliability & Execution',
       questions: [
         {
+          id: 'on_time_pickup',
+          text: 'On-time pickup rate (%)',
+          rating: 0
+        },
+        {
+          id: 'shipped_as_promised',
+          text: 'Shipped as promised (%)',
+          rating: 0
+        },
+        {
           id: 'on_time_delivery',
-          text: 'How reliable are they in on-time delivery?',
+          text: 'On-time delivery rate (%)',
           rating: 0
         },
         {
-          id: 'service_consistency',
-          text: 'How consistent is their service delivery?',
+          id: 'sop_compliance',
+          text: 'Compliance with clients\' SOP (%)',
           rating: 0
         },
         {
-          id: 'commitment_fulfillment',
-          text: 'How well do they fulfill their commitments?',
+          id: 'customs_clearance_errors',
+          text: 'Customs clearance error rate (%)',
           rating: 0
         },
         {
-          id: 'error_rate',
-          text: 'How low is their error rate?',
+          id: 'claims_ratio',
+          text: 'Claims ratio (number of claims / total shipments)',
           rating: 0
         }
       ]
@@ -175,23 +200,18 @@
       name: 'Proactivity & Insight',
       questions: [
         {
-          id: 'route_optimization',
-          text: 'How proactive are they in suggesting route optimizations?',
+          id: 'rate_trends',
+          text: 'Offers rate trends and capacity forecasts for key trade lanes',
           rating: 0
         },
         {
-          id: 'cost_saving',
-          text: 'How proactive are they in cost-saving recommendations?',
+          id: 'gri_baf_notifications',
+          text: 'Notifies customer of upcoming GRI or BAF changes in advance',
           rating: 0
         },
         {
-          id: 'risk_mitigation',
-          text: 'How proactive are they in risk mitigation advice?',
-          rating: 0
-        },
-        {
-          id: 'industry_insights',
-          text: 'How valuable are their industry insights and recommendations?',
+          id: 'consolidation_suggestions',
+          text: 'Provides suggestions for consolidation, better routings, or mode shifts',
           rating: 0
         }
       ]
@@ -202,22 +222,12 @@
       questions: [
         {
           id: 'emergency_contact',
-          text: 'How accessible are they for emergency contacts?',
+          text: 'Has 24/7 support or provides emergency contact for after-hours escalation',
           rating: 0
         },
         {
-          id: 'support_options',
-          text: 'How many 24/7 support options do they provide?',
-          rating: 0
-        },
-        {
-          id: 'crisis_response',
-          text: 'How capable are they in crisis response?',
-          rating: 0
-        },
-        {
-          id: 'weekend_holiday',
-          text: 'How available are they during weekends and holidays?',
+          id: 'weekend_holiday_contact',
+          text: 'Weekend or holiday contact provided in advance for critical shipments',
           rating: 0
         }
       ]
@@ -402,14 +412,43 @@
             </div>
           </div>
 
+          <!-- Tips for Accurate Reviews -->
+          <div class="form-section">
+            <h2>Tips for Accurate Reviews</h2>
+            <div class="tips-container">
+              <ul class="tips-list">
+                <li>Base your review on recent experiences (within 12 months)</li>
+                <li>Consider multiple interactions, not just one shipment</li>
+                <li>Be specific about the branch/location you're reviewing</li>
+                <li>Focus on objective criteria rather than personal preferences</li>
+                <li>Consider both positive and negative aspects</li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Rating Categories -->
           <div class="form-section">
             <h2>Rate Your Experience</h2>
-            <p class="rating-instructions">
-              Rate each question from 0-4 stars:<br>
-              0 = Not applicable, 1 = Hardly (25%), 2 = Usually (50%), 3 = Most of the time (75%), 4 = Every time (100%)
-            </p>
-
+            <div class="rating-scale-info">
+              <h3>Rating Scale</h3>
+              <div class="scale-grid">
+                <div class="scale-item">
+                  <strong>0 stars:</strong> Not applicable
+                </div>
+                <div class="scale-item">
+                  <strong>1 star:</strong> 25% - Hardly on time / Seldom accurate / Seldom / Submits shipment reports upon request / Claims occur often / Not able to provide any information about trends relating to carriers, customs or geopolitics / Helpdesk is only active during normal working hours
+                </div>
+                <div class="scale-item">
+                  <strong>2 stars:</strong> 50% - Usually on time / Usually accurate / In most cases / Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free / Regular claims / Provides some information about trends, carriers and geopolitical issues when requested / There is a helpdesk but require more than 2 hours to be activated
+                </div>
+                <div class="scale-item">
+                  <strong>3 stars:</strong> 75% - Most of the time / Accurate most of the time / provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge / Occasional claims / Provides updates when requested about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client, and mitigation options the client could consider / There is a helpdesk but requires 1-2 hours until activated
+                </div>
+                <div class="scale-item">
+                  <strong>4 stars:</strong> 100% - Every time / Accurate every time / Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge / Rarely have claims / Provides proactive updates about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider / There is a 24/7 helpdesk that's always available
+                </div>
+              </div>
+            </div>
             {#each reviewCategories as category}
               <div class="rating-category">
                 <h3>{category.name}</h3>
@@ -454,7 +493,7 @@
               </div>
               <div class="summary-item">
                 <span class="label">Review Weight:</span>
-                <span class="value">{reviewWeight * 100}%</span>
+                <span class="value">{isAnonymous ? '50% (Anonymous)' : '100% (Authenticated)'}</span>
               </div>
               <div class="summary-item">
                 <span class="label">Weighted Rating:</span>
@@ -707,6 +746,58 @@
     padding: 4rem 2rem;
     font-size: 1.2rem;
     color: #666;
+  }
+
+  .tips-container {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tips-list li {
+    margin-bottom: 0.75rem;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .rating-scale-info {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .rating-scale-info h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .scale-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .scale-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .scale-item strong {
+    font-weight: 600;
+    color: #333;
   }
 
   @media (max-width: 768px) {
