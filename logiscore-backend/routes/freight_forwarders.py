@@ -15,6 +15,8 @@ class FreightForwarderResponse(BaseModel):
     name: str
     website: Optional[str]
     logo_url: Optional[str]
+    average_rating: Optional[float] = 0.0
+    review_count: Optional[int] = 0
     created_at: datetime
 
     class Config:
@@ -37,16 +39,40 @@ async def get_freight_forwarders(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     search: Optional[str] = Query(None),
+    random_select: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
 ):
-    """Get list of freight forwarders with optional search"""
-    query = db.query(FreightForwarder)
-    
-    if search:
-        query = query.filter(FreightForwarder.name.ilike(f"%{search}%"))
-    
-    freight_forwarders = query.offset(skip).limit(limit).all()
-    return [FreightForwarderResponse.from_orm(ff) for ff in freight_forwarders]
+    """Get list of freight forwarders with optional search and random selection"""
+    try:
+        query = db.query(FreightForwarder)
+        
+        if search:
+            query = query.filter(FreightForwarder.name.ilike(f"%{search}%"))
+        
+        # Handle random selection
+        if random_select:
+            from sqlalchemy import func
+            query = query.order_by(func.random())
+        
+        freight_forwarders = query.offset(skip).limit(limit).all()
+        
+        # Convert to response model
+        result = []
+        for ff in freight_forwarders:
+            try:
+                response = FreightForwarderResponse.from_orm(ff)
+                result.append(response)
+            except Exception as e:
+                # Log the error but continue with other records
+                print(f"Error converting freight forwarder {ff.id}: {e}")
+                continue
+        
+        return result
+        
+    except Exception as e:
+        print(f"Error in get_freight_forwarders: {e}")
+        # Return empty list instead of crashing
+        return []
 
 @router.get("/{freight_forwarder_id}", response_model=FreightForwarderResponse)
 async def get_freight_forwarder(

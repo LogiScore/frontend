@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey, UUID, Numeric, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, hybrid_property
 from sqlalchemy.sql import func
 from database.database import Base
 import uuid
@@ -44,6 +44,25 @@ class FreightForwarder(Base):
     # Relationships
     branches = relationship("Branch", back_populates="freight_forwarder")
     reviews = relationship("Review", back_populates="freight_forwarder")
+    
+    @hybrid_property
+    def average_rating(self):
+        """Calculate average rating from weighted reviews"""
+        if not self.reviews:
+            return 0.0
+        
+        total_weighted_rating = sum(review.weighted_rating or 0 for review in self.reviews if review.weighted_rating is not None)
+        total_weight = sum(review.review_weight or 0 for review in self.reviews if review.review_weight is not None)
+        
+        if total_weight == 0:
+            return 0.0
+        
+        return total_weighted_rating / total_weight
+    
+    @hybrid_property
+    def review_count(self):
+        """Get total number of reviews"""
+        return len(self.reviews) if self.reviews else 0
 
 class Branch(Base):
     __tablename__ = "branches"
