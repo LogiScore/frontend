@@ -7,11 +7,13 @@ export interface FreightForwarder {
   website?: string | null;
   logo_url?: string | null;
   description?: string | null;
-  services?: string | null;
-  specializations?: string | null;
+  headquarters_country?: string | null;
+  global_rank?: number | null;
+  is_active?: boolean | null;
   rating?: number | null;
   review_count?: number | null;
   created_at?: string | null;
+  updated_at?: string | null;
   category_scores?: Array<{
     category_name: string;
     average_score: number;
