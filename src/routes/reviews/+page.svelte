@@ -24,8 +24,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -36,8 +36,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -48,8 +48,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -60,8 +60,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -72,8 +72,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -90,8 +90,8 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: 'Hardly on time',
-            2: 'Usually on time',
+            1: 'Seldom',
+            2: 'Usually',
             3: 'Most of the time',
             4: 'Every time'
           }
@@ -102,10 +102,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -114,10 +114,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -126,10 +126,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -138,10 +138,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         }
       ]
@@ -156,10 +156,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -168,22 +168,22 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
           id: 'documentation_accuracy',
-          text: 'Ensures documentation is accurate and complete on first submission (error rate < X%)',
+          text: 'Ensures documentation is accurate and complete on first submission',
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom accurate',
-            2: '50% - Usually accurate',
-            3: '75% - Accurate most of the time',
-            4: '100% - Accurate every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -192,10 +192,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom accurate',
-            2: '50% - Usually accurate',
-            3: '75% - Accurate most of the time',
-            4: '100% - Accurate every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         }
       ]
@@ -210,10 +210,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom',
-            2: '50% - In most cases',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -222,22 +222,22 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom',
-            2: '50% - In most cases',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
           id: 'named_contacts',
-          text: 'Provides named contact person(s) for operations and customer service',
+          text: 'Provides contact person(s) and contact details for operations and customer service',
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom',
-            2: '50% - In most cases',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -246,10 +246,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom',
-            2: '50% - In most cases',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         },
         {
@@ -258,10 +258,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Seldom',
-            2: '50% - In most cases',
-            3: '75% - Most of the time',
-            4: '100% - Every time'
+            1: 'Seldom',
+            2: 'Usually',
+            3: 'Most of the time',
+            4: 'Every time'
           }
         }
       ]
@@ -276,22 +276,22 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Submits shipment reports upon request',
-            2: '50% - Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free',
-            3: '75% - Provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge',
-            4: '100% - Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge'
+            1: 'Not offered',
+            2: 'Available via a website, however information is static and and not current',
+            3: 'Available via a website or mobile, information is dynamic and current',
+            4: 'Available with reporting on demand or triggered by events'
           }
         },
         {
           id: 'document_portal',
-          text: 'Has an online document portal or can deliver documents in a single zipped file on request',
+          text: 'Has an online document portal or can deliver documents in a single zipped file on demand',
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Submits shipment reports upon request',
-            2: '50% - Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free',
-            3: '75% - Provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge',
-            4: '100% - Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge'
+            1: 'Not offered',
+            2: 'Only available for large clients',
+            3: 'Available at a cost',
+            4: 'Available free of charge'
           }
         },
         {
@@ -300,10 +300,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Submits shipment reports upon request',
-            2: '50% - Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free',
-            3: '75% - Provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge',
-            4: '100% - Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge'
+            1: 'Not offered',
+            2: 'Only available for large clients',
+            3: 'Available at a cost',
+            4: 'Available free of charge'
           }
         },
         {
@@ -312,10 +312,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Submits shipment reports upon request',
-            2: '50% - Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free',
-            3: '75% - Provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge',
-            4: '100% - Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge'
+            1: 'Not offered',
+            2: 'Only available for large clients',
+            3: 'Available upon request, prepared manually',
+            4: 'Available via an app of web portal'
           }
         }
       ]
@@ -330,10 +330,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom on time',
+            2: 'Usually on time',
+            3: 'On time most of the time',
+            4: 'On time every time'
           }
         },
         {
@@ -342,10 +342,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom on time',
+            2: 'Usually on time',
+            3: 'On time most of the time',
+            4: 'On time every time'
           }
         },
         {
@@ -354,10 +354,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom on time',
+            2: 'Usually on time',
+            3: 'On time most of the time',
+            4: 'On time every time'
           }
         },
         {
@@ -366,10 +366,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Seldom follows SOP',
+            2: 'Usually follows SOP',
+            3: 'Follows SOP most of the time',
+            4: 'Follows SOP every time'
           }
         },
         {
@@ -378,10 +378,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Hardly on time',
-            2: '50% - Usually on time',
-            3: '75% - On time most of the time',
-            4: '100% - On time every time'
+            1: 'Wrong declarations are very common',
+            2: 'Wrong declarations are common',
+            3: 'Wrong declarations are rare',
+            4: 'No wrong declarations'
           }
         },
         {
@@ -390,10 +390,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Claims often occur (7 out of 10 shipments)',
-            2: '50% - There are regular claims (5 out of 10)',
-            3: '75% - There are occasional claims (25% of shipments have issues)',
-            4: '100% - There are rarely claims (9 out of 10 shipments have no issues)'
+            1: 'Claims occur often (7 out of 10 shipments)',
+            2: 'Claims occur regularly (5 out of 10)',
+            3: 'Claims occur occasionally (25% of shipments have issues)',
+            4: 'Claims occur rarely (9 out of 10 shipments have no issues)'
           }
         }
       ]
@@ -408,10 +408,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Not able to provide any information about trends relating to carriers, customs or geopolitics',
-            2: '50% - Provides some information about trends, carriers and geopolitical issues when requested',
-            3: '75% - Provides updates when requested about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client, and mitigation options the client could consider',
-            4: '100% - Provides proactive updates about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider'
+            1: 'Not able to provide any information',
+            2: 'Provides some information',
+            3: 'Provides updates when requested',
+            4: 'Provides proactive updates'
           }
         },
         {
@@ -420,10 +420,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Not able to provide any information about trends relating to carriers, customs or geopolitics',
-            2: '50% - Provides some information about trends, carriers and geopolitical issues when requested',
-            3: '75% - Provides updates when requested about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client, and mitigation options the client could consider',
-            4: '100% - Provides proactive updates about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider'
+            1: 'Not able to provide any information',
+            2: 'Provides some information',
+            3: 'Provides updates when requested',
+            4: 'Provides proactive updates'
           }
         },
         {
@@ -432,10 +432,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Not able to provide any information about trends relating to carriers, customs or geopolitics',
-            2: '50% - Provides some information about trends, carriers and geopolitical issues when requested',
-            3: '75% - Provides updates when requested about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client, and mitigation options the client could consider',
-            4: '100% - Provides proactive updates about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider'
+            1: 'Not able to provide any information',
+            2: 'Provides some information',
+            3: 'Provides updates when requested',
+            4: 'Provides proactive updates'
           }
         }
       ]
@@ -450,10 +450,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Helpdesk is only active during normal working hours',
-            2: '50% - There is a helpdesk but require more than 2 hours to be activated',
-            3: '75% - There is a helpdesk but requires 1-2 hours until activated',
-            4: '100% - There is a 24/7 helpdesk that\'s always available'
+            1: 'Only active during normal working hours',
+            2: 'Requires more than 2 hours to be activated',
+            3: 'Requires 1-2 hours until activated',
+            4: '24/7 availability'
           }
         },
         {
@@ -462,10 +462,10 @@
           rating: 0,
           ratingDefinitions: {
             0: 'Not applicable',
-            1: '25% - Helpdesk is only active during normal working hours',
-            2: '50% - There is a helpdesk but require more than 2 hours to be activated',
-            3: '75% - There is a helpdesk but requires 1-2 hours until activated',
-            4: '100% - There is a 24/7 helpdesk that\'s always available'
+            1: 'Only active during normal working hours',
+            2: 'Requires more than 2 hours to be activated',
+            3: 'Requires 1-2 hours until activated',
+            4: '24/7 availability'
           }
         }
       ]
@@ -672,29 +672,8 @@
             </div>
           </div>
 
-          <!-- Rating Categories -->
+                    <!-- Rating Categories -->
           <div class="form-section">
-            <h2>Rate Your Experience</h2>
-            <div class="rating-scale-info">
-              <h3>Rating Scale</h3>
-              <div class="scale-grid">
-                <div class="scale-item">
-                  <strong>0 stars:</strong> Not applicable
-                </div>
-                <div class="scale-item">
-                  <strong>1 star:</strong> 25% - Hardly on time / Seldom accurate / Seldom / Submits shipment reports upon request / Claims occur often / Not able to provide any information about trends relating to carriers, customs or geopolitics / Helpdesk is only active during normal working hours
-                </div>
-                <div class="scale-item">
-                  <strong>2 stars:</strong> 50% - Usually on time / Usually accurate / In most cases / Offer some kind of track and trace, either via web or mobile, information is dynamic, or service is free / Regular claims / Provides some information about trends, carriers and geopolitical issues when requested / There is a helpdesk but require more than 2 hours to be activated
-                </div>
-                <div class="scale-item">
-                  <strong>3 stars:</strong> 75% - Most of the time / Accurate most of the time / provides this solution via web or mobile, however information is not always up-to-date, not current (without dynamic vessel tracking), or complete or no access to documents, provided without charge / Occasional claims / Provides updates when requested about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client, and mitigation options the client could consider / There is a helpdesk but requires 1-2 hours until activated
-                </div>
-                <div class="scale-item">
-                  <strong>4 stars:</strong> 100% - Every time / Accurate every time / Provides this solution via web and mobile and information is always up-to-date, complete and current (dynamic vessel tracking), with access to documents, able to schedule reports, provided without charge / Rarely have claims / Provides proactive updates about trends relating to carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider / There is a 24/7 helpdesk that's always available
-                </div>
-              </div>
-            </div>
             {#each reviewCategories as category}
               <div class="rating-category">
                 <h3>{category.name}</h3>
