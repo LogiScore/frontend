@@ -163,16 +163,15 @@
   }
 
   .company-logo img {
-    width: 180px;
+    width: 360px;
     height: 180px;
     border-radius: 16px;
     object-fit: contain;
     padding: 10px;
-    background: #f8f9fa;
   }
 
   .logo-placeholder {
-    width: 180px;
+    width: 360px;
     height: 180px;
     background: #667eea;
     color: white;
