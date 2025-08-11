@@ -71,22 +71,32 @@
       <section class="company-details">
         <h2>Company Information</h2>
         <div class="details-grid">
+          <div class="detail-item">
+            <h3>Company Name</h3>
+            <p>{freightForwarder.name}</p>
+          </div>
           {#if freightForwarder.description}
             <div class="detail-item">
               <h3>Description</h3>
               <p>{freightForwarder.description}</p>
             </div>
           {/if}
-          {#if freightForwarder.services}
+          {#if freightForwarder.headquarters_country}
             <div class="detail-item">
-              <h3>Services</h3>
-              <p>{freightForwarder.services}</p>
+              <h3>Headquarters</h3>
+              <p>{freightForwarder.headquarters_country}</p>
             </div>
           {/if}
-          {#if freightForwarder.specializations}
+          {#if freightForwarder.global_rank}
             <div class="detail-item">
-              <h3>Specializations</h3>
-              <p>{freightForwarder.specializations}</p>
+              <h3>Global Rank</h3>
+              <p>#{freightForwarder.global_rank}</p>
+            </div>
+          {/if}
+          {#if freightForwarder.website}
+            <div class="detail-item">
+              <h3>Website</h3>
+              <p><a href={freightForwarder.website} target="_blank" rel="noopener noreferrer">{freightForwarder.website}</a></p>
             </div>
           {/if}
         </div>
