@@ -51,18 +51,12 @@
           {/if}
         </div>
         <div class="company-info">
-          <h1>{freightForwarder.name}</h1>
           {#if freightForwarder.rating}
             <div class="rating">
               <span class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</span>
               <span class="rating-text">{freightForwarder.rating.toFixed(1)}</span>
               <span class="review-count">({freightForwarder.review_count} reviews)</span>
             </div>
-          {/if}
-          {#if freightForwarder.website}
-            <a href={freightForwarder.website} target="_blank" rel="noopener noreferrer" class="website-link">
-              Visit Website
-            </a>
           {/if}
         </div>
       </section>
@@ -91,12 +85,6 @@
             <div class="detail-item">
               <h3>Global Rank</h3>
               <p>#{freightForwarder.global_rank}</p>
-            </div>
-          {/if}
-          {#if freightForwarder.website}
-            <div class="detail-item">
-              <h3>Website</h3>
-              <p><a href={freightForwarder.website} target="_blank" rel="noopener noreferrer">{freightForwarder.website}</a></p>
             </div>
           {/if}
         </div>
@@ -161,30 +149,30 @@
   .company-header {
     display: flex;
     align-items: center;
-    gap: 2rem;
-    padding: 2rem 0;
+    gap: 3rem;
+    padding: 3rem 0;
     border-bottom: 2px solid #e0e0e0;
     margin-bottom: 3rem;
   }
 
   .company-logo img {
-    width: 120px;
-    height: 120px;
-    border-radius: 12px;
+    width: 180px;
+    height: 180px;
+    border-radius: 16px;
     object-fit: cover;
   }
 
   .logo-placeholder {
-    width: 120px;
-    height: 120px;
+    width: 180px;
+    height: 180px;
     background: #667eea;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: bold;
-    border-radius: 12px;
+    border-radius: 16px;
   }
 
   .company-info h1 {
@@ -214,21 +202,6 @@
   .review-count {
     color: #666;
     font-size: 0.9rem;
-  }
-
-  .website-link {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #667eea;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-
-  .website-link:hover {
-    background: #5a6268;
   }
 
   /* Company Details */
