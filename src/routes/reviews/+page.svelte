@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { apiClient } from '$lib/api';
+  import type { ReviewCategory, ReviewCreate } from '$lib/api';
   
   let freightForwarders: any[] = [];
   let branches: any[] = [];
@@ -12,472 +13,15 @@
   let isLoading = true;
   let error: string | null = null;
   
-  // Review categories with detailed questions from documentation
-  let reviewCategories = [
-    {
-      id: 'responsiveness',
-      name: 'Responsiveness',
-      questions: [
-        {
-          id: 'acknowledges_requests',
-          text: 'Acknowledges receipt of requests (for quotation or information) within 30 minutes (even if full response comes later)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'estimated_response_time',
-          text: 'Provides clear estimated response time if immediate resolution is not possible',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'same_region_response',
-          text: 'Responds within 6 hours to rate requests to/from locations within the same region',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'other_region_response',
-          text: 'Responds within 24 hours to rate requests to/from other regions (e.g. Asia to US, US to Europe)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'emergency_response',
-          text: 'Responds to emergency requests (e.g., urgent shipment delay, customs issues) within 30 minutes',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        }
-      ]
-    },
-    {
-      id: 'shipment_management',
-      name: 'Shipment Management',
-      questions: [
-        {
-          id: 'proactive_milestones',
-          text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'pre_alerts',
-          text: 'Sends pre-alerts before vessel ETA',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'pod_delivery',
-          text: 'Provides POD (proof of delivery) within 24 hours of delivery',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'delay_notifications',
-          text: 'Proactively notifies delays or disruptions',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'recovery_plans',
-          text: 'Offers recovery plans in case of delays or missed transshipments',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        }
-      ]
-    },
-    {
-      id: 'documentation',
-      name: 'Documentation',
-      questions: [
-        {
-          id: 'draft_bl_issuance',
-          text: 'Issues draft B/L or HAWB within 24 hours of cargo departure',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'final_invoices',
-          text: 'Sends final invoices within 48 hours of shipment completion',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'documentation_accuracy',
-          text: 'Ensures documentation is accurate and complete on first submission',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'invoice_accuracy',
-          text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        }
-      ]
-    },
-    {
-      id: 'customer_experience',
-      name: 'Customer Experience',
-      questions: [
-        {
-          id: 'follow_up_issues',
-          text: 'Follows up on pending issues without the need for reminders',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'documentation_rectification',
-          text: 'Rectifies documentation (shipping documents and invoices/credit notes) within 48 hours',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'named_contacts',
-          text: 'Provides contact person(s) and contact details for operations and customer service',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'escalation_contact',
-          text: 'Offers single point of contact for issue escalation',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        },
-        {
-          id: 'professional_tone',
-          text: 'Replies in professional tone, avoids jargon unless relevant',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom',
-            2: 'Usually',
-            3: 'Most of the time',
-            4: 'Every time'
-          }
-        }
-      ]
-    },
-    {
-      id: 'technology_process',
-      name: 'Technology Process',
-      questions: [
-        {
-          id: 'track_and_trace',
-          text: 'Offers track-and-trace (either via portal or manual milestone emails)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not offered',
-            2: 'Available via a website, however information is static and and not current',
-            3: 'Available via a website or mobile, information is dynamic and current',
-            4: 'Available with reporting on demand or triggered by events'
-          }
-        },
-        {
-          id: 'document_portal',
-          text: 'Has an online document portal or can deliver documents in a single zipped file on demand',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not offered',
-            2: 'Only available for large clients',
-            3: 'Available at a cost',
-            4: 'Available free of charge'
-          }
-        },
-        {
-          id: 'system_integration',
-          text: 'Integrates with customer systems (e.g., EDI/API) where required',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not offered',
-            2: 'Only available for large clients',
-            3: 'Available at a cost',
-            4: 'Available free of charge'
-          }
-        },
-        {
-          id: 'regular_reporting',
-          text: 'Able to provide regular reporting (e.g., weekly shipment report, KPI report)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not offered',
-            2: 'Only available for large clients',
-            3: 'Available upon request, prepared manually',
-            4: 'Available via an app or web portal'
-          }
-        }
-      ]
-    },
-    {
-      id: 'reliability_execution',
-      name: 'Reliability & Execution',
-      questions: [
-        {
-          id: 'on_time_pickup',
-          text: 'On-time pickup rate (%)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom on time',
-            2: 'Usually on time',
-            3: 'On time most of the time',
-            4: 'On time every time'
-          }
-        },
-        {
-          id: 'shipped_as_promised',
-          text: 'Shipped as promised (%)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom on time',
-            2: 'Usually on time',
-            3: 'On time most of the time',
-            4: 'On time every time'
-          }
-        },
-        {
-          id: 'on_time_delivery',
-          text: 'On-time delivery rate (%)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom on time',
-            2: 'Usually on time',
-            3: 'On time most of the time',
-            4: 'On time every time'
-          }
-        },
-        {
-          id: 'sop_compliance',
-          text: 'Compliance with clients\' SOP (%)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Seldom follows SOP',
-            2: 'Usually follows SOP',
-            3: 'Follows SOP most of the time',
-            4: 'Follows SOP every time'
-          }
-        },
-        {
-          id: 'customs_clearance_errors',
-          text: 'Customs clearance error rate (%)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Wrong declarations are very common',
-            2: 'Wrong declarations are common',
-            3: 'Wrong declarations are rare',
-            4: 'No wrong declarations'
-          }
-        },
-        {
-          id: 'claims_ratio',
-          text: 'Claims ratio (number of claims / total shipments)',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Claims occur often (7 out of 10 shipments)',
-            2: 'Claims occur regularly (5 out of 10)',
-            3: 'Claims occur occasionally (25% of shipments have issues)',
-            4: 'Claims occur rarely (9 out of 10 shipments have no issues)'
-          }
-        }
-      ]
-    },
-    {
-      id: 'proactivity_insight',
-      name: 'Proactivity & Insight',
-      questions: [
-        {
-          id: 'rate_trends',
-          text: 'Offers rate trends and capacity forecasts for key trade lanes',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not able to provide any information',
-            2: 'Provides some information',
-            3: 'Provides updates when requested',
-            4: 'Provides proactive updates'
-          }
-        },
-        {
-          id: 'gri_baf_notifications',
-          text: 'Notifies customer of upcoming GRI or BAF changes in advance',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not able to provide any information',
-            2: 'Provides some information',
-            3: 'Provides updates when requested',
-            4: 'Provides proactive updates'
-          }
-        },
-        {
-          id: 'consolidation_suggestions',
-          text: 'Provides suggestions for consolidation, better routings, or mode shifts',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Not able to provide any information',
-            2: 'Provides some information',
-            3: 'Provides updates when requested',
-            4: 'Provides proactive updates'
-          }
-        }
-      ]
-    },
-    {
-      id: 'after_hours_support',
-      name: 'After Hours Support',
-      questions: [
-        {
-          id: 'emergency_contact',
-          text: 'Has 24/7 support or provides emergency contact for after-hours escalation',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Only active during normal working hours',
-            2: 'Requires more than 2 hours to be activated',
-            3: 'Requires 1-2 hours until activated',
-            4: '24/7 availability'
-          }
-        },
-        {
-          id: 'weekend_holiday_contact',
-          text: 'Weekend or holiday contact provided in advance for critical shipments',
-          rating: 0,
-          ratingDefinitions: {
-            0: 'Not applicable',
-            1: 'Only active during normal working hours',
-            2: 'Requires more than 2 hours to be activated',
-            3: 'Requires 1-2 hours until activated',
-            4: '24/7 availability'
-          }
-        }
-      ]
-    }
-  ];
+  // Review categories loaded from API
+  let reviewCategories: ReviewCategory[] = [];
 
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
-    const categoryRating = cat.questions.reduce((qSum, q) => qSum + q.rating, 0) / cat.questions.filter(q => q.rating > 0).length || 0;
+    const categoryRating = cat.questions.reduce((qSum: number, q: any) => qSum + (q.rating || 0), 0) / cat.questions.filter((q: any) => (q.rating || 0) > 0).length || 0;
     return sum + categoryRating;
-  }, 0) / reviewCategories.filter(cat => cat.questions.some(q => q.rating > 0)).length || 0;
+  }, 0) / reviewCategories.filter(cat => cat.questions.some((q: any) => (q.rating || 0) > 0)).length || 0;
   
-  $: ratedQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.filter(q => q.rating > 0).length, 0);
+  $: ratedQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.filter((q: any) => (q.rating || 0) > 0).length, 0);
   $: totalQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
   $: reviewWeight = isAnonymous ? 0.5 : 1.0;
   $: weightedRating = aggregateRating * reviewWeight;
@@ -496,6 +40,9 @@
       
       // Load all freight forwarders for selection
       await loadFreightForwarders();
+      
+      // Load review questions from API
+      await loadReviewQuestions();
     } catch (err: any) {
       error = err.message || 'Failed to load data';
     } finally {
@@ -519,6 +66,16 @@
       branches = []; // Placeholder
     } catch (err: any) {
       console.error('Failed to load company data:', err);
+    }
+  }
+
+  async function loadReviewQuestions() {
+    try {
+      reviewCategories = await apiClient.getReviewQuestions();
+      console.log('Loaded review questions:', reviewCategories);
+    } catch (err: any) {
+      console.error('Failed to load review questions:', err);
+      error = 'Failed to load review questions. Please refresh the page.';
     }
   }
 
@@ -552,10 +109,10 @@
     }
 
     try {
-      // Prepare review data
-      const reviewData = {
+      // Prepare review data for API
+      const reviewData: ReviewCreate = {
         freight_forwarder_id: selectedCompany,
-        branch_id: selectedBranch,
+        branch_id: selectedBranch || undefined,
         review_type: reviewType,
         is_anonymous: isAnonymous,
         review_weight: reviewWeight,
@@ -563,27 +120,29 @@
           category: cat.id,
           questions: cat.questions.map(q => ({
             question: q.id,
-            rating: q.rating
+            rating: q.rating || 0
           }))
         })),
         aggregate_rating: aggregateRating,
         weighted_rating: weightedRating
       };
 
-      // Submit review (this would need to be implemented in the API)
-      console.log('Submitting review:', reviewData);
+      // Submit review using the new API method
+      const response = await apiClient.createComprehensiveReview(reviewData);
       
-      // For now, show success message
+      // Show success message
       alert('Review submitted successfully!');
+      console.log('Review submitted:', response);
       
       // Reset form
-      reviewCategories.forEach(cat => cat.questions.forEach(q => q.rating = 0));
+      reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
       reviewType = 'general';
       isAnonymous = false;
       
     } catch (err: any) {
       error = err.message || 'Failed to submit review';
+      console.error('Review submission failed:', err);
     }
   }
 </script>

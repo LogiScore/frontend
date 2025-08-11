@@ -21,12 +21,60 @@ export interface FreightForwarder {
   }> | null;
 }
 
+// Legacy Review interface (for backward compatibility)
 export interface Review {
   id: string;
   freight_forwarder_id: string;
   user_id: string;
   rating: number;
   comment?: string;
+  created_at: string;
+}
+
+// New comprehensive review interfaces
+export interface ReviewQuestion {
+  id: string;
+  text: string;
+  ratingDefinitions: Record<string, string>;
+}
+
+export interface ReviewCategory {
+  id: string;
+  name: string;
+  questions: ReviewQuestion[];
+}
+
+export interface QuestionRating {
+  question: string;
+  rating: number;
+}
+
+export interface CategoryRating {
+  category: string;
+  questions: QuestionRating[];
+}
+
+export interface ReviewCreate {
+  freight_forwarder_id: string;
+  branch_id?: string;
+  review_type: string;
+  is_anonymous: boolean;
+  review_weight: number;
+  category_ratings: CategoryRating[];
+  aggregate_rating: number;
+  weighted_rating: number;
+}
+
+export interface ReviewResponse {
+  id: string;
+  freight_forwarder_id: string;
+  branch_id?: string;
+  review_type: string;
+  is_anonymous: boolean;
+  review_weight: number;
+  aggregate_rating: number;
+  weighted_rating: number;
+  total_questions_rated: number;
   created_at: string;
 }
 
@@ -136,7 +184,7 @@ class ApiClient {
     }
   }
 
-  // Reviews
+  // Reviews - Legacy methods (for backward compatibility)
   async getReviews(freightForwarderId: string): Promise<Review[]> {
     return this.request<Review[]>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
   }
@@ -150,6 +198,98 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(review),
     });
+  }
+
+  // New comprehensive review methods
+  async getReviewQuestions(): Promise<ReviewCategory[]> {
+    try {
+      return await this.request<ReviewCategory[]>('/api/reviews/questions');
+    } catch (error: any) {
+      console.error('Failed to fetch review questions:', error);
+      // Return fallback questions if API fails
+      return this.getFallbackReviewQuestions();
+    }
+  }
+
+  async createComprehensiveReview(reviewData: ReviewCreate): Promise<ReviewResponse> {
+    try {
+      return await this.request<ReviewResponse>('/api/reviews/', {
+        method: 'POST',
+        body: JSON.stringify(reviewData),
+      });
+    } catch (error: any) {
+      console.error('Failed to create comprehensive review:', error);
+      throw error;
+    }
+  }
+
+  async getReviewsByFreightForwarder(freightForwarderId: string): Promise<ReviewResponse[]> {
+    try {
+      return await this.request<ReviewResponse[]>(`/api/reviews/freight-forwarder/${freightForwarderId}`);
+    } catch (error: any) {
+      console.error('Failed to fetch reviews for freight forwarder:', error);
+      return [];
+    }
+  }
+
+  async getReviewById(reviewId: string): Promise<ReviewResponse> {
+    try {
+      return await this.request<ReviewResponse>(`/api/reviews/${reviewId}`);
+    } catch (error: any) {
+      console.error('Failed to fetch review by ID:', error);
+      throw error;
+    }
+  }
+
+  // Fallback review questions (if API fails)
+  private getFallbackReviewQuestions(): ReviewCategory[] {
+    return [
+      {
+        id: 'responsiveness',
+        name: 'Responsiveness',
+        questions: [
+          {
+            id: 'acknowledges_requests',
+            text: 'Acknowledges receipt of requests (for quotation or information) within 30 minutes (even if full response comes later)',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'estimated_response_time',
+            text: 'Provides clear estimated response time if immediate resolution is not possible',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'shipment_management',
+        name: 'Shipment Management',
+        questions: [
+          {
+            id: 'proactive_milestones',
+            text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      }
+    ];
   }
 
   // Search
