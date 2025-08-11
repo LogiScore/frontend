@@ -690,13 +690,6 @@
                           {i === 0 ? 'N/A' : '★'}
                         </button>
                       {/each}
-                      <span class="rating-label">
-                        {question.rating === 0 ? 'Not applicable' : 
-                         question.rating === 1 ? 'Hardly (25%)' :
-                         question.rating === 2 ? 'Usually (50%)' :
-                         question.rating === 3 ? 'Most of the time (75%)' :
-                         'Every time (100%)'}
-                      </span>
                       {#if question.rating > 0}
                         <div class="rating-definition">
                           {question.ratingDefinitions[question.rating]}
