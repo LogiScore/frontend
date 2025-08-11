@@ -17,11 +17,13 @@ class FreightForwarderResponse(BaseModel):
     website: Optional[str]
     logo_url: Optional[str]
     description: Optional[str]
-    services: Optional[str]
-    specializations: Optional[str]
+    headquarters_country: Optional[str]
+    global_rank: Optional[int]
+    is_active: bool
     rating: Optional[float]
     review_count: Optional[int]
     created_at: datetime
+    updated_at: datetime
     category_scores: Optional[List[dict]] = []
 
     class Config:
@@ -79,11 +81,13 @@ async def get_freight_forwarders(
             'website': result.FreightForwarder.website,
             'logo_url': result.FreightForwarder.logo_url,
             'description': result.FreightForwarder.description,
-            'services': result.FreightForwarder.services,
-            'specializations': result.FreightForwarder.specializations,
+            'headquarters_country': result.FreightForwarder.headquarters_country,
+            'global_rank': result.FreightForwarder.global_rank,
+            'is_active': result.FreightForwarder.is_active,
             'rating': float(result.avg_rating) if result.avg_rating else None,
             'review_count': int(result.review_count) if result.review_count else 0,
-            'created_at': result.FreightForwarder.created_at
+            'created_at': result.FreightForwarder.created_at,
+            'updated_at': result.FreightForwarder.updated_at
         }
         freight_forwarders.append(FreightForwarderResponse(**ff_data))
     
@@ -125,11 +129,13 @@ async def get_freight_forwarder(
         'website': result.FreightForwarder.website,
         'logo_url': result.FreightForwarder.logo_url,
         'description': result.FreightForwarder.description,
-        'services': result.FreightForwarder.services,
-        'specializations': result.FreightForwarder.specializations,
+        'headquarters_country': result.FreightForwarder.headquarters_country,
+        'global_rank': result.FreightForwarder.global_rank,
+        'is_active': result.FreightForwarder.is_active,
         'rating': float(result.avg_rating) if result.avg_rating else None,
         'review_count': int(result.review_count) if result.review_count else 0,
         'created_at': result.FreightForwarder.created_at,
+        'updated_at': result.FreightForwarder.updated_at,
         'category_scores': [
             {
                 'category_name': 'Service Quality',
