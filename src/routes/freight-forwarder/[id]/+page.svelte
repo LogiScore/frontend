@@ -155,11 +155,20 @@
     margin-bottom: 3rem;
   }
 
+  .company-logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .company-logo img {
     width: 180px;
     height: 180px;
     border-radius: 16px;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 10px;
+    background: #f8f9fa;
   }
 
   .logo-placeholder {
