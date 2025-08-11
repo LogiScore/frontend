@@ -21,27 +21,62 @@
         {
           id: 'acknowledges_requests',
           text: 'Acknowledges receipt of requests (for quotation or information) within 30 minutes (even if full response comes later)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom acknowledges within 30 minutes',
+            2: 'Usually - In most cases acknowledges within 30 minutes',
+            3: 'Most of the time - Usually acknowledges within 30 minutes',
+            4: 'Every time - Always acknowledges within 30 minutes'
+          }
         },
         {
           id: 'estimated_response_time',
           text: 'Provides clear estimated response time if immediate resolution is not possible',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides clear estimates',
+            2: 'Usually - In most cases provides clear estimates',
+            3: 'Most of the time - Usually provides clear estimates',
+            4: 'Every time - Always provides clear estimates'
+          }
         },
         {
           id: 'same_region_response',
           text: 'Responds within 6 hours to rate requests to/from locations within the same region',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom responds within 6 hours',
+            2: 'Usually - In most cases responds within 6 hours',
+            3: 'Most of the time - Usually responds within 6 hours',
+            4: 'Every time - Always responds within 6 hours'
+          }
         },
         {
           id: 'other_region_response',
           text: 'Responds within 24 hours to rate requests to/from other regions (e.g. Asia to US, US to Europe)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom responds within 24 hours',
+            2: 'Usually - In most cases responds within 24 hours',
+            3: 'Most of the time - Usually responds within 24 hours',
+            4: 'Every time - Always responds within 24 hours'
+          }
         },
         {
           id: 'emergency_response',
           text: 'Responds to emergency requests (e.g., urgent shipment delay, customs issues) within 30 minutes',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom responds within 30 minutes',
+            2: 'Usually - In most cases responds within 30 minutes',
+            3: 'Most of the time - Usually responds within 30 minutes',
+            4: 'Every time - Always responds within 30 minutes'
+          }
         }
       ]
     },
@@ -52,27 +87,62 @@
         {
           id: 'proactive_milestones',
           text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom sends proactive updates',
+            2: 'Usually - In most cases sends proactive updates',
+            3: 'Most of the time - Usually sends proactive updates',
+            4: 'Every time - Always sends proactive updates'
+          }
         },
         {
           id: 'pre_alerts',
           text: 'Sends pre-alerts before vessel ETA',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom sends pre-alerts',
+            2: 'Usually - In most cases sends pre-alerts',
+            3: 'Most of the time - Usually sends pre-alerts',
+            4: 'Every time - Always sends pre-alerts'
+          }
         },
         {
           id: 'pod_delivery',
           text: 'Provides POD (proof of delivery) within 24 hours of delivery',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides POD within 24 hours',
+            2: 'Usually - In most cases provides POD within 24 hours',
+            3: 'Most of the time - Usually provides POD within 24 hours',
+            4: 'Every time - Always provides POD within 24 hours'
+          }
         },
         {
           id: 'delay_notifications',
           text: 'Proactively notifies delays or disruptions',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom notifies proactively',
+            2: 'Usually - In most cases notifies proactively',
+            3: 'Most of the time - Usually notifies proactively',
+            4: 'Every time - Always notifies proactively'
+          }
         },
         {
           id: 'recovery_plans',
           text: 'Offers recovery plans in case of delays or missed transshipments',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom offers recovery plans',
+            2: 'Usually - In most cases offers recovery plans',
+            3: 'Most of the time - Usually offers recovery plans',
+            4: 'Every time - Always offers recovery plans'
+          }
         }
       ]
     },
@@ -83,22 +153,50 @@
         {
           id: 'draft_bl_issuance',
           text: 'Issues draft B/L or HAWB within 24 hours of cargo departure',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom issues within 24 hours',
+            2: 'Usually - In most cases issues within 24 hours',
+            3: 'Most of the time - Usually issues within 24 hours',
+            4: 'Every time - Always issues within 24 hours'
+          }
         },
         {
           id: 'final_invoices',
           text: 'Sends final invoices within 48 hours of shipment completion',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom sends within 48 hours',
+            2: 'Usually - In most cases sends within 48 hours',
+            3: 'Most of the time - Usually sends within 48 hours',
+            4: 'Every time - Always sends within 48 hours'
+          }
         },
         {
           id: 'documentation_accuracy',
           text: 'Ensures documentation is accurate and complete on first submission (error rate < X%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom accurate on first submission',
+            2: 'Usually - In most cases accurate on first submission',
+            3: 'Most of the time - Usually accurate on first submission',
+            4: 'Every time - Always accurate on first submission'
+          }
         },
         {
           id: 'invoice_accuracy',
           text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom matches quotation',
+            2: 'Usually - In most cases matches quotation',
+            3: 'Most of the time - Usually matches quotation',
+            4: 'Every time - Always matches quotation'
+          }
         }
       ]
     },
@@ -109,27 +207,62 @@
         {
           id: 'follow_up_issues',
           text: 'Follows up on pending issues without the need for reminders',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom follows up without reminders',
+            2: 'Usually - In most cases follows up without reminders',
+            3: 'Most of the time - Usually follows up without reminders',
+            4: 'Every time - Always follows up without reminders'
+          }
         },
         {
           id: 'documentation_rectification',
           text: 'Rectifies documentation (shipping documents and invoices/credit notes) within 48 hours',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom rectifies within 48 hours',
+            2: 'Usually - In most cases rectifies within 48 hours',
+            3: 'Most of the time - Usually rectifies within 48 hours',
+            4: 'Every time - Always rectifies within 48 hours'
+          }
         },
         {
           id: 'named_contacts',
           text: 'Provides named contact person(s) for operations and customer service',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides named contacts',
+            2: 'Usually - In most cases provides named contacts',
+            3: 'Most of the time - Usually provides named contacts',
+            4: 'Every time - Always provides named contacts'
+          }
         },
         {
           id: 'escalation_contact',
           text: 'Offers single point of contact for issue escalation',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom offers escalation contact',
+            2: 'Usually - In most cases offers escalation contact',
+            3: 'Most of the time - Usually offers escalation contact',
+            4: 'Every time - Always offers escalation contact'
+          }
         },
         {
           id: 'professional_tone',
           text: 'Replies in professional tone, avoids jargon unless relevant',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom uses professional tone',
+            2: 'Usually - In most cases uses professional tone',
+            3: 'Most of the time - Usually uses professional tone',
+            4: 'Every time - Always uses professional tone'
+          }
         }
       ]
     },
@@ -140,22 +273,50 @@
         {
           id: 'track_and_trace',
           text: 'Offers track-and-trace (either via portal or manual milestone emails)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom offers track-and-trace',
+            2: 'Usually - In most cases offers track-and-trace',
+            3: 'Most of the time - Usually offers track-and-trace',
+            4: 'Every time - Always offers track-and-trace'
+          }
         },
         {
           id: 'document_portal',
           text: 'Has an online document portal or can deliver documents in a single zipped file on request',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides document access',
+            2: 'Usually - In most cases provides document access',
+            3: 'Most of the time - Usually provides document access',
+            4: 'Every time - Always provides document access'
+          }
         },
         {
           id: 'system_integration',
           text: 'Integrates with customer systems (e.g., EDI/API) where required',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom integrates with customer systems',
+            2: 'Usually - In most cases integrates with customer systems',
+            3: 'Most of the time - Usually integrates with customer systems',
+            4: 'Every time - Always integrates with customer systems'
+          }
         },
         {
           id: 'regular_reporting',
           text: 'Able to provide regular reporting (e.g., weekly shipment report, KPI report)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides regular reports',
+            2: 'Usually - In most cases provides regular reports',
+            3: 'Most of the time - Usually provides regular reports',
+            4: 'Every time - Always provides regular reports'
+          }
         }
       ]
     },
@@ -166,32 +327,74 @@
         {
           id: 'on_time_pickup',
           text: 'On-time pickup rate (%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - 0-25% on-time pickup rate',
+            2: 'Usually - 26-50% on-time pickup rate',
+            3: 'Most of the time - 51-75% on-time pickup rate',
+            4: 'Every time - 76-100% on-time pickup rate'
+          }
         },
         {
           id: 'shipped_as_promised',
           text: 'Shipped as promised (%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - 0-25% shipped as promised',
+            2: 'Usually - 26-50% shipped as promised',
+            3: 'Most of the time - 51-75% shipped as promised',
+            4: 'Every time - 76-100% shipped as promised'
+          }
         },
         {
           id: 'on_time_delivery',
           text: 'On-time delivery rate (%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - 0-25% on-time delivery rate',
+            2: 'Usually - 26-50% on-time delivery rate',
+            3: 'Most of the time - 51-75% on-time delivery rate',
+            4: 'Every time - 76-100% on-time delivery rate'
+          }
         },
         {
           id: 'sop_compliance',
           text: 'Compliance with clients\' SOP (%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - 0-25% SOP compliance',
+            2: 'Usually - 26-50% SOP compliance',
+            3: 'Most of the time - 51-75% SOP compliance',
+            4: 'Every time - 76-100% SOP compliance'
+          }
         },
         {
           id: 'customs_clearance_errors',
           text: 'Customs clearance error rate (%)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - High error rate (frequent issues)',
+            2: 'Usually - Moderate error rate (some issues)',
+            3: 'Most of the time - Low error rate (few issues)',
+            4: 'Every time - Very low error rate (rare issues)'
+          }
         },
         {
           id: 'claims_ratio',
           text: 'Claims ratio (number of claims / total shipments)',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - High claims ratio (frequent claims)',
+            2: 'Usually - Moderate claims ratio (some claims)',
+            3: 'Most of the time - Low claims ratio (few claims)',
+            4: 'Every time - Very low claims ratio (rare claims)'
+          }
         }
       ]
     },
@@ -202,17 +405,38 @@
         {
           id: 'rate_trends',
           text: 'Offers rate trends and capacity forecasts for key trade lanes',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom offers trends and forecasts',
+            2: 'Usually - In most cases offers trends and forecasts',
+            3: 'Most of the time - Usually offers trends and forecasts',
+            4: 'Every time - Always offers trends and forecasts'
+          }
         },
         {
           id: 'gri_baf_notifications',
           text: 'Notifies customer of upcoming GRI or BAF changes in advance',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom notifies in advance',
+            2: 'Usually - In most cases notifies in advance',
+            3: 'Most of the time - Usually notifies in advance',
+            4: 'Every time - Always notifies in advance'
+          }
         },
         {
           id: 'consolidation_suggestions',
           text: 'Provides suggestions for consolidation, better routings, or mode shifts',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides suggestions',
+            2: 'Usually - In most cases provides suggestions',
+            3: 'Most of the time - Usually provides suggestions',
+            4: 'Every time - Always provides suggestions'
+          }
         }
       ]
     },
@@ -223,12 +447,26 @@
         {
           id: 'emergency_contact',
           text: 'Has 24/7 support or provides emergency contact for after-hours escalation',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Limited after-hours support',
+            2: 'Usually - Some after-hours support available',
+            3: 'Most of the time - Good after-hours support',
+            4: 'Every time - Excellent 24/7 after-hours support'
+          }
         },
         {
           id: 'weekend_holiday_contact',
           text: 'Weekend or holiday contact provided in advance for critical shipments',
-          rating: 0
+          rating: 0,
+          ratingDefinitions: {
+            0: 'Not applicable',
+            1: 'Hardly - Seldom provides weekend/holiday contact',
+            2: 'Usually - In most cases provides weekend/holiday contact',
+            3: 'Most of the time - Usually provides weekend/holiday contact',
+            4: 'Every time - Always provides weekend/holiday contact'
+          }
         }
       ]
     }
@@ -480,6 +718,11 @@
                          question.rating === 3 ? 'Most of the time (75%)' :
                          'Every time (100%)'}
                       </span>
+                      {#if question.rating > 0}
+                        <div class="rating-definition">
+                          {question.ratingDefinitions[question.rating]}
+                        </div>
+                      {/if}
                     </div>
                   </div>
                 {/each}
@@ -685,6 +928,17 @@
     margin-left: 1rem;
     color: #666;
     font-size: 0.9rem;
+  }
+
+  .rating-definition {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.4;
   }
 
   .rating-summary {
