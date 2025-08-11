@@ -12,60 +12,225 @@
   let isLoading = true;
   let error: string | null = null;
   
-  // Review categories with questions
+  // Review categories with multiple questions each
   const reviewCategories = [
     {
       id: 'responsiveness',
       name: 'Responsiveness',
-      question: 'How quickly does the freight forwarder respond to your inquiries and requests?',
-      rating: 0
+      questions: [
+        {
+          id: 'initial_response',
+          text: 'How quickly does the freight forwarder respond to your initial inquiries?',
+          rating: 0
+        },
+        {
+          id: 'follow_up_speed',
+          text: 'How fast is their follow-up communication?',
+          rating: 0
+        },
+        {
+          id: 'business_hours',
+          text: 'How available are they during business hours?',
+          rating: 0
+        },
+        {
+          id: 'emergency_response',
+          text: 'How capable are they in emergency response situations?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'shipment_management',
       name: 'Shipment Management',
-      question: 'How effectively does the freight forwarder manage your shipments from pickup to delivery?',
-      rating: 0
+      questions: [
+        {
+          id: 'tracking_visibility',
+          text: 'How effective is their tracking and shipment visibility?',
+          rating: 0
+        },
+        {
+          id: 'issue_resolution',
+          text: 'How proactive are they in resolving shipment issues?',
+          rating: 0
+        },
+        {
+          id: 'delivery_accuracy',
+          text: 'How accurate are their delivery estimates and execution?',
+          rating: 0
+        },
+        {
+          id: 'documentation_handling',
+          text: 'How well do they handle shipment documentation?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'documentation',
       name: 'Documentation',
-      question: 'How accurate and complete is the freight forwarder\'s documentation and paperwork?',
-      rating: 0
+      questions: [
+        {
+          id: 'customs_docs',
+          text: 'How accurate and complete is their customs documentation?',
+          rating: 0
+        },
+        {
+          id: 'shipping_docs',
+          text: 'How complete are their shipping documents?',
+          rating: 0
+        },
+        {
+          id: 'invoice_accuracy',
+          text: 'How accurate are their invoices and billing documents?',
+          rating: 0
+        },
+        {
+          id: 'compliance_requirements',
+          text: 'How well do they meet compliance requirements?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'customer_experience',
       name: 'Customer Experience',
-      question: 'How satisfied are you with the overall customer service experience?',
-      rating: 0
+      questions: [
+        {
+          id: 'staff_professionalism',
+          text: 'How professional is their staff?',
+          rating: 0
+        },
+        {
+          id: 'communication_clarity',
+          text: 'How clear is their communication?',
+          rating: 0
+        },
+        {
+          id: 'problem_resolution',
+          text: 'How effective are they at resolving problems?',
+          rating: 0
+        },
+        {
+          id: 'service_consistency',
+          text: 'How consistent is their service quality?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'technology_process',
       name: 'Technology Process',
-      question: 'How well does the freight forwarder utilize technology in their operations?',
-      rating: 0
+      questions: [
+        {
+          id: 'online_tracking',
+          text: 'How effective are their online tracking systems?',
+          rating: 0
+        },
+        {
+          id: 'digital_documentation',
+          text: 'How well do they utilize digital documentation?',
+          rating: 0
+        },
+        {
+          id: 'communication_platforms',
+          text: 'How effective are their communication platforms?',
+          rating: 0
+        },
+        {
+          id: 'process_automation',
+          text: 'How well do they automate their processes?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'reliability_execution',
       name: 'Reliability & Execution',
-      question: 'How reliable is the freight forwarder in meeting deadlines and commitments?',
-      rating: 0
+      questions: [
+        {
+          id: 'on_time_delivery',
+          text: 'How reliable are they in on-time delivery?',
+          rating: 0
+        },
+        {
+          id: 'service_consistency',
+          text: 'How consistent is their service delivery?',
+          rating: 0
+        },
+        {
+          id: 'commitment_fulfillment',
+          text: 'How well do they fulfill their commitments?',
+          rating: 0
+        },
+        {
+          id: 'error_rate',
+          text: 'How low is their error rate?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'proactivity_insight',
       name: 'Proactivity & Insight',
-      question: 'How proactive is the freight forwarder in providing insights and recommendations?',
-      rating: 0
+      questions: [
+        {
+          id: 'route_optimization',
+          text: 'How proactive are they in suggesting route optimizations?',
+          rating: 0
+        },
+        {
+          id: 'cost_saving',
+          text: 'How proactive are they in cost-saving recommendations?',
+          rating: 0
+        },
+        {
+          id: 'risk_mitigation',
+          text: 'How proactive are they in risk mitigation advice?',
+          rating: 0
+        },
+        {
+          id: 'industry_insights',
+          text: 'How valuable are their industry insights and recommendations?',
+          rating: 0
+        }
+      ]
     },
     {
       id: 'after_hours_support',
       name: 'After Hours Support',
-      question: 'How accessible is the freight forwarder for urgent matters outside business hours?',
-      rating: 0
+      questions: [
+        {
+          id: 'emergency_contact',
+          text: 'How accessible are they for emergency contacts?',
+          rating: 0
+        },
+        {
+          id: 'support_options',
+          text: 'How many 24/7 support options do they provide?',
+          rating: 0
+        },
+        {
+          id: 'crisis_response',
+          text: 'How capable are they in crisis response?',
+          rating: 0
+        },
+        {
+          id: 'weekend_holiday',
+          text: 'How available are they during weekends and holidays?',
+          rating: 0
+        }
+      ]
     }
   ];
 
-  $: aggregateRating = reviewCategories.reduce((sum, cat) => sum + cat.rating, 0) / reviewCategories.filter(cat => cat.rating > 0).length || 0;
-  $: ratedQuestions = reviewCategories.filter(cat => cat.rating > 0).length;
+  $: aggregateRating = reviewCategories.reduce((sum, cat) => {
+    const categoryRating = cat.questions.reduce((qSum, q) => qSum + q.rating, 0) / cat.questions.filter(q => q.rating > 0).length || 0;
+    return sum + categoryRating;
+  }, 0) / reviewCategories.filter(cat => cat.questions.some(q => q.rating > 0)).length || 0;
+  
+  $: ratedQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.filter(q => q.rating > 0).length, 0);
+  $: totalQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
   $: reviewWeight = isAnonymous ? 0.5 : 1.0;
   $: weightedRating = aggregateRating * reviewWeight;
 
@@ -109,10 +274,13 @@
     }
   }
 
-  function handleRatingChange(categoryId: string, rating: number) {
+  function handleRatingChange(categoryId: string, questionId: string, rating: number) {
     const category = reviewCategories.find(cat => cat.id === categoryId);
     if (category) {
-      category.rating = rating;
+      const question = category.questions.find(q => q.id === questionId);
+      if (question) {
+        question.rating = rating;
+      }
     }
   }
 
@@ -137,7 +305,10 @@
         review_weight: reviewWeight,
         category_ratings: reviewCategories.map(cat => ({
           category: cat.id,
-          rating: cat.rating
+          questions: cat.questions.map(q => ({
+            question: q.id,
+            rating: q.rating
+          }))
         })),
         aggregate_rating: aggregateRating,
         weighted_rating: weightedRating
@@ -150,7 +321,7 @@
       alert('Review submitted successfully!');
       
       // Reset form
-      reviewCategories.forEach(cat => cat.rating = 0);
+      reviewCategories.forEach(cat => cat.questions.forEach(q => q.rating = 0));
       selectedBranch = '';
       reviewType = 'general';
       isAnonymous = false;
@@ -235,32 +406,36 @@
           <div class="form-section">
             <h2>Rate Your Experience</h2>
             <p class="rating-instructions">
-              Rate each category from 0-4 stars:<br>
+              Rate each question from 0-4 stars:<br>
               0 = Not applicable, 1 = Hardly (25%), 2 = Usually (50%), 3 = Most of the time (75%), 4 = Every time (100%)
             </p>
 
             {#each reviewCategories as category}
               <div class="rating-category">
                 <h3>{category.name}</h3>
-                <p class="question">{category.question}</p>
-                <div class="star-rating">
-                  {#each Array(5) as _, i}
-                    <button
-                      type="button"
-                      class="star {i === 0 ? 'not-applicable' : ''} {i <= category.rating ? 'filled' : ''}"
-                      on:click={() => handleRatingChange(category.id, i === 0 ? 0 : i)}
-                    >
-                      {i === 0 ? 'N/A' : '★'}
-                    </button>
-                  {/each}
-                  <span class="rating-label">
-                    {category.rating === 0 ? 'Not applicable' : 
-                     category.rating === 1 ? 'Hardly (25%)' :
-                     category.rating === 2 ? 'Usually (50%)' :
-                     category.rating === 3 ? 'Most of the time (75%)' :
-                     'Every time (100%)'}
-                  </span>
-                </div>
+                {#each category.questions as question}
+                  <div class="question-item">
+                    <p class="question-text">{question.text}</p>
+                    <div class="star-rating">
+                      {#each Array(5) as _, i}
+                        <button
+                          type="button"
+                          class="star {i === 0 ? 'not-applicable' : ''} {i <= question.rating ? 'filled' : ''}"
+                          on:click={() => handleRatingChange(category.id, question.id, i === 0 ? 0 : i)}
+                        >
+                          {i === 0 ? 'N/A' : '★'}
+                        </button>
+                      {/each}
+                      <span class="rating-label">
+                        {question.rating === 0 ? 'Not applicable' : 
+                         question.rating === 1 ? 'Hardly (25%)' :
+                         question.rating === 2 ? 'Usually (50%)' :
+                         question.rating === 3 ? 'Most of the time (75%)' :
+                         'Every time (100%)'}
+                      </span>
+                    </div>
+                  </div>
+                {/each}
               </div>
             {/each}
           </div>
@@ -275,7 +450,7 @@
               </div>
               <div class="summary-item">
                 <span class="label">Rated Questions:</span>
-                <span class="value">{ratedQuestions} out of 8</span>
+                <span class="value">{ratedQuestions} out of {totalQuestions}</span>
               </div>
               <div class="summary-item">
                 <span class="label">Review Weight:</span>
@@ -407,10 +582,19 @@
     margin-bottom: 0.5rem;
   }
 
-  .question {
-    color: #666;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+  .question-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #667eea;
+  }
+
+  .question-text {
+    color: #333;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
   }
 
   .star-rating {
