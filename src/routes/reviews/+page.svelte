@@ -13,7 +13,7 @@
   let error: string | null = null;
   
   // Review categories with detailed questions from documentation
-  const reviewCategories = [
+  let reviewCategories = [
     {
       id: 'responsiveness',
       name: 'Responsiveness',
@@ -285,13 +285,21 @@
   }
 
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
-    const category = reviewCategories.find(cat => cat.id === categoryId);
-    if (category) {
-      const question = category.questions.find(q => q.id === questionId);
-      if (question) {
-        question.rating = rating;
+    console.log('Rating changed:', { categoryId, questionId, rating });
+    reviewCategories = reviewCategories.map(cat => {
+      if (cat.id === categoryId) {
+        return {
+          ...cat,
+          questions: cat.questions.map(q => {
+            if (q.id === questionId) {
+              return { ...q, rating };
+            }
+            return q;
+          })
+        };
       }
-    }
+      return cat;
+    });
   }
 
   async function submitReview() {
