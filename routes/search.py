@@ -14,6 +14,7 @@ class SearchResult(BaseModel):
     name: str
     website: Optional[str]
     logo_url: Optional[str]
+    description: Optional[str]
     rating: Optional[float]
     review_count: Optional[int]
 
@@ -59,6 +60,7 @@ async def search_freight_forwarders(
             'name': result.FreightForwarder.name,
             'website': result.FreightForwarder.website,
             'logo_url': result.FreightForwarder.logo_url,
+            'description': result.FreightForwarder.description,
             'rating': float(result.avg_rating) if result.avg_rating else None,
             'review_count': int(result.review_count) if result.review_count else 0
         }
