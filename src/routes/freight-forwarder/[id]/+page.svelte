@@ -114,9 +114,9 @@
         {/if}
       </section>
 
-      <!-- Back Button -->
-      <div class="back-section">
-        <a href="/" class="btn btn-outline">← Back to Homepage</a>
+      <!-- Submit Review Button -->
+      <div class="review-section">
+        <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
       </div>
     {:else}
       <div class="not-found">Freight forwarder not found.</div>
@@ -313,8 +313,8 @@
     padding: 2rem;
   }
 
-  /* Back Button */
-  .back-section {
+  /* Review Section */
+  .review-section {
     text-align: center;
     padding: 2rem 0;
   }
@@ -327,6 +327,17 @@
     font-weight: 600;
     transition: all 0.3s ease;
     border: 2px solid;
+  }
+
+  .btn-primary {
+    color: white;
+    border-color: #667eea;
+    background: #667eea;
+  }
+
+  .btn-primary:hover {
+    background: #5a6268;
+    border-color: #5a6268;
   }
 
   .btn-outline {
