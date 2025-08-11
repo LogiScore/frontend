@@ -114,10 +114,11 @@ async def get_freight_forwarder(
     
     # Get review category scores
     category_scores = db.query(
-        func.avg(Review.service_quality).label('service_quality'),
-        func.avg(Review.reliability).label('reliability'),
-        func.avg(Review.communication).label('communication'),
-        func.avg(Review.pricing).label('pricing'),
+        func.avg(Review.responsiveness_rating).label('responsiveness'),
+        func.avg(Review.documentation_rating).label('documentation'),
+        func.avg(Review.communication_rating).label('communication'),
+        func.avg(Review.reliability_rating).label('reliability'),
+        func.avg(Review.cost_effectiveness_rating).label('cost_effectiveness'),
         func.avg(Review.overall_rating).label('overall'),
         func.count(Review.id).label('review_count')
     ).filter(Review.freight_forwarder_id == freight_forwarder_id).first()
@@ -138,13 +139,13 @@ async def get_freight_forwarder(
         'updated_at': result.FreightForwarder.updated_at,
         'category_scores': [
             {
-                'category_name': 'Service Quality',
-                'average_score': float(category_scores.service_quality) if category_scores.service_quality else 0,
+                'category_name': 'Responsiveness',
+                'average_score': float(category_scores.responsiveness) if category_scores.responsiveness else 0,
                 'review_count': int(category_scores.review_count) if category_scores.review_count else 0
             },
             {
-                'category_name': 'Reliability',
-                'average_score': float(category_scores.reliability) if category_scores.reliability else 0,
+                'category_name': 'Documentation',
+                'average_score': float(category_scores.documentation) if category_scores.documentation else 0,
                 'review_count': int(category_scores.review_count) if category_scores.review_count else 0
             },
             {
@@ -153,8 +154,13 @@ async def get_freight_forwarder(
                 'review_count': int(category_scores.review_count) if category_scores.review_count else 0
             },
             {
-                'category_name': 'Pricing',
-                'average_score': float(category_scores.pricing) if category_scores.pricing else 0,
+                'category_name': 'Reliability',
+                'average_score': float(category_scores.reliability) if category_scores.reliability else 0,
+                'review_count': int(category_scores.review_count) if category_scores.review_count else 0
+            },
+            {
+                'category_name': 'Cost Effectiveness',
+                'average_score': float(category_scores.cost_effectiveness) if category_scores.cost_effectiveness else 0,
                 'review_count': int(category_scores.review_count) if category_scores.review_count else 0
             },
             {
