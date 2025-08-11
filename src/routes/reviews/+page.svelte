@@ -315,7 +315,7 @@
             1: 'Not offered',
             2: 'Only available for large clients',
             3: 'Available upon request, prepared manually',
-            4: 'Available via an app of web portal'
+            4: 'Available via an app or web portal'
           }
         }
       ]
