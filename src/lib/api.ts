@@ -242,12 +242,12 @@ class ApiClient {
     }
   }
 
-  // Fallback review questions (if API fails)
+  // Fallback review questions (if API fails) - Full 35 questions
   private getFallbackReviewQuestions(): ReviewCategory[] {
     return [
       {
         id: 'responsiveness',
-        name: 'Responsiveness',
+        name: 'Responsiveness & Communication',
         questions: [
           {
             id: 'acknowledges_requests',
@@ -270,16 +270,398 @@ class ApiClient {
               '3': 'Most of the time',
               '4': 'Every time'
             }
+          },
+          {
+            id: 'proactive_updates',
+            text: 'Proactively provides updates on shipment status without being asked',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'communication_channel',
+            text: 'Maintains consistent communication through preferred channels (email, phone, portal)',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'escalation_process',
+            text: 'Has clear escalation process for urgent issues or delays',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
           }
         ]
       },
       {
-        id: 'shipment_management',
-        name: 'Shipment Management',
+        id: 'pricing_transparency',
+        name: 'Pricing & Transparency',
         questions: [
           {
-            id: 'proactive_milestones',
-            text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
+            id: 'clear_quotation',
+            text: 'Provides clear, itemized quotations with no hidden fees',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'price_stability',
+            text: 'Final invoice matches quoted price (within reasonable variance)',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'additional_costs',
+            text: 'Clearly explains any additional costs before they are incurred',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'payment_terms',
+            text: 'Payment terms are clearly communicated and reasonable',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'currency_handling',
+            text: 'Handles currency conversions transparently with fair rates',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'service_quality',
+        name: 'Service Quality & Reliability',
+        questions: [
+          {
+            id: 'on_time_pickup',
+            text: 'Pickup occurs within agreed time window',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'on_time_delivery',
+            text: 'Delivery occurs within agreed time window',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'cargo_condition',
+            text: 'Cargo arrives in same condition as when shipped',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'documentation_accuracy',
+            text: 'All shipping documents are accurate and complete',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'customs_clearance',
+            text: 'Efficiently handles customs clearance and documentation',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'problem_resolution',
+        name: 'Problem Resolution & Support',
+        questions: [
+          {
+            id: 'issue_acknowledgment',
+            text: 'Quickly acknowledges and takes ownership of problems',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'solution_provided',
+            text: 'Provides practical solutions to problems within reasonable time',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'compensation_fairness',
+            text: 'Offers fair compensation for service failures or delays',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'preventive_measures',
+            text: 'Implements measures to prevent similar problems in future',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'customer_satisfaction',
+            text: 'Follows up to ensure customer satisfaction after problem resolution',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'technology_expertise',
+        name: 'Technology & Innovation',
+        questions: [
+          {
+            id: 'tracking_system',
+            text: 'Provides real-time tracking and visibility of shipments',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'digital_documentation',
+            text: 'Offers digital documentation and e-signature capabilities',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'mobile_accessibility',
+            text: 'Services are accessible through mobile devices and apps',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'api_integration',
+            text: 'Provides API access for system integration',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'data_analytics',
+            text: 'Offers data analytics and reporting capabilities',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'global_network',
+        name: 'Global Network & Coverage',
+        questions: [
+          {
+            id: 'geographic_coverage',
+            text: 'Provides services in all required geographic locations',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'local_expertise',
+            text: 'Has local expertise and knowledge in destination markets',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'partner_network',
+            text: 'Maintains reliable partner network in all regions',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'cultural_understanding',
+            text: 'Demonstrates understanding of local business customs and regulations',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'multilingual_support',
+            text: 'Provides support in local languages when needed',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          }
+        ]
+      },
+      {
+        id: 'compliance_security',
+        name: 'Compliance & Security',
+        questions: [
+          {
+            id: 'regulatory_compliance',
+            text: 'Stays current with all relevant international trade regulations',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'security_protocols',
+            text: 'Implements robust security measures for cargo and data',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'insurance_coverage',
+            text: 'Provides adequate insurance coverage for shipments',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'risk_management',
+            text: 'Has effective risk management and mitigation strategies',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'audit_trail',
+            text: 'Maintains complete audit trail for all transactions',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',

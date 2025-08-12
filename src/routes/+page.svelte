@@ -1,21 +1,63 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
   import { apiClient } from '$lib/api';
+  import AuthModal from '$lib/components/AuthModal.svelte';
   
   let featuredCompanies: any[] = [];
   let isLoading = true;
+  let showAuthModal = false;
+  let authModalMode: 'signin' | 'signup' = 'signin';
+  
+  // Watch for URL changes using SvelteKit's page store
+  $: {
+    if (typeof window !== 'undefined') { // Only run on client side
+      const urlParams = new URLSearchParams($page.url.search);
+      const authParam = urlParams.get('auth');
+      
+      if (authParam === 'signup') {
+        authModalMode = 'signup';
+        showAuthModal = true;
+      } else if (authParam === 'signin') {
+        authModalMode = 'signin';
+        showAuthModal = true;
+      }
+    }
+  }
   
   onMount(async () => {
     try {
       // Load up to 18 freight forwarders with random selection
       const companies = await apiClient.getFreightForwarders(18, true);
       featuredCompanies = companies;
+      
+      // Check for auth URL parameters
+      const urlParams = new URLSearchParams($page.url.search);
+      const authParam = urlParams.get('auth');
+      
+      if (authParam === 'signup') {
+        authModalMode = 'signup';
+        showAuthModal = true;
+      } else if (authParam === 'signin') {
+        authModalMode = 'signin';
+        showAuthModal = true;
+      }
     } catch (error) {
       console.error('Failed to load homepage data:', error);
     } finally {
       isLoading = false;
     }
   });
+  
+  function closeAuthModal() {
+    showAuthModal = false;
+    // Remove auth parameter from URL using SvelteKit navigation
+    if (typeof window !== 'undefined') {
+      const url = new URL($page.url.href);
+      url.searchParams.delete('auth');
+      window.history.replaceState({}, '', url);
+    }
+  }
 </script>
 
 <svelte:head>
@@ -123,6 +165,15 @@
       </div>
     </div>
   </section>
+  
+  <!-- Auth Modal -->
+  {#if showAuthModal}
+    <AuthModal 
+      isOpen={showAuthModal}
+      mode={authModalMode} 
+      on:close={closeAuthModal}
+    />
+  {/if}
 </main>
 
 <style>

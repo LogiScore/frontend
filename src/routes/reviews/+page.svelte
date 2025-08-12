@@ -95,10 +95,10 @@
       reviewCategories = await apiClient.getReviewQuestions();
       console.log('Loaded review questions:', reviewCategories);
       
-      // Check if we got the fallback questions (only 3) instead of full 35
+      // Check if we got the fallback questions instead of API data
       if (reviewCategories.length <= 3) {
-        console.warn('Warning: Only received fallback questions. API may be unavailable.');
-        error = 'Warning: Review system is using limited questions due to API issues. Please try again later.';
+        console.warn('Warning: Using fallback questions. API may be unavailable.');
+        // Don't show error since we now have comprehensive fallback questions
       }
     } catch (err: any) {
       console.error('Failed to load review questions:', err);
