@@ -36,6 +36,7 @@ export interface ReviewQuestion {
   id: string;
   text: string;
   ratingDefinitions: Record<string, string>;
+  rating?: number; // Optional rating property for user input
 }
 
 export interface ReviewCategory {

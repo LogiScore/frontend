@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { apiClient } from '$lib/api';
+  import { auth, authMethods } from '$lib/auth';
   import type { ReviewCategory, ReviewCreate } from '$lib/api';
   
   let freightForwarders: any[] = [];
@@ -13,8 +14,21 @@
   let isLoading = true;
   let error: string | null = null;
   
+  // Auth state
+  let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
+    user: null,
+    token: null,
+    isLoading: false,
+    error: null
+  };
+
   // Review categories loaded from API
   let reviewCategories: ReviewCategory[] = [];
+
+  // Subscribe to auth store
+  auth.subscribe(state => {
+    authState = state;
+  });
 
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
     const categoryRating = cat.questions.reduce((qSum: number, q: any) => qSum + (q.rating || 0), 0) / cat.questions.filter((q: any) => (q.rating || 0) > 0).length || 0;
@@ -28,6 +42,13 @@
 
   onMount(async () => {
     try {
+      // Check authentication first
+      if (!authState.token) {
+        error = 'You must be logged in to submit reviews. Please sign in or create an account.';
+        isLoading = false;
+        return;
+      }
+
       // Get company from URL parameter if available
       const urlParams = new URLSearchParams(window.location.search);
       const companyId = urlParams.get('company');
@@ -73,6 +94,12 @@
     try {
       reviewCategories = await apiClient.getReviewQuestions();
       console.log('Loaded review questions:', reviewCategories);
+      
+      // Check if we got the fallback questions (only 3) instead of full 35
+      if (reviewCategories.length <= 3) {
+        console.warn('Warning: Only received fallback questions. API may be unavailable.');
+        error = 'Warning: Review system is using limited questions due to API issues. Please try again later.';
+      }
     } catch (err: any) {
       console.error('Failed to load review questions:', err);
       error = 'Failed to load review questions. Please refresh the page.';
@@ -98,6 +125,12 @@
   }
 
   async function submitReview() {
+    // Check authentication again
+    if (!authState.token || !authState.user) {
+      error = 'You must be logged in to submit reviews. Please sign in or create an account.';
+      return;
+    }
+
     if (!selectedCompany) {
       error = 'Please select a company';
       return;
@@ -165,6 +198,26 @@
       {#if isLoading}
         <div class="loading">
           <p>Loading...</p>
+        </div>
+      {:else if !authState.token}
+        <div class="auth-required">
+          <h2>Authentication Required</h2>
+          <p>You must be logged in to submit reviews on LogiScore.</p>
+          <p class="auth-note">Our comprehensive review system includes 35 detailed questions across multiple categories to provide accurate assessments of freight forwarder services.</p>
+          <div class="auth-actions">
+            <a href="/?auth=signin" class="btn btn-primary">Sign In</a>
+            <a href="/?auth=signup" class="btn btn-secondary">Create Account</a>
+          </div>
+          <div class="auth-benefits">
+            <h3>Why Create an Account?</h3>
+            <ul>
+              <li>Submit reviews with full weight (100% vs 50% for anonymous)</li>
+              <li>Track your review history</li>
+              <li>Earn reputation points</li>
+              <li>Get notified about responses to your reviews</li>
+              <li>Access to comprehensive 35-question review system</li>
+            </ul>
+          </div>
         </div>
       {:else}
         <form on:submit|preventDefault={submitReview}>
@@ -243,15 +296,15 @@
                       {#each Array(5) as _, i}
                         <button
                           type="button"
-                          class="star {i === 0 ? 'not-applicable' : ''} {i <= question.rating ? 'filled' : ''}"
+                          class="star {i === 0 ? 'not-applicable' : ''} {i <= (question.rating || 0) ? 'filled' : ''}"
                           on:click={() => handleRatingChange(category.id, question.id, i === 0 ? 0 : i)}
                         >
                           {i === 0 ? 'N/A' : '★'}
                         </button>
                       {/each}
-                      {#if question.rating > 0}
+                      {#if question.rating && question.rating > 0}
                         <div class="rating-definition">
-                          {question.ratingDefinitions[question.rating]}
+                          {question.ratingDefinitions[question.rating.toString()]}
                         </div>
                       {/if}
                     </div>
@@ -593,6 +646,102 @@
     color: #333;
   }
 
+  .auth-required {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .auth-required h2 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+  }
+
+  .auth-required p {
+    color: #555;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .auth-note {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #e0e0e0;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+  }
+
+  .auth-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .btn-primary {
+    background: #667eea;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #5a6268;
+  }
+
+  .btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #d0d0d0;
+  }
+
+  .auth-benefits {
+    background: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .auth-benefits h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .auth-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .auth-benefits li {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+
   @media (max-width: 768px) {
     .container {
       padding: 1rem;
@@ -614,6 +763,11 @@
     
     .summary-grid {
       grid-template-columns: 1fr;
+    }
+
+    .auth-actions {
+      flex-direction: column;
+      gap: 0.5rem;
     }
   }
 </style>
