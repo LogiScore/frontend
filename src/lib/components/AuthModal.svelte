@@ -82,9 +82,10 @@
             isLoading: false,
             error: null
           }));
-          // Save token to localStorage
+          // Save token and user to localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem('logiscore_token', result.access_token);
+            localStorage.setItem('logiscore_user', JSON.stringify(result.user));
           }
           closeModal();
         } else {
@@ -118,9 +119,10 @@
             isLoading: false,
             error: null
           }));
-          // Save token to localStorage
+          // Save token and user to localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem('logiscore_token', result.access_token);
+            localStorage.setItem('logiscore_user', JSON.stringify(result.user));
           }
           closeModal();
         } else {
