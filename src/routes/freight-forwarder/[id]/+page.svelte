@@ -82,7 +82,7 @@
           {#if freightForwarder.description}
             <div class="detail-item full-width">
               <h3>Company Description</h3>
-              <p>{freightForwarder.description}</p>
+              <p class="description-text">{freightForwarder.description}</p>
             </div>
           {/if}
           {#if freightForwarder.headquarters_country}
@@ -248,6 +248,13 @@
   }
 
   .detail-item p {
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .description-text {
+    white-space: pre-line;
     color: #666;
     line-height: 1.6;
     margin: 0;

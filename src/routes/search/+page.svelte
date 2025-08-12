@@ -126,7 +126,7 @@
                 </div>
               </div>
               {#if company.description}
-                <p class="company-description">{company.description}</p>
+                <p class="company-description preserve-linebreaks">{company.description}</p>
               {:else}
                 <p class="company-description">
                   {company.name} provides comprehensive logistics and freight forwarding services worldwide.
@@ -266,6 +266,10 @@
     color: #666;
     line-height: 1.6;
     margin-bottom: 1rem;
+  }
+
+  .preserve-linebreaks {
+    white-space: pre-line;
   }
 
   .view-details-btn {
