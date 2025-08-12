@@ -113,7 +113,7 @@ async def get_dashboard_stats(
         pending_disputes = db.query(Dispute).filter(Dispute.status == "open").count()
         
         # Count pending reviews (reviews that need moderation)
-        pending_reviews = db.query(Review).filter(Review.status == "pending").count()
+        pending_reviews = db.query(Review).filter(Review.is_active == True).count()
         
         # Calculate revenue (mock calculation for now)
         # In a real app, this would come from subscription payments
@@ -224,7 +224,7 @@ async def get_reviews(
         query = db.query(Review).join(FreightForwarder)
         
         if status_filter:
-            query = query.filter(Review.status == status_filter)
+            query = query.filter(Review.is_active == True)
         
         reviews = query.offset(skip).limit(limit).all()
         
@@ -234,9 +234,9 @@ async def get_reviews(
                 freight_forwarder_name=review.freight_forwarder.name,
                 branch_name=review.branch.name if review.branch else None,
                 reviewer_name=review.user.username or "Anonymous",
-                rating=review.rating,
-                comment=review.comment,
-                status=review.status,
+                rating=review.overall_rating or 0.0,
+                comment=review.review_text or "",
+                status="active" if review.is_active else "inactive",
                 created_at=review.created_at.isoformat() if review.created_at else None
             )
             for review in reviews
@@ -262,7 +262,7 @@ async def approve_review(
                 detail="Review not found"
             )
         
-        review.status = "approved"
+        review.is_active = True
         db.commit()
         
         return {"message": "Review approved successfully"}
@@ -288,7 +288,7 @@ async def reject_review(
                 detail="Review not found"
             )
         
-        review.status = "rejected"
+        review.is_active = False
         db.commit()
         
         return {"message": "Review rejected successfully"}
