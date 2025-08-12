@@ -51,14 +51,6 @@
           {/if}
         </div>
         <div class="company-info">
-          <h1>{freightForwarder.name}</h1>
-          {#if freightForwarder.website}
-            <div class="company-website">
-              <a href={freightForwarder.website} target="_blank" rel="noopener noreferrer" class="website-link">
-                🌐 Visit Website
-              </a>
-            </div>
-          {/if}
           {#if freightForwarder.rating}
             <div class="rating">
               <span class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</span>
@@ -201,31 +193,8 @@
     border-radius: 16px;
   }
 
-  .company-info h1 {
-    font-size: 2.5rem;
-    margin: 0 0 1rem 0;
-    color: #333;
-  }
-
-  .company-website {
-    margin-bottom: 1rem;
-  }
-
-  .website-link {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 1.1rem;
-    padding: 0.5rem 1rem;
-    border: 2px solid #667eea;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    display: inline-block;
-  }
-
-  .website-link:hover {
-    background: #667eea;
-    color: white;
-    text-decoration: none;
+  .company-info {
+    flex: 1;
   }
 
   .rating {
