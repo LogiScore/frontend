@@ -120,12 +120,6 @@
                   />
                 </div>
                 <div class="company-info">
-                  <h3 class="company-name">{company.name}</h3>
-                  {#if company.website}
-                    <a href={company.website} target="_blank" rel="noopener noreferrer" class="company-website">
-                      🌐 Visit Website
-                    </a>
-                  {/if}
                   {#if company.headquarters_country}
                     <p class="company-headquarters">📍 {company.headquarters_country}</p>
                   {/if}
@@ -260,22 +254,6 @@
 
   .company-info {
     flex: 1;
-  }
-
-  .company-name {
-    color: #333;
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-
-  .company-website {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-
-  .company-website:hover {
-    text-decoration: underline;
   }
 
   .company-headquarters {
