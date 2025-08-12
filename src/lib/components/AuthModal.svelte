@@ -74,7 +74,7 @@
 
         const result = await apiClient.signinWithCode(email, verificationCode);
         if (result.user && result.access_token) {
-          // Update auth store
+          // Use authMethods to properly handle authentication
           auth.update(state => ({
             ...state,
             user: result.user,
@@ -82,6 +82,10 @@
             isLoading: false,
             error: null
           }));
+          // Save token to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('logiscore_token', result.access_token);
+          }
           closeModal();
         } else {
           errorMessage = 'Invalid verification code';
@@ -114,6 +118,10 @@
             isLoading: false,
             error: null
           }));
+          // Save token to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('logiscore_token', result.access_token);
+          }
           closeModal();
         } else {
           errorMessage = 'Registration failed';
