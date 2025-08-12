@@ -141,27 +141,27 @@
       return;
     }
 
-    try {
-      // Prepare review data for API
-      const reviewData: ReviewCreate = {
-        freight_forwarder_id: selectedCompany,
-        branch_id: selectedBranch || undefined,
-        review_type: reviewType,
-        is_anonymous: isAnonymous,
-        review_weight: reviewWeight,
-        category_ratings: reviewCategories.map(cat => ({
-          category: cat.id,
-          questions: cat.questions.map(q => ({
-            question: q.id,
-            rating: q.rating || 0
-          }))
-        })),
-        aggregate_rating: aggregateRating,
-        weighted_rating: weightedRating
-      };
+    // Prepare review data for API
+    const reviewData: ReviewCreate = {
+      freight_forwarder_id: selectedCompany,
+      branch_id: selectedBranch || undefined,
+      review_type: reviewType,
+      is_anonymous: isAnonymous,
+      review_weight: reviewWeight,
+      category_ratings: reviewCategories.map(cat => ({
+        category: cat.id,
+        questions: cat.questions.map(q => ({
+          question: q.id,
+          rating: q.rating || 0
+        }))
+      })),
+      aggregate_rating: aggregateRating,
+      weighted_rating: weightedRating
+    };
 
+    try {
       // Submit review using the new API method
-      const response = await apiClient.createComprehensiveReview(reviewData);
+      const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
       
       // Show success message
       alert('Review submitted successfully!');
@@ -174,8 +174,28 @@
       isAnonymous = false;
       
     } catch (err: any) {
-      error = err.message || 'Failed to submit review';
       console.error('Review submission failed:', err);
+      
+      // Provide more specific error messages
+      if (err.message?.includes('405')) {
+        error = 'Review submission failed: Backend endpoint not available. Please try again later or contact support.';
+      } else if (err.message?.includes('401') || err.message?.includes('403')) {
+        error = 'Authentication failed. Please log in again.';
+      } else if (err.message?.includes('400')) {
+        error = 'Invalid review data. Please check your inputs and try again.';
+      } else if (err.message?.includes('500')) {
+        error = 'Server error occurred. Please try again later.';
+      } else {
+        error = err.message || 'Failed to submit review. Please try again.';
+      }
+      
+      // Log additional details for debugging
+      console.error('Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response,
+        data: reviewData
+      });
     }
   }
 </script>

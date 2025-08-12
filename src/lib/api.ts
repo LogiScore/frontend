@@ -212,10 +212,18 @@ class ApiClient {
     }
   }
 
-  async createComprehensiveReview(reviewData: ReviewCreate): Promise<ReviewResponse> {
+  async createComprehensiveReview(reviewData: ReviewCreate, token: string): Promise<ReviewResponse> {
     try {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+      
       return await this.request<ReviewResponse>('/api/reviews/', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(reviewData),
       });
     } catch (error: any) {
