@@ -163,7 +163,7 @@
                   Change Password
                 </button>
                 <div class="dropdown-divider"></div>
-                <a href="/admin" class="dropdown-item">
+                <a href="/8x7k9m2p" class="dropdown-item">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 3h18v18H3z"/>
                     <path d="M9 9h6v6H9z"/>
