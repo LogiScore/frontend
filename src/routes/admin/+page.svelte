@@ -495,6 +495,9 @@
               <tr>
                 <th>Logo</th>
                 <th>Company Name</th>
+                <th>Website</th>
+                <th>Headquarters</th>
+                <th>Description</th>
                 <th>Branches</th>
                 <th>Reviews</th>
                 <th>Status</th>
@@ -512,6 +515,31 @@
                     {/if}
                   </td>
                   <td>{company.name}</td>
+                  <td>
+                    {#if company.website}
+                      <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
+                        🌐 Visit
+                      </a>
+                    {:else}
+                      <span class="no-data">-</span>
+                    {/if}
+                  </td>
+                  <td>
+                    {#if company.headquarters_country}
+                      <span class="headquarters">📍 {company.headquarters_country}</span>
+                    {:else}
+                      <span class="no-data">-</span>
+                    {/if}
+                  </td>
+                  <td>
+                    {#if company.description}
+                      <div class="description-cell" title={company.description}>
+                        {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
+                      </div>
+                    {:else}
+                      <span class="no-data">-</span>
+                    {/if}
+                  </td>
                   <td>{company.branches_count}</td>
                   <td>{company.reviews_count}</td>
                   <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
@@ -1070,6 +1098,37 @@
     justify-content: center;
     font-size: 0.75rem;
     color: #666;
+  }
+
+  .website-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  .website-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+
+  .headquarters {
+    font-weight: 500;
+    color: #333;
+  }
+
+  .description-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .no-data {
+    color: #999;
+    font-style: italic;
   }
 
   /* User Management */

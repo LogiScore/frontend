@@ -86,6 +86,15 @@
                   {/if}
                 </div>
                 <div class="company-info">
+                  <h3 class="company-name">{company.name}</h3>
+                  {#if company.website}
+                    <a href={company.website} target="_blank" rel="noopener noreferrer" class="company-website">
+                      🌐 Website
+                    </a>
+                  {/if}
+                  {#if company.headquarters_country}
+                    <p class="company-headquarters">📍 {company.headquarters_country}</p>
+                  {/if}
                   {#if company.rating}
                     <div class="rating">
                       <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
@@ -340,6 +349,36 @@
   .company-info h3 {
     margin: 0 0 0.5rem 0;
     color: #333;
+  }
+
+  .company-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .company-website {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #667eea;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .company-website:hover {
+    background-color: #5a67d8;
+  }
+
+  .company-headquarters {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .rating {

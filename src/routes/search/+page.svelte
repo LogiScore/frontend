@@ -123,14 +123,21 @@
                   <h3 class="company-name">{company.name}</h3>
                   {#if company.website}
                     <a href={company.website} target="_blank" rel="noopener noreferrer" class="company-website">
-                      Visit Website
+                      🌐 Visit Website
                     </a>
+                  {/if}
+                  {#if company.headquarters_country}
+                    <p class="company-headquarters">📍 {company.headquarters_country}</p>
                   {/if}
                 </div>
               </div>
-              <p class="company-description">
-                {company.name} provides comprehensive logistics and freight forwarding services worldwide.
-              </p>
+              {#if company.description}
+                <p class="company-description">{company.description}</p>
+              {:else}
+                <p class="company-description">
+                  {company.name} provides comprehensive logistics and freight forwarding services worldwide.
+                </p>
+              {/if}
               <button class="view-details-btn">View Details</button>
             </div>
           {/each}
@@ -269,6 +276,12 @@
 
   .company-website:hover {
     text-decoration: underline;
+  }
+
+  .company-headquarters {
+    color: #555;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
   }
 
   .company-description {

@@ -51,6 +51,14 @@
           {/if}
         </div>
         <div class="company-info">
+          <h1>{freightForwarder.name}</h1>
+          {#if freightForwarder.website}
+            <div class="company-website">
+              <a href={freightForwarder.website} target="_blank" rel="noopener noreferrer" class="website-link">
+                🌐 Visit Website
+              </a>
+            </div>
+          {/if}
           {#if freightForwarder.rating}
             <div class="rating">
               <span class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</span>
@@ -69,22 +77,32 @@
             <h3>Company Name</h3>
             <p>{freightForwarder.name}</p>
           </div>
-          {#if freightForwarder.description}
+          {#if freightForwarder.website}
             <div class="detail-item">
-              <h3>Description</h3>
+              <h3>Website</h3>
+              <p>
+                <a href={freightForwarder.website} target="_blank" rel="noopener noreferrer" class="website-link">
+                  {freightForwarder.website}
+                </a>
+              </p>
+            </div>
+          {/if}
+          {#if freightForwarder.description}
+            <div class="detail-item full-width">
+              <h3>Company Description</h3>
               <p>{freightForwarder.description}</p>
             </div>
           {/if}
           {#if freightForwarder.headquarters_country}
             <div class="detail-item">
               <h3>Headquarters</h3>
-              <p>{freightForwarder.headquarters_country}</p>
+              <p>📍 {freightForwarder.headquarters_country}</p>
             </div>
           {/if}
           {#if freightForwarder.global_rank}
             <div class="detail-item">
               <h3>Global Rank</h3>
-              <p>#{freightForwarder.global_rank}</p>
+              <p>🏆 #{freightForwarder.global_rank}</p>
             </div>
           {/if}
         </div>
@@ -189,6 +207,27 @@
     color: #333;
   }
 
+  .company-website {
+    margin-bottom: 1rem;
+  }
+
+  .website-link {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: inline-block;
+  }
+
+  .website-link:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+  }
+
   .rating {
     display: flex;
     align-items: center;
@@ -226,6 +265,11 @@
   .details-grid {
     display: grid;
     gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .detail-item.full-width {
+    grid-column: 1 / -1;
   }
 
   .detail-item h3 {
