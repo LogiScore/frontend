@@ -90,7 +90,7 @@ async def root():
     """Health check endpoint"""
     return {
         "message": "LogiScore API is running",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "timestamp": datetime.utcnow().isoformat()
     }
 
