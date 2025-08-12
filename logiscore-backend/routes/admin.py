@@ -81,8 +81,6 @@ class SubscriptionUpdate(BaseModel):
 class CompanyCreate(BaseModel):
     name: str
     website: Optional[str] = None
-    description: Optional[str] = None
-    headquarters_country: Optional[str] = None
 
 # Helper function to check if user is admin
 async def get_admin_user(current_user: User = Depends(get_current_user)):
@@ -390,7 +388,7 @@ async def get_companies(
                 logo_url=company.logo_url,
                 branches_count=branches_count,
                 reviews_count=reviews_count,
-                status="active" if company.is_active else "inactive"
+                status="active"
             ))
         
         return result
@@ -422,10 +420,7 @@ async def create_company(
         new_company = FreightForwarder(
             id=str(uuid.uuid4()),
             name=company_data.name,
-            website=company_data.website,
-            description=company_data.description,
-            headquarters_country=company_data.headquarters_country,
-            is_active=True
+            website=company_data.website
         )
         
         db.add(new_company)
