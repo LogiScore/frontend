@@ -487,12 +487,12 @@ class ApiClient {
         ]
       },
       {
-        id: 'problem_resolution',
-        name: 'Problem Resolution & Support',
+        id: 'customer_experience',
+        name: 'Customer Experience',
         questions: [
           {
-            id: 'issue_acknowledgment',
-            text: 'Quickly acknowledges and takes ownership of problems',
+            id: 'follow_up_issues',
+            text: 'Follows up on pending issues without the need for reminders',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
