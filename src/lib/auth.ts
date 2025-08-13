@@ -392,6 +392,31 @@ export const authMethods = {
       console.log('Inactivity prompt timeout, logging out user');
       authMethods.logout();
     }, PROMPT_TIMEOUT);
+  },
+
+  // Recovery method - restore original user session from localStorage
+  recoverSession: () => {
+    console.log('Attempting to recover original user session...');
+    const storedToken = getStoredToken();
+    const storedUser = getStoredUser();
+    
+    if (storedToken && storedUser) {
+      console.log('Found stored session, restoring...');
+      console.log('Stored user:', storedUser);
+      
+      // Restore the session
+      auth.update(state => ({
+        ...state,
+        user: storedUser,
+        token: storedToken,
+        error: null
+      }));
+      
+      return { success: true, message: 'Session recovered successfully' };
+    } else {
+      console.log('No stored session found');
+      return { success: false, message: 'No stored session to recover' };
+    }
   }
 };
 

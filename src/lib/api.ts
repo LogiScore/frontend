@@ -965,17 +965,9 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get current user:', error);
-      // Return a mock user for fallback
-      return {
-        id: 'fallback-user',
-        username: 'Demo User',
-        full_name: 'Demo User',
-        email: 'demo@example.com',
-        user_type: 'shipper',
-        subscription_tier: 'free',
-        is_verified: true,
-        is_active: true
-      };
+      // Don't return demo user - let the calling code handle the error
+      // This prevents real users from being replaced with demo data
+      throw error;
     }
   }
 
