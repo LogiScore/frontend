@@ -18,12 +18,14 @@
   let error: string | null = null;
   let successMessage: string | null = null;
   
-  // New forwarder creation
+  // New forwarder creation - RE-ENABLED after backend implementation
   let showNewForwarderForm = false;
   let newForwarder = {
     name: '',
     website: '',
-    description: ''
+    logo_url: '',
+    description: '',
+    headquarters_country: ''
   };
   
   // Branch location autopopulation
@@ -127,7 +129,7 @@
       }
 
       console.log('Calling API to create forwarder...');
-      const createdForwarder = await apiClient.createFreightForwarder(newForwarder);
+      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token!);
       console.log('Forwarder created successfully:', createdForwarder);
       
       // Add to the list and select it
@@ -138,7 +140,9 @@
       newForwarder = {
         name: '',
         website: '',
-        description: ''
+        logo_url: '',
+        description: '',
+        headquarters_country: ''
       };
       showNewForwarderForm = false;
       
@@ -150,7 +154,37 @@
       
     } catch (err: any) {
       console.error('Error creating forwarder:', err);
-      error = err.message || 'Failed to create new freight forwarder';
+      
+      // Handle specific backend error responses
+      if (err.message && err.message.includes('API request failed:')) {
+        const statusMatch = err.message.match(/API request failed: (\d+)/);
+        if (statusMatch) {
+          const statusCode = parseInt(statusMatch[1]);
+          switch (statusCode) {
+            case 400:
+              error = 'Invalid company data. Please check all fields and try again.';
+              break;
+            case 401:
+              error = 'Authentication required. Please log in again.';
+              break;
+            case 403:
+              error = 'Permission denied. Only admins and shippers can create companies.';
+              break;
+            case 409:
+              error = 'A company with this name already exists. Please use a different name.';
+              break;
+            case 500:
+              error = 'Server error. Please try again later.';
+              break;
+            default:
+              error = err.message || 'Failed to create new freight forwarder';
+          }
+        } else {
+          error = err.message || 'Failed to create new freight forwarder';
+        }
+      } else {
+        error = err.message || 'Failed to create new freight forwarder';
+      }
     }
   }
 
@@ -377,6 +411,26 @@
                       type="url" 
                       bind:value={newForwarder.website} 
                       placeholder="https://example.com"
+                    />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="newLogoUrl">Logo URL</label>
+                    <input 
+                      id="newLogoUrl" 
+                      type="url" 
+                      bind:value={newForwarder.logo_url} 
+                      placeholder="https://example.com/logo.png"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="newHeadquarters">Headquarters Country</label>
+                    <input 
+                      id="newHeadquarters" 
+                      type="text" 
+                      bind:value={newForwarder.headquarters_country} 
+                      placeholder="e.g., United States"
                     />
                   </div>
                 </div>

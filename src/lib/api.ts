@@ -48,7 +48,9 @@ export interface ReviewCategory {
 export interface FreightForwarderCreate {
   name: string;
   website?: string;
+  logo_url?: string;
   description?: string;
+  headquarters_country?: string;
 }
 
 export interface Location {
@@ -197,10 +199,18 @@ class ApiClient {
     }
   }
 
-  async createFreightForwarder(forwarderData: FreightForwarderCreate): Promise<FreightForwarder> {
+  async createFreightForwarder(forwarderData: FreightForwarderCreate, token: string): Promise<FreightForwarder> {
     try {
-      return await this.request<FreightForwarder>('/api/freight-forwarders', {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+      
+      return await this.request<FreightForwarder>('/api/freight-forwarders/', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(forwarderData),
       });
     } catch (error: any) {
