@@ -975,14 +975,14 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
-  },
+  }
 
   async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email, reset_token: resetToken, new_password: newPassword }),
     });
-  },
+  }
 
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
