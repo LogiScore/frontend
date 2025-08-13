@@ -199,7 +199,7 @@ class ApiClient {
       console.error('Failed to fetch freight forwarder details:', error);
       throw error;
     }
-  },
+  }
 
   async createFreightForwarder(forwarderData: FreightForwarderCreate): Promise<FreightForwarder> {
     try {
@@ -211,7 +211,7 @@ class ApiClient {
       console.error('Failed to create freight forwarder:', error);
       throw error;
     }
-  },
+  }
 
   async getLocations(): Promise<Location[]> {
     try {
@@ -221,7 +221,7 @@ class ApiClient {
       // Return fallback locations if API fails
       return this.getFallbackLocations();
     }
-  },
+  }
 
   private getFallbackLocations(): Location[] {
     return [
@@ -234,12 +234,12 @@ class ApiClient {
       { id: 'ae-dubai', name: 'Dubai', region: 'Middle East', subregion: 'Gulf Cooperation Council', country: 'UAE' },
       { id: 'za-cape-town', name: 'Cape Town', region: 'Africa', subregion: 'Southern Africa', country: 'South Africa' }
     ];
-  },
+  }
 
   // Reviews - Legacy methods (for backward compatibility)
   async getReviews(freightForwarderId: string): Promise<Review[]> {
     return this.request<Review[]>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
-  },
+  }
 
   async createReview(review: {
     freight_forwarder_id: string;
@@ -250,7 +250,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(review),
     });
-  },
+  }
 
   // New comprehensive review methods
   async getReviewQuestions(): Promise<ReviewCategory[]> {
@@ -261,7 +261,7 @@ class ApiClient {
       // Return fallback questions if API fails
       return this.getFallbackReviewQuestions();
     }
-  },
+  }
 
   async createComprehensiveReview(reviewData: ReviewCreate, token: string): Promise<ReviewResponse> {
     try {
@@ -281,7 +281,7 @@ class ApiClient {
       console.error('Failed to create comprehensive review:', error);
       throw error;
     }
-  },
+  }
 
   async getReviewsByFreightForwarder(freightForwarderId: string): Promise<ReviewResponse[]> {
     try {
@@ -290,7 +290,7 @@ class ApiClient {
       console.error('Failed to fetch reviews for freight forwarder:', error);
       return [];
     }
-  },
+  }
 
   async getReviewById(reviewId: string): Promise<ReviewResponse> {
     try {
@@ -299,7 +299,7 @@ class ApiClient {
       console.error('Failed to fetch review by ID:', error);
       throw error;
     }
-  },,
+  }
 
   // Fallback review questions (if API fails) - Updated to match LogiScore Review Questions document
   private getFallbackReviewQuestions(): ReviewCategory[] {
