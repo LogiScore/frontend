@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { onMount } from 'svelte';
   import AuthModal from '$lib/components/AuthModal.svelte';
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
@@ -26,11 +26,16 @@
   });
   
   onMount(() => {
-    // Check if user is already authenticated
-    if (authState.token) {
-      auth.getCurrentUser().catch(error => {
+    // Only check auth if we don't already have a user
+    if (!authState.user && authState.token) {
+      console.log('Header: No user but token exists, attempting to restore session');
+      authMethods.getCurrentUser().catch((error: any) => {
         console.error('Failed to get current user:', error);
       });
+    } else if (authState.user && authState.token) {
+      console.log('Header: User session already restored');
+    } else {
+      console.log('Header: No authentication found');
     }
     
     // Add click outside handler for dropdown
@@ -87,7 +92,7 @@
   }
   
   function handleLogout() {
-    auth.logout();
+    authMethods.logout();
     showUserDropdown = false;
   }
 </script>

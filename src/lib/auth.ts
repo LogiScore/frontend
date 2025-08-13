@@ -53,6 +53,18 @@ export const auth = writable<AuthState>({
   error: null
 });
 
+// Subscribe to auth changes for debugging
+if (typeof window !== 'undefined') {
+  auth.subscribe(state => {
+    console.log('Auth state changed:', {
+      hasUser: !!state.user,
+      hasToken: !!state.token,
+      isLoading: state.isLoading,
+      error: state.error
+    });
+  });
+}
+
 // Auth methods
 export const authMethods = {
   login: async (credentials: { email: string; password: string }) => {
@@ -134,8 +146,9 @@ export const authMethods = {
         const user = await apiClient.getCurrentUser(authToken);
         console.log('getCurrentUser API call successful, user:', user ? 'exists' : 'none');
         
-        // Ensure token is saved to localStorage
+        // Ensure token and user are saved to localStorage
         saveToken(authToken);
+        saveUser(user);
         auth.update(state => ({
           ...state,
           user,
@@ -150,6 +163,7 @@ export const authMethods = {
         if (currentState.user) {
           console.log('Maintaining existing user session despite API failure');
           saveToken(authToken);
+          saveUser(currentState.user);
           auth.update(state => ({
             ...state,
             token: authToken,
@@ -163,6 +177,13 @@ export const authMethods = {
       }
     } catch (error: any) {
       console.error('getCurrentUser completely failed:', error.message);
+      
+      // Only clear authentication for critical errors, not network issues
+      if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
+        console.log('Network error detected, maintaining existing session');
+        return;
+      }
+      
       // User not authenticated - clear localStorage too
       removeStoredToken();
       auth.update(state => ({
@@ -181,30 +202,64 @@ export const authMethods = {
       console.log('Current state token:', currentState.token ? 'exists' : 'none');
       console.log('Current state user:', currentState.user ? 'exists' : 'none');
       
-      if (currentState.token && currentState.user) {
-        console.log('Using existing token and user from store');
-        // Just ensure token is saved to localStorage
-        saveToken(currentState.token);
-        return;
-      } else if (currentState.token) {
-        console.log('Using existing token from store, attempting to get user');
-        // Validate token and get current user
-        await authMethods.getCurrentUser(currentState.token);
-      } else {
-        console.log('No token in store, checking localStorage');
-        // Try to get stored token and validate it
+      // First, try to restore from localStorage if store is empty
+      if (!currentState.token || !currentState.user) {
+        console.log('Store incomplete, attempting to restore from localStorage');
         const storedToken = getStoredToken();
-        console.log('Stored token found:', storedToken ? 'yes' : 'no');
-        if (storedToken) {
-          console.log('Attempting to restore session with stored token');
-          await authMethods.getCurrentUser(storedToken);
-        } else {
-          console.log('No stored token found');
+        const storedUser = getStoredUser();
+        
+        if (storedToken && storedUser) {
+          console.log('Found stored token and user, restoring to store');
+          auth.update(state => ({
+            ...state,
+            token: storedToken,
+            user: storedUser
+          }));
+          
+          // Now try to validate the token with the backend
+          try {
+            await authMethods.getCurrentUser(storedToken);
+            console.log('Token validation successful');
+            return;
+          } catch (validationError: any) {
+            console.warn('Token validation failed, but maintaining local session:', validationError.message);
+            // Don't logout immediately, just maintain the local session
+            return;
+          }
         }
       }
-    } catch (error) {
+      
+      // If we have both token and user in store, just ensure they're saved to localStorage
+      if (currentState.token && currentState.user) {
+        console.log('Using existing token and user from store');
+        saveToken(currentState.token);
+        saveUser(currentState.user);
+        return;
+      }
+      
+      // If we only have token, try to get user
+      if (currentState.token && !currentState.user) {
+        console.log('Using existing token from store, attempting to get user');
+        try {
+          await authMethods.getCurrentUser(currentState.token);
+          return;
+        } catch (error: any) {
+          console.warn('Failed to get user with existing token:', error.message);
+          // Don't logout immediately, maintain the token
+          return;
+        }
+      }
+      
+      console.log('No valid authentication found');
+    } catch (error: any) {
       console.error('checkAuth failed:', error);
-      // User not authenticated, clear everything
+      // Only clear everything if it's a critical error, not just a network issue
+      if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
+        console.log('Network error detected, maintaining existing session');
+        return;
+      }
+      
+      // For other errors, clear authentication
       removeStoredToken();
       auth.update(state => ({
         ...state,
@@ -236,6 +291,33 @@ export const authMethods = {
       }));
       throw error;
     }
+  },
+
+  // Debug method to check current auth status
+  debugAuthStatus: () => {
+    const currentState = get<AuthState>(auth);
+    const storedToken = getStoredToken();
+    const storedUser = getStoredUser();
+    
+    console.log('=== AUTH DEBUG INFO ===');
+    console.log('Store state:', {
+      hasUser: !!currentState.user,
+      hasToken: !!currentState.token,
+      user: currentState.user,
+      token: currentState.token ? 'exists' : 'none'
+    });
+    console.log('localStorage state:', {
+      hasStoredToken: !!storedToken,
+      hasStoredUser: !!storedUser,
+      storedToken: storedToken ? 'exists' : 'none',
+      storedUser: storedUser
+    });
+    console.log('=======================');
+    
+    return {
+      store: currentState,
+      localStorage: { token: storedToken, user: storedUser }
+    };
   }
 };
 
@@ -250,7 +332,22 @@ function get<T>(store: any): T {
 if (typeof window !== 'undefined') {
   console.log('Auth system initializing...');
   console.log('Stored token on init:', getStoredToken() ? 'exists' : 'none');
+  console.log('Stored user on init:', getStoredUser() ? 'exists' : 'none');
   
+  // Ensure the store is properly initialized with stored values
+  const storedToken = getStoredToken();
+  const storedUser = getStoredUser();
+  
+  if (storedToken && storedUser) {
+    console.log('Restoring stored authentication on init');
+    auth.update(state => ({
+      ...state,
+      token: storedToken,
+      user: storedUser
+    }));
+  }
+  
+  // Now check auth status
   authMethods.checkAuth();
   
   // Set up periodic token validation (every 5 minutes)
