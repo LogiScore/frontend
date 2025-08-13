@@ -1,8 +1,6 @@
 <script lang="ts">
   import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
-  import AuthModal from '$lib/components/AuthModal.svelte';
-  import { onMount } from 'svelte';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -11,24 +9,10 @@
     error: null
   };
 
-  let showAuthModal = false;
-
   // Subscribe to auth store
   auth.subscribe(state => {
     authState = state;
   });
-
-  function openSignInModal() {
-    showAuthModal = true;
-  }
-
-  function closeAuthModal() {
-    showAuthModal = false;
-  }
-
-  function handleLogout() {
-    authMethods.logout();
-  }
 
   // Admin state
   let activeTab = 'dashboard';
@@ -281,34 +265,6 @@
   <title>Admin Dashboard - LogiScore</title>
   <meta name="description" content="LogiScore Admin Dashboard - Manage reviews, disputes, users, and company data." />
 </svelte:head>
-
-<!-- Navigation Header -->
-<header class="header">
-  <div class="container">
-    <nav class="nav">
-      <div class="nav-brand">
-        <a href="/" class="logo-container">
-          <img src="/logo.png" alt="LogiScore" class="logo" />
-        </a>
-      </div>
-      
-      <div class="nav-menu">
-        <!-- Admin page - no navigation links -->
-      </div>
-      
-      <div class="nav-actions">
-        {#if authState.user}
-          <div class="user-menu">
-            <span class="username">Welcome, {authState.user.username}</span>
-            <button class="btn-secondary" on:click={handleLogout}>Sign Out</button>
-          </div>
-        {:else}
-          <button class="btn-secondary" on:click={openSignInModal}>Sign In</button>
-        {/if}
-      </div>
-    </nav>
-  </div>
-</header>
 
 <!-- Admin Dashboard -->
 <section class="admin-dashboard">
@@ -630,57 +586,6 @@
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>Company</h3>
-        <ul>
-          <li><a href="/about">About</a></li>
-          <li><a href="/careers">Careers</a></li>
-          <li><a href="/press">Press</a></li>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>Platform</h3>
-        <ul>
-          <li><a href="/how-it-works">How It Works</a></li>
-          <li><a href="/pricing">Pricing</a></li>
-          <li><a href="/features">Features</a></li>
-          <li><a href="/api">API</a></li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>Support</h3>
-        <ul>
-          <li><a href="/help">Help Center</a></li>
-          <li><a href="/faq">FAQ</a></li>
-          <li><a href="/guidelines">Guidelines</a></li>
-          <li><a href="/contact-support">Contact Support</a></li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>Legal</h3>
-        <ul>
-          <li><a href="/privacy">Privacy Policy</a></li>
-          <li><a href="/terms">Terms of Service</a></li>
-          <li><a href="/cookies">Cookie Policy</a></li>
-          <li><a href="/security">Security</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="footer-bottom">
-      <p>&copy; 2025 LogiScore. All rights reserved.</p>
-    </div>
-  </div>
-</footer>
-
 <!-- Subscription Management Modal -->
 {#if showSubscriptionModal}
   <div class="modal-overlay" on:click={closeSubscriptionModal}>
@@ -733,13 +638,6 @@
   </div>
 {/if}
 
-<!-- Auth Modal -->
-<AuthModal 
-  bind:isOpen={showAuthModal}
-  defaultMode="signin"
-  on:close={closeAuthModal}
-/>
-
 <style>
   /* Global Styles */
   * {
@@ -759,97 +657,6 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-  }
-
-  /* Header styles removed - now using Header component */
-
-  .nav-menu {
-    display: flex;
-    gap: 30px;
-  }
-
-  .nav-link {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: color 0.3s;
-  }
-
-  .nav-link:hover {
-    color: #667eea;
-  }
-
-  .nav-link.active {
-    color: #667eea;
-    font-weight: 600;
-  }
-
-  .nav-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-
-  .user-menu {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .username {
-    font-weight: 500;
-    color: #333;
-    font-size: 0.9rem;
-  }
-
-  .btn-primary, .btn-secondary {
-    padding: 15px 30px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-    font-family: 'Roboto', sans-serif;
-  }
-
-  .btn-primary {
-    background: #ffd700;
-    color: #333;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #e6c200;
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: #ffffff !important;
-    color: #333 !important;
-    border: 2px solid #333 !important;
-    font-weight: 600 !important;
-    padding: 10px 20px !important;
-    border-radius: 6px !important;
-    font-size: 14px !important;
-    cursor: pointer !important;
-    display: inline-block !important;
-    text-decoration: none !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    position: relative !important;
-    z-index: 10 !important;
-  }
-
-  .btn-secondary:hover {
-    background: #333;
-    color: white;
   }
 
   /* Admin Dashboard */
@@ -1292,52 +1099,6 @@
     font-size: 1.2rem;
   }
 
-  /* Footer */
-  .footer {
-    background: #333;
-    color: white;
-    padding: 60px 0 20px;
-  }
-
-  .footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
-    margin-bottom: 40px;
-  }
-
-  .footer-section h3 {
-    margin-bottom: 20px;
-    color: #ffd700;
-    font-weight: 600;
-  }
-
-  .footer-section ul {
-    list-style: none;
-  }
-
-  .footer-section li {
-    margin-bottom: 10px;
-  }
-
-  .footer-section a {
-    color: #ccc;
-    text-decoration: none;
-    transition: color 0.3s;
-    font-weight: 400;
-  }
-
-  .footer-section a:hover {
-    color: white;
-  }
-
-  .footer-bottom {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #555;
-    color: #ccc;
-  }
-
   /* Responsive Design */
   @media (max-width: 768px) {
     .nav-menu {
@@ -1367,11 +1128,6 @@
 
     .analytics-grid {
       grid-template-columns: 1fr;
-    }
-
-    .footer-content {
-      grid-template-columns: 1fr;
-      text-align: center;
     }
   }
 </style> 
