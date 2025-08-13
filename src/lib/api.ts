@@ -1036,11 +1036,11 @@ class ApiClient {
         plan_id: planId,
         plan_name: planName,
         user_type: userType
-      }),
-    });
-  },
+              }),
+      });
+    }
 
-  // ===== METHOD: getSubscriptionPlans =====
+    // ===== METHOD: getSubscriptionPlans =====
   async getSubscriptionPlans(token: string): Promise<{ plans: any[] }> {
     return this.request<{ plans: any[] }>('/api/subscriptions/plans', {
       headers: {
