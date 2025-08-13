@@ -740,6 +740,73 @@ class ApiClient {
             }
           }
         ]
+      },
+      {
+        id: 'proactivity_insight',
+        name: 'Proactivity & Insight',
+        questions: [
+          {
+            id: 'trends_insights',
+            text: 'Provides trends relating to rates, capacities, carriers, customs and geopolitical issues that might impact global trade and the client and mitigation options the client could consider',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Not able to provide any information',
+              '2': 'Provides some information when requested',
+              '3': 'Provides updates when requested',
+              '4': 'Provides proactive updates'
+            }
+          },
+          {
+            id: 'gri_baf_changes',
+            text: 'Notifies customer of upcoming GRI or BAF changes in advance and migitation options',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Not able to provide any information',
+              '2': 'Provides some information when requested',
+              '3': 'Provides updates when requested',
+              '4': 'Provides proactive updates'
+            }
+          },
+          {
+            id: 'consolidation_suggestions',
+            text: 'Provides suggestions for consolidation, better routings, or mode shifts',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Not able to provide any information',
+              '2': 'Provides suggestions when requested',
+              '3': 'Provides suggestions when requested',
+              '4': 'Provides proactive suggestions'
+            }
+          }
+        ]
+      },
+      {
+        id: 'after_hours_support',
+        name: 'After Hours Support',
+        questions: [
+          {
+            id: 'emergency_contact',
+            text: 'Has 24/7 support or provides emergency contact for after-hours escalation',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Helpdesk/control tower only responds during working hours',
+              '2': 'Provides a helpdesk/control tower however reponds only after 2-4 hours',
+              '3': 'Provides a helpdesk/control tower however respond only after 1-2 hours',
+              '4': 'Provides 24/7 helpdesk/control tower'
+            }
+          },
+          {
+            id: 'weekend_holiday_contact',
+            text: 'Weekend or holiday contact provided in advance for critical shipments',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'No contact available on weekends or holidays',
+              '2': 'Contact responds after 2-4 hours',
+              '3': 'Contact responds after 1-2 hours',
+              '4': 'Provides 24/7 contact'
+            }
+          }
+        ]
       }
     ];
   }
