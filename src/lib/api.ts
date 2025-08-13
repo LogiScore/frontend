@@ -290,7 +290,7 @@ class ApiClient {
       console.error('Failed to fetch reviews for freight forwarder:', error);
       return [];
     }
-  }
+  },
 
   async getReviewById(reviewId: string): Promise<ReviewResponse> {
     try {
