@@ -624,47 +624,58 @@ class ApiClient {
             }
           },
           {
-            id: 'local_expertise',
-            text: 'Has local expertise and knowledge in destination markets',
+            id: 'shipped_as_promised',
+            text: 'Shipped as promised (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Seldom (25%)',
+              '2': 'Often (50%)',
+              '3': 'Mostly (75%)',
+              '4': 'Always (100%)'
             }
           },
           {
-            id: 'partner_network',
-            text: 'Maintains reliable partner network in all regions',
+            id: 'on_time_delivery_rate',
+            text: 'On-time delivery rate (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Seldom (25%)',
+              '2': 'Often (50%)',
+              '3': 'Mostly (75%)',
+              '4': 'Always (100%)'
             }
           },
           {
-            id: 'cultural_understanding',
-            text: 'Demonstrates understanding of local business customs and regulations',
+            id: 'compliance_client_sop',
+            text: 'Compliance with clients\' SOP (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'No SOP defined (25%)',
+              '2': 'Seldom (50%)',
+              '3': 'Usually (75%)',
+              '4': 'Always (100%)'
             }
           },
           {
-            id: 'multilingual_support',
-            text: 'Provides support in local languages when needed',
+            id: 'customs_clearance_error_rate',
+            text: 'Customs clearance error rate (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Regular errors (75%)',
+              '2': 'Frequent errors (50%)',
+              '3': 'Occasional errors (25%)',
+              '4': 'No errors (0%)'
+            }
+          },
+          {
+            id: 'claims_ratio',
+            text: 'Claims ratio (number of claims / total shipments)',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Often',
+              '2': 'Regularly',
+              '3': 'Occasionally',
+              '4': 'Rarely'
             }
           }
         ]
