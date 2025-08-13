@@ -10,6 +10,10 @@
   let selectedCompany: string = '';
   let selectedBranch: string = '';
   let isAnonymous: boolean = false;
+  
+  // Location autocomplete
+  let showLocationSuggestions = false;
+  let locationSuggestions: any[] = [];
   let isLoading = true;
   let error: string | null = null;
   
@@ -23,8 +27,7 @@
   
   // Branch location autopopulation
   let locations: any[] = [];
-  let selectedRegion = '';
-  let selectedSubregion = '';
+
   
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -158,6 +161,34 @@
     }
   }
 
+  function handleLocationSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const query = input.value.toLowerCase().trim();
+    
+    if (query.length < 2) {
+      showLocationSuggestions = false;
+      locationSuggestions = [];
+      return;
+    }
+    
+    // Filter locations based on input
+    const filtered = locations.filter(location => 
+      location.Location.toLowerCase().includes(query) ||
+      location.City.toLowerCase().includes(query) ||
+      location.State.toLowerCase().includes(query) ||
+      location.Country.toLowerCase().includes(query)
+    ).slice(0, 10); // Limit to 10 suggestions
+    
+    locationSuggestions = filtered;
+    showLocationSuggestions = true;
+  }
+  
+  function selectLocation(location: any) {
+    selectedBranch = location.Location;
+    showLocationSuggestions = false;
+    locationSuggestions = [];
+  }
+  
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
     console.log('Rating changed:', { categoryId, questionId, rating });
     reviewCategories = reviewCategories.map(cat => {
@@ -340,7 +371,6 @@
                     />
                   </div>
                 </div>
-                </div>
                 <div class="form-group">
                   <label for="newDescription">Description</label>
                   <textarea 
@@ -359,43 +389,35 @@
                     Create Company
                   </button>
                 </div>
+              </div>
             {/if}
 
             <div class="form-group">
-              <label for="branch">Branch Location</label>
-              <div class="location-selection">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="region">Region</label>
-                    <select id="region" bind:value={selectedRegion} on:change={() => selectedSubregion = ''}>
-                      <option value="">Select region</option>
-                      {#each [...new Set(locations.map(l => l.region))] as region}
-                        <option value={region}>{region}</option>
-                      {/each}
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="subregion">Subregion</label>
-                    <select id="subregion" bind:value={selectedSubregion} disabled={!selectedRegion}>
-                      <option value="">Select subregion</option>
-                      {#each locations.filter(l => l.region === selectedRegion).map(l => l.subregion) as subregion}
-                        <option value={subregion}>{subregion}</option>
-                      {/each}
-                    </select>
-                  </div>
+              <label for="branch">Branch Location (optional)</label>
+              <input 
+                type="text" 
+                id="branch" 
+                bind:value={selectedBranch}
+                placeholder="Start typing to search locations..."
+                on:input={handleLocationSearch}
+                class="location-input"
+              />
+              {#if showLocationSuggestions && locationSuggestions.length > 0}
+                <div class="location-suggestions">
+                  {#each locationSuggestions as suggestion}
+                    <div 
+                      class="suggestion-item" 
+                      on:click={() => selectLocation(suggestion)}
+                      on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
+                      tabindex="0"
+                    >
+                      <strong>{suggestion.Location}</strong>
+                      <span class="suggestion-details">{suggestion.City}, {suggestion.State}, {suggestion.Country}</span>
+                    </div>
+                  {/each}
                 </div>
-                <div class="form-group">
-                  <label for="location">Specific Location</label>
-                  <select id="location" bind:value={selectedBranch}>
-                    <option value="">Select location (optional)</option>
-                    {#each locations.filter(l => l.region === selectedRegion && l.subregion === selectedSubregion) as location}
-                      <option value={location.id}>{location.name}, {location.country}</option>
-                    {/each}
-                  </select>
-                </div>
-              </div>
+              {/if}
             </div>
-          </div>
 
           <!-- Review Options -->
           <div class="form-section">
@@ -541,6 +563,53 @@
 
   .form-group {
     margin-bottom: 1.5rem;
+    position: relative;
+  }
+  
+  .location-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .location-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .suggestion-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+  }
+  
+  .suggestion-item:hover,
+  .suggestion-item:focus {
+    background-color: #f8f9fa;
+  }
+  
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+  
+  .suggestion-details {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.25rem;
   }
 
   .form-group label {
