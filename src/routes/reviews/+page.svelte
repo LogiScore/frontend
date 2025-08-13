@@ -14,6 +14,21 @@
   let isLoading = true;
   let error: string | null = null;
   
+  // New forwarder creation
+  let showNewForwarderForm = false;
+  let newForwarder = {
+    name: '',
+    website: '',
+    contact_email: '',
+    contact_phone: '',
+    description: ''
+  };
+  
+  // Branch location autopopulation
+  let locations: any[] = [];
+  let selectedRegion = '';
+  let selectedSubregion = '';
+  
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -62,6 +77,9 @@
       // Load all freight forwarders for selection
       await loadFreightForwarders();
       
+      // Load locations for branch autopopulation
+      await loadLocations();
+      
       // Load review questions from API
       await loadReviewQuestions();
     } catch (err: any) {
@@ -87,6 +105,45 @@
       branches = []; // Placeholder
     } catch (err: any) {
       console.error('Failed to load company data:', err);
+    }
+  }
+
+  async function loadLocations() {
+    try {
+      locations = await apiClient.getLocations();
+    } catch (err: any) {
+      console.error('Failed to load locations:', err);
+    }
+  }
+
+  async function createNewForwarder() {
+    try {
+      if (!newForwarder.name.trim()) {
+        error = 'Company name is required';
+        return;
+      }
+
+      const createdForwarder = await apiClient.createFreightForwarder(newForwarder);
+      
+      // Add to the list and select it
+      freightForwarders.push(createdForwarder);
+      selectedCompany = createdForwarder.id;
+      
+      // Reset form
+      newForwarder = {
+        name: '',
+        website: '',
+        contact_email: '',
+        contact_phone: '',
+        description: ''
+      };
+      showNewForwarderForm = false;
+      
+      // Clear any previous errors
+      error = null;
+      
+    } catch (err: any) {
+      error = err.message || 'Failed to create new freight forwarder';
     }
   }
 
@@ -253,15 +310,117 @@
                 {/each}
               </select>
             </div>
+            
+            <!-- Add New Company Button -->
+            <div class="form-group">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                on:click={() => showNewForwarderForm = !showNewForwarderForm}
+              >
+                {showNewForwarderForm ? 'Cancel' : 'Add New Company'}
+              </button>
+            </div>
+
+            <!-- New Company Form -->
+            {#if showNewForwarderForm}
+              <div class="new-company-form">
+                <h4>Add New Freight Forwarder</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="newName">Company Name *</label>
+                    <input 
+                      id="newName" 
+                      type="text" 
+                      bind:value={newForwarder.name} 
+                      placeholder="Enter company name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="newWebsite">Website</label>
+                    <input 
+                      id="newWebsite" 
+                      type="url" 
+                      bind:value={newForwarder.website} 
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="newEmail">Contact Email</label>
+                    <input 
+                      id="newEmail" 
+                      type="email" 
+                      bind:value={newForwarder.contact_email} 
+                      placeholder="contact@company.com"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="newPhone">Contact Phone</label>
+                    <input 
+                      id="newPhone" 
+                      type="tel" 
+                      bind:value={newForwarder.contact_phone} 
+                      placeholder="+1-234-567-8900"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="newDescription">Description</label>
+                  <textarea 
+                    id="newDescription" 
+                    bind:value={newForwarder.description} 
+                    placeholder="Brief description of the company"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <button 
+                    type="button" 
+                    class="btn btn-primary" 
+                    on:click={createNewForwarder}
+                  >
+                    Create Company
+                  </button>
+                </div>
+              </div>
+            {/if}
 
             <div class="form-group">
               <label for="branch">Branch Location</label>
-              <select id="branch" bind:value={selectedBranch}>
-                <option value="">Select branch (optional)</option>
-                {#each branches as branch}
-                  <option value={branch.id}>{branch.name} - {branch.location}</option>
-                {/each}
-              </select>
+              <div class="location-selection">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="region">Region</label>
+                    <select id="region" bind:value={selectedRegion} on:change={() => selectedSubregion = ''}>
+                      <option value="">Select region</option>
+                      {#each [...new Set(locations.map(l => l.region))] as region}
+                        <option value={region}>{region}</option>
+                      {/each}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="subregion">Subregion</label>
+                    <select id="subregion" bind:value={selectedSubregion} disabled={!selectedRegion}>
+                      <option value="">Select subregion</option>
+                      {#each locations.filter(l => l.region === selectedRegion).map(l => l.subregion) as subregion}
+                        <option value={subregion}>{subregion}</option>
+                      {/each}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="location">Specific Location</label>
+                  <select id="location" bind:value={selectedBranch}>
+                    <option value="">Select location (optional)</option>
+                    {#each locations.filter(l => l.region === selectedRegion && l.subregion === selectedSubregion) as location}
+                      <option value={location.id}>{location.name}, {location.country}</option>
+                    {/each}
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">
@@ -738,6 +897,51 @@
   .auth-benefits {
     background: #f0f0f0;
     border: 1px solid #e0e0e0;
+  }
+
+  /* New Company Form Styles */
+  .new-company-form {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .new-company-form h4 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-row .form-group {
+    margin-bottom: 0;
+  }
+
+  /* Location Selection Styles */
+  .location-selection {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .location-selection .form-row {
+    margin-bottom: 1rem;
+  }
+
+  .location-selection .form-group:last-child {
+    margin-bottom: 0;
+  }
     border-radius: 8px;
     padding: 1.5rem;
     margin-top: 2rem;
