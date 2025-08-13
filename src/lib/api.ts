@@ -994,7 +994,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ code }),
     });
-  },
+  }
 
   // User management
   async getCurrentUser(token: string): Promise<User> {
@@ -1010,7 +1010,7 @@ class ApiClient {
       // This prevents real users from being replaced with demo data
       throw error;
     }
-  },
+  }
 
   // Subscriptions
   async createSubscription(
