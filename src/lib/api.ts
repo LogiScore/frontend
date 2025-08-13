@@ -789,7 +789,7 @@ class ApiClient {
       console.log('Using fallback verification code system due to unknown error');
       return { message: 'Verification code sent to your email (demo mode)' };
     }
-  },
+  }
 
   // ===== METHOD: completeSignup =====
   async completeSignup(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
@@ -806,7 +806,7 @@ class ApiClient {
       }
       throw new Error('Signup completion failed. Please try again later.');
     }
-  },
+  }
 
   // ===== METHOD: signinWithCode =====
   async signinWithCode(email: string, code: string): Promise<{ user: User; access_token: string; token_type: string }> {
