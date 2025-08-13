@@ -1125,6 +1125,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAdminReviews =====
   async getAdminReviews(token: string, status?: string) {
     try {
       const params = new URLSearchParams();
@@ -1149,6 +1150,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAdminDisputes =====
   async getAdminDisputes(token: string, status?: string) {
     try {
       const params = new URLSearchParams();
@@ -1172,6 +1174,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAdminCompanies =====
   async getAdminCompanies(token: string, search?: string) {
     try {
       const params = new URLSearchParams();
