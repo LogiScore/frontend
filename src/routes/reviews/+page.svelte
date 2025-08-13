@@ -942,10 +942,6 @@
   .location-selection .form-group:last-child {
     margin-bottom: 0;
   }
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-  }
 
   .auth-benefits h3 {
     color: #333;
