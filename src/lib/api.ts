@@ -376,12 +376,12 @@ class ApiClient {
         ]
       },
       {
-        id: 'pricing_transparency',
-        name: 'Pricing & Transparency',
+        id: 'shipment_management',
+        name: 'Shipment Management',
         questions: [
           {
-            id: 'clear_quotation',
-            text: 'Provides clear, itemized quotations with no hidden fees',
+            id: 'proactive_milestones',
+            text: 'Proactively sends shipment milestones (e.g., pickup, departure, arrival, delivery) without being asked',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
