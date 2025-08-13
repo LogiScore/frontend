@@ -875,10 +875,8 @@ class ApiClient {
           access_token: 'demo-token',
           token_type: 'bearer'
         };
-              }
       }
     }
-  }
 
   // Legacy signin method (for demo account)
   async signin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
