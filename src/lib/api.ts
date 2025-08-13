@@ -213,6 +213,29 @@ class ApiClient {
     }
   },
 
+  async getLocations(): Promise<Location[]> {
+    try {
+      return await this.request<Location[]>('/api/locations');
+    } catch (error: any) {
+      console.error('Failed to fetch locations:', error);
+      // Return fallback locations if API fails
+      return this.getFallbackLocations();
+    }
+  },
+
+  private getFallbackLocations(): Location[] {
+    return [
+      { id: 'us-east', name: 'New York', region: 'Americas', subregion: 'North America', country: 'USA' },
+      { id: 'us-west', name: 'Los Angeles', region: 'Americas', subregion: 'North America', country: 'USA' },
+      { id: 'uk-london', name: 'London', region: 'Europe', subregion: 'Western Europe', country: 'UK' },
+      { id: 'de-hamburg', name: 'Hamburg', region: 'Europe', subregion: 'Central Europe', country: 'Germany' },
+      { id: 'cn-shanghai', name: 'Shanghai', region: 'Asia', subregion: 'East Asia', country: 'China' },
+      { id: 'sg-singapore', name: 'Singapore', region: 'Asia', subregion: 'Southeast Asia', country: 'Singapore' },
+      { id: 'ae-dubai', name: 'Dubai', region: 'Middle East', subregion: 'Gulf Cooperation Council', country: 'UAE' },
+      { id: 'za-cape-town', name: 'Cape Town', region: 'Africa', subregion: 'Southern Africa', country: 'South Africa' }
+    ];
+  },
+
   // Reviews - Legacy methods (for backward compatibility)
   async getReviews(freightForwarderId: string): Promise<Review[]> {
     return this.request<Review[]>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
