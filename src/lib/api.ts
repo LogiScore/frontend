@@ -261,7 +261,7 @@ class ApiClient {
       // Return fallback questions if API fails
       return this.getFallbackReviewQuestions();
     }
-  }
+  },
 
   async createComprehensiveReview(reviewData: ReviewCreate, token: string): Promise<ReviewResponse> {
     try {
