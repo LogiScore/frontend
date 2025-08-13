@@ -58,15 +58,6 @@
       window.history.replaceState({}, '', url);
     }
   }
-
-  async function testAuthEndpoint() {
-    try {
-      const response = await apiClient.testAuthEndpoint();
-      alert('Auth endpoint test successful! Response: ' + JSON.stringify(response));
-    } catch (error: any) {
-      alert('Auth endpoint test failed: ' + error.message);
-    }
-  }
 </script>
 
 <svelte:head>
@@ -81,17 +72,6 @@
       <div class="hero-content">
         <h1>Find the Best Freight Forwarders</h1>
         <p class="hero-subtitle">Make informed logistics decisions with verified customer reviews and ratings</p>
-        
-        <!-- Temporary test button for debugging -->
-        <div style="margin-top: 20px;">
-          <button 
-            class="btn btn-primary" 
-            on:click={testAuthEndpoint}
-            style="background: #ff6b6b; border: none;"
-          >
-            🔍 Test Auth Endpoint
-          </button>
-        </div>
       </div>
     </div>
   </section>
