@@ -299,7 +299,7 @@ class ApiClient {
       console.error('Failed to fetch review by ID:', error);
       throw error;
     }
-  }
+  },
 
   // Fallback review questions (if API fails) - Updated to match LogiScore Review Questions document
   private getFallbackReviewQuestions(): ReviewCategory[] {
