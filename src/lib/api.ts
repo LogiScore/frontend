@@ -976,23 +976,23 @@ class ApiClient {
   async forgotPassword(email: string): Promise<{ message: string; reset_token?: string; expires_in?: string }> {
     return this.request<{ message: string; reset_token?: string; expires_in?: string }>('/api/users/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  },
+              body: JSON.stringify({ email }),
+      });
+    }
 
-  // ===== METHOD: resetPassword =====
+    // ===== METHOD: resetPassword =====
   async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email, reset_token: resetToken, new_password: newPassword }),
     });
-  },
+  }
 
   // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
     return this.request<{ auth_url: string }>('/api/users/github/auth');
-  },
+  }
 
   // ===== METHOD: handleGitHubCallback =====
   async handleGitHubCallback(code: string): Promise<{ access_token: string; user: User }> {
@@ -1000,7 +1000,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ code }),
     });
-  },
+  }
 
   // ===== METHOD: getCurrentUser =====
   // User management
@@ -1017,7 +1017,7 @@ class ApiClient {
       // This prevents real users from being replaced with demo data
       throw error;
     }
-  },
+  }
 
   // ===== METHOD: createSubscription =====
   // Subscriptions
@@ -1047,7 +1047,7 @@ class ApiClient {
         'Authorization': `Bearer ${token}`,
       },
     });
-  },
+  }
 
   // ===== METHOD: getCurrentSubscription =====
   async getCurrentSubscription(token: string): Promise<{
@@ -1066,7 +1066,7 @@ class ApiClient {
         'Authorization': `Bearer ${token}`,
       },
     });
-  },
+  }
 
   // ===== METHOD: getDashboardStats =====
   // Admin methods (for the admin dashboard)
@@ -1087,7 +1087,7 @@ class ApiClient {
         total_revenue: 15420
       };
     }
-  },
+  }
 
   // ===== METHOD: getAdminUsers =====
   async getAdminUsers(token: string, search?: string, filter?: string) {
@@ -1123,7 +1123,7 @@ class ApiClient {
         }
       ];
     }
-  },
+  }
 
   // ===== METHOD: getAdminReviews =====
   async getAdminReviews(token: string, status?: string) {
@@ -1148,7 +1148,7 @@ class ApiClient {
         }
       ];
     }
-  },
+  }
 
   // ===== METHOD: getAdminDisputes =====
   async getAdminDisputes(token: string, status?: string) {
@@ -1172,7 +1172,7 @@ class ApiClient {
         }
       ];
     }
-  },
+  }
 
   // ===== METHOD: getAdminCompanies =====
   async getAdminCompanies(token: string, search?: string) {
@@ -1197,7 +1197,7 @@ class ApiClient {
         }
       ];
     }
-  },
+  }
 
   // ===== METHOD: createCompany =====
   async createCompany(token: string, companyData: any) {
@@ -1214,7 +1214,7 @@ class ApiClient {
       console.error('Failed to create company:', error);
       throw new Error('Failed to create company');
     }
-  },
+  }
 
   // ===== METHOD: updateUserSubscription =====
   async updateUserSubscription(token: string, userId: string, subscriptionData: any) {
@@ -1231,7 +1231,7 @@ class ApiClient {
       console.error('Failed to update subscription:', error);
       throw new Error('Failed to update subscription');
     }
-  },
+  }
 
   // ===== METHOD: approveReview =====
   async approveReview(token: string, reviewId: string) {
@@ -1244,7 +1244,7 @@ class ApiClient {
       console.error('Failed to approve review:', error);
       throw new Error('Failed to approve review');
     }
-  },
+  }
 
   // ===== METHOD: rejectReview =====
   async rejectReview(token: string, reviewId: string) {
@@ -1257,7 +1257,7 @@ class ApiClient {
       console.error('Failed to reject review:', error);
       throw new Error('Failed to reject review');
     }
-  },
+  }
 
   // ===== METHOD: resolveDispute =====
   async resolveDispute(token: string, disputeId: string) {
@@ -1270,7 +1270,7 @@ class ApiClient {
       console.error('Failed to resolve dispute:', error);
       throw new Error('Failed to resolve dispute');
     }
-  },
+  }
 
   // Payment processing (for PaymentModal)
   // ===== METHOD: processPayment =====
