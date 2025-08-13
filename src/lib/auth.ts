@@ -8,6 +8,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  showInactivityPrompt: boolean;
 }
 
 // Helper functions for token and user persistence
@@ -45,12 +46,59 @@ function getStoredUser(): any {
   return null;
 }
 
+// Inactivity tracking
+let inactivityTimer: number | null = null;
+let inactivityPromptTimer: number | null = null;
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+const PROMPT_TIMEOUT = 1 * 60 * 1000; // 1 minute to respond to prompt
+
+function resetInactivityTimer() {
+  // Clear existing timers
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer);
+  }
+  if (inactivityPromptTimer) {
+    clearTimeout(inactivityPromptTimer);
+  }
+  
+  // Reset the inactivity prompt state
+  auth.update(state => ({ ...state, showInactivityPrompt: false }));
+  
+  // Set new inactivity timer
+  inactivityTimer = setTimeout(() => {
+    console.log('User inactive for 10 minutes, showing prompt');
+    auth.update(state => ({ ...state, showInactivityPrompt: true }));
+    
+    // Set prompt timeout - if user doesn't respond in 1 minute, logout
+    inactivityPromptTimer = setTimeout(() => {
+      console.log('Inactivity prompt timeout, logging out user');
+      authMethods.logout();
+    }, PROMPT_TIMEOUT);
+  }, INACTIVITY_TIMEOUT);
+}
+
+function setupInactivityTracking() {
+  if (typeof window === 'undefined') return;
+  
+  // Events that indicate user activity
+  const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+  
+  // Reset timer on any user activity
+  activityEvents.forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, true);
+  });
+  
+  // Start the initial timer
+  resetInactivityTimer();
+}
+
 // Create a writable store for authentication state
 export const auth = writable<AuthState>({
   user: getStoredUser(), // Initialize with stored user
   token: getStoredToken(), // Initialize with stored token
   isLoading: false,
-  error: null
+  error: null,
+  showInactivityPrompt: false
 });
 
 // Subscribe to auth changes for debugging
@@ -318,6 +366,32 @@ export const authMethods = {
       store: currentState,
       localStorage: { token: storedToken, user: storedUser }
     };
+  },
+
+  // Handle inactivity prompt responses
+  extendSession: () => {
+    console.log('User chose to extend session');
+    resetInactivityTimer();
+  },
+
+  endSession: () => {
+    console.log('User chose to end session');
+    authMethods.logout();
+  },
+
+  // Development/testing method - manually trigger inactivity prompt
+  testInactivityPrompt: () => {
+    console.log('Manually triggering inactivity prompt for testing');
+    auth.update(state => ({ ...state, showInactivityPrompt: true }));
+    
+    // Set prompt timeout - if user doesn't respond in 1 minute, logout
+    if (inactivityPromptTimer) {
+      clearTimeout(inactivityPromptTimer);
+    }
+    inactivityPromptTimer = setTimeout(() => {
+      console.log('Inactivity prompt timeout, logging out user');
+      authMethods.logout();
+    }, PROMPT_TIMEOUT);
   }
 };
 
@@ -360,5 +434,8 @@ if (typeof window !== 'undefined') {
       });
     }
   }, 5 * 60 * 1000); // 5 minutes
+
+  // Set up inactivity tracking
+  setupInactivityTracking();
 }
 
