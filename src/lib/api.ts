@@ -308,6 +308,39 @@ class ApiClient {
             }
           },
           {
+            id: 'same_region_response',
+            text: 'Responds within 6 hours to rate requests to/from locations within the same region?',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'other_region_response',
+            text: 'Responds within 24 hours to rate requests to/from other regions (e.g. Asia to US, US to Europe)?',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
+            id: 'emergency_response',
+            text: 'Responds to emergency requests (e.g., urgent shipment delay, customs issues) within 30 minutes',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
+            }
+          },
+          {
             id: 'proactive_updates',
             text: 'Proactively provides updates on shipment status without being asked',
             ratingDefinitions: {
