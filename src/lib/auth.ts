@@ -141,6 +141,33 @@ export const authMethods = {
     }
   },
 
+  // Admin login method - uses username and password
+  adminLogin: async (credentials: { username: string; password: string }) => {
+    auth.update(state => ({ ...state, isLoading: true, error: null }));
+    
+    try {
+      const response = await apiClient.adminSignin(credentials.username, credentials.password);
+      // Save token and user to localStorage
+      saveToken(response.access_token);
+      saveUser(response.user);
+      auth.update(state => ({
+        ...state,
+        user: response.user,
+        token: response.access_token,
+        isLoading: false,
+        error: null
+      }));
+      return { success: true };
+    } catch (error: any) {
+      auth.update(state => ({ 
+        ...state, 
+        isLoading: false, 
+        error: error.message || 'Admin login failed' 
+      }));
+      return { success: false, error: error.message };
+    }
+  },
+
   logout: () => {
     // Remove token from localStorage
     removeStoredToken();

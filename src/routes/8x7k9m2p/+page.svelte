@@ -2,6 +2,7 @@
   import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
   import { onMount } from 'svelte';
+  import AdminLoginForm from '$lib/components/AdminLoginForm.svelte';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -326,6 +327,11 @@
             <button class="btn-primary" on:click={() => window.location.href = '/'}>
               Go to Homepage
             </button>
+          </div>
+          
+          <!-- Admin Login Form -->
+          <div class="admin-login-section">
+            <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
           </div>
         {/if}
       </div>
@@ -851,6 +857,12 @@
 
   .auth-warning .btn-primary:hover {
     background: #b91c1c;
+  }
+
+  .admin-login-section {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
   }
 
   /* Tab Navigation */
