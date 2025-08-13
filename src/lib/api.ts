@@ -1002,6 +1002,7 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: getCurrentUser =====
   // User management
   async getCurrentUser(token: string): Promise<User> {
     try {
@@ -1018,6 +1019,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: createSubscription =====
   // Subscriptions
   async createSubscription(
     planId: string,
@@ -1038,6 +1040,7 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: getSubscriptionPlans =====
   async getSubscriptionPlans(token: string): Promise<{ plans: any[] }> {
     return this.request<{ plans: any[] }>('/api/subscriptions/plans', {
       headers: {
