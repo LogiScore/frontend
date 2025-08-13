@@ -1049,6 +1049,7 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: getCurrentSubscription =====
   async getCurrentSubscription(token: string): Promise<{
     subscription_tier: string;
     user_type: string;
@@ -1067,6 +1068,7 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: getDashboardStats =====
   // Admin methods (for the admin dashboard)
   async getDashboardStats(token: string) {
     try {
@@ -1087,6 +1089,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAdminUsers =====
   async getAdminUsers(token: string, search?: string, filter?: string) {
     try {
       const params = new URLSearchParams();
