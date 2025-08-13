@@ -281,7 +281,7 @@ class ApiClient {
       console.error('Failed to create comprehensive review:', error);
       throw error;
     }
-  }
+  },
 
   async getReviewsByFreightForwarder(freightForwarderId: string): Promise<ReviewResponse[]> {
     try {
