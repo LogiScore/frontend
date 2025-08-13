@@ -437,12 +437,12 @@ class ApiClient {
         ]
       },
       {
-        id: 'service_quality',
-        name: 'Service Quality & Reliability',
+        id: 'documentation',
+        name: 'Documentation',
         questions: [
           {
-            id: 'on_time_pickup',
-            text: 'Pickup occurs within agreed time window',
+            id: 'draft_bl_hawb',
+            text: 'Issues draft B/L or HAWB within 24 hours of cargo departure',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
