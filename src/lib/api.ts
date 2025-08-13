@@ -917,8 +917,9 @@ class ApiClient {
       }
       throw new Error('Signin failed. Please try again later or sign up for a new account.');
     }
-  },
+  }
 
+  // ===== METHOD: adminSignin =====
   // Admin authentication method - uses username and password
   async adminSignin(username: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
@@ -960,6 +961,7 @@ class ApiClient {
     }
   },
 
+  // ===== METHOD: changePassword =====
   async changePassword(currentPassword: string, newPassword: string, token: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/change-password', {
       method: 'POST',
@@ -968,8 +970,9 @@ class ApiClient {
       },
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
-  },
+  }
 
+  // ===== METHOD: forgotPassword =====
   async forgotPassword(email: string): Promise<{ message: string; reset_token?: string; expires_in?: string }> {
     return this.request<{ message: string; reset_token?: string; expires_in?: string }>('/api/users/forgot-password', {
       method: 'POST',
