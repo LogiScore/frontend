@@ -1,6 +1,8 @@
 <script lang="ts">
   import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -11,7 +13,42 @@
 
   // Subscribe to auth store
   auth.subscribe(state => {
+    console.log('Admin page: Auth state changed:', state);
     authState = state;
+    
+    // Check if user is authenticated and has admin access
+    if (state.user && state.token) {
+      console.log('Admin page: User authenticated:', state.user);
+      // Check if user has admin privileges (you can customize this logic)
+      if (state.user.user_type === 'admin' || state.user.username === 'admin') {
+        console.log('Admin page: User has admin access');
+      } else {
+        console.log('Admin page: User does not have admin access, redirecting to homepage');
+        goto('/');
+      }
+    } else if (!state.token) {
+      console.log('Admin page: No token, redirecting to homepage');
+      goto('/');
+    }
+  });
+
+  onMount(() => {
+    console.log('Admin page mounted');
+    console.log('Current auth state:', authState);
+    
+    // If no authentication, redirect to homepage
+    if (!authState.token) {
+      console.log('Admin page: No authentication on mount, redirecting');
+      goto('/');
+      return;
+    }
+    
+    // Try to recover session if needed
+    if (authState.user && authState.user.username === 'Demo User') {
+      console.log('Admin page: Detected demo user, attempting to recover session');
+      const result = authMethods.recoverSession();
+      console.log('Session recovery result:', result);
+    }
   });
 
   // Admin state
@@ -277,6 +314,17 @@
           <span class="admin-badge">Administrator</span>
           <span class="user-email">{authState.user?.email || 'Loading...'}</span>
         </div>
+        <!-- Authentication Status Indicator -->
+        <div class="auth-status">
+          <span class="status-label">Status:</span>
+          {#if authState.token && authState.user}
+            <span class="status-value authenticated">✅ Authenticated as {authState.user.username}</span>
+          {:else if authState.token && !authState.user}
+            <span class="status-value loading">⏳ Loading user data...</span>
+          {:else}
+            <span class="status-value unauthenticated">❌ Not authenticated</span>
+          {/if}
+        </div>
       </div>
     </div>
   </div>
@@ -286,6 +334,12 @@
     <div class="admin-indicator">
       <span class="indicator-dot"></span>
       <span class="indicator-text">Administrative Interface</span>
+    </div>
+
+    <!-- Navigation Warning -->
+    <div class="navigation-warning">
+      <span class="warning-icon">⚠️</span>
+      <span class="warning-text">You are in the Admin Dashboard. Use the navigation tabs above to switch between sections.</span>
     </div>
 
     <!-- Tab Navigation -->
@@ -728,6 +782,36 @@
     font-weight: 500;
   }
 
+  .auth-status {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+  }
+
+  .status-label {
+    color: #e0e0e0;
+    margin-right: 10px;
+  }
+
+  .status-value {
+    font-weight: 600;
+  }
+
+  .status-value.authenticated {
+    color: #4ade80;
+  }
+
+  .status-value.loading {
+    color: #fbbf24;
+  }
+
+  .status-value.unauthenticated {
+    color: #f87171;
+  }
+
   /* Tab Navigation */
   .tab-navigation {
     display: flex;
@@ -789,6 +873,27 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .navigation-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    color: #92400e;
+  }
+
+  .warning-icon {
+    font-size: 1.2rem;
+  }
+
+  .warning-text {
+    font-weight: 500;
+    font-size: 0.9rem;
   }
 
   @keyframes pulse {
