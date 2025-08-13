@@ -452,19 +452,8 @@ class ApiClient {
             }
           },
           {
-            id: 'on_time_delivery',
-            text: 'Delivery occurs within agreed time window',
-            ratingDefinitions: {
-              '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
-            }
-          },
-          {
-            id: 'cargo_condition',
-            text: 'Cargo arrives in same condition as when shipped',
+            id: 'final_invoices',
+            text: 'Sends final invoices within 48 hours of shipment completion',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -475,7 +464,7 @@ class ApiClient {
           },
           {
             id: 'documentation_accuracy',
-            text: 'All shipping documents are accurate and complete',
+            text: 'Ensures documentation is accurate and complete on first submission',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -485,8 +474,8 @@ class ApiClient {
             }
           },
           {
-            id: 'customs_clearance',
-            text: 'Efficiently handles customs clearance and documentation',
+            id: 'invoice_matches_quotation',
+            text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct)',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
