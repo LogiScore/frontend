@@ -68,14 +68,17 @@
   }
   
   function openSubscriptionModal() {
+    console.log('Opening subscription modal');
     showSubscriptionModal = true;
   }
   
   function openProfileModal() {
+    console.log('Opening profile modal');
     showProfileModal = true;
   }
   
   function openChangePasswordModal() {
+    console.log('Opening change password modal');
     showChangePasswordModal = true;
   }
   
@@ -127,7 +130,11 @@
       <div class="nav-actions">
         {#if authState.user}
           <div class="user-dropdown" class:open={showUserDropdown}>
-            <button class="user-dropdown-toggle" on:click={() => showUserDropdown = !showUserDropdown}>
+            <button class="user-dropdown-toggle" on:click={() => {
+              console.log('Dropdown toggle clicked, current state:', showUserDropdown);
+              showUserDropdown = !showUserDropdown;
+              console.log('New dropdown state:', showUserDropdown);
+            }}>
               <span class="username">{authState.user.username}</span>
               <span class="status-badge" class:premium={authState.user.subscription_tier !== 'free'}>
                 {authState.user.subscription_tier === 'free' ? 'Free' : authState.user.subscription_tier}
@@ -174,14 +181,6 @@
                   Change Password
                 </button>
                 <div class="dropdown-divider"></div>
-                <a href="/8x7k9m2p" class="dropdown-item">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 3h18v18H3z"/>
-                    <path d="M9 9h6v6H9z"/>
-                  </svg>
-                  Admin Dashboard
-                </a>
-                <div class="dropdown-divider"></div>
                 <button class="dropdown-item logout" on:click={handleLogout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -209,7 +208,7 @@
 {#if showAuthModal}
   <AuthModal 
     isOpen={showAuthModal}
-    defaultMode={authModalMode} 
+    mode={authModalMode} 
     on:close={closeAuthModal}
   />
 {/if}
