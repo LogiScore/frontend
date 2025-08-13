@@ -574,47 +574,36 @@ class ApiClient {
             }
           },
           {
-            id: 'digital_documentation',
-            text: 'Offers digital documentation and e-signature capabilities',
+            id: 'online_document_portal',
+            text: 'Has an online document portal to access shipment documents and invoices',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'No system available',
+              '2': 'Available however only made available to large customers',
+              '3': 'Available via web, however documents are not current or complete',
+              '4': 'Available via web or mobile app, on demand or scheduled'
             }
           },
           {
-            id: 'mobile_accessibility',
-            text: 'Services are accessible through mobile devices and apps',
+            id: 'customer_system_integration',
+            text: 'Integrates with customer systems (e.g., EDI/API) where required',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'No integration available',
+              '2': 'Available however only made available to large customers',
+              '3': 'Available however does not have much experience with such projects',
+              '4': 'Available and able to implement effortlessly'
             }
           },
           {
-            id: 'api_integration',
-            text: 'Provides API access for system integration',
+            id: 'regular_reporting',
+            text: 'Able to provides regular reporting (e.g., weekly shipment report, KPI report)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
-            }
-          },
-          {
-            id: 'data_analytics',
-            text: 'Offers data analytics and reporting capabilities',
-            ratingDefinitions: {
-              '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Not available',
+              '2': 'Reporting is manual',
+              '3': 'Available however only made available to large customers',
+              '4': 'Available and setup either by provider or via a web portal.'
             }
           }
         ]
