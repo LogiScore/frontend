@@ -1246,6 +1246,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: rejectReview =====
   async rejectReview(token: string, reviewId: string) {
     try {
       return await this.request(`/admin/reviews/${reviewId}/reject`, {
@@ -1258,6 +1259,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: resolveDispute =====
   async resolveDispute(token: string, disputeId: string) {
     try {
       return await this.request(`/admin/disputes/${disputeId}/resolve`, {
@@ -1271,6 +1273,7 @@ class ApiClient {
   }
 
   // Payment processing (for PaymentModal)
+  // ===== METHOD: processPayment =====
   async processPayment(paymentData: any) {
     // Simulate payment processing for demo
     return new Promise((resolve) => {
