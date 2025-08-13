@@ -760,7 +760,7 @@ class ApiClient {
     }
   }
 
-  // Request verification code
+  // ===== METHOD: requestVerificationCode =====
   async requestVerificationCode(email: string): Promise<{ message: string }> {
     try {
       return await this.request<{ message: string }>('/api/users/request-code', {
@@ -789,9 +789,9 @@ class ApiClient {
       console.log('Using fallback verification code system due to unknown error');
       return { message: 'Verification code sent to your email (demo mode)' };
     }
-  }
+  },
 
-  // Complete signup with verification code
+  // ===== METHOD: completeSignup =====
   async completeSignup(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
       return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/complete-signup', {
@@ -806,9 +806,9 @@ class ApiClient {
       }
       throw new Error('Signup completion failed. Please try again later.');
     }
-  }
+  },
 
-  // Sign in with verification code
+  // ===== METHOD: signinWithCode =====
   async signinWithCode(email: string, code: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
       return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/signin-with-code', {
@@ -877,6 +877,7 @@ class ApiClient {
         };
       }
     }
+  },
 
   // Legacy signin method (for demo account)
   async signin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
@@ -917,7 +918,7 @@ class ApiClient {
       }
       throw new Error('Signin failed. Please try again later or sign up for a new account.');
     }
-  }
+  },
 
   // ===== METHOD: adminSignin =====
   // Admin authentication method - uses username and password
@@ -970,7 +971,7 @@ class ApiClient {
       },
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
-  }
+  },
 
   // ===== METHOD: forgotPassword =====
   async forgotPassword(email: string): Promise<{ message: string; reset_token?: string; expires_in?: string }> {
@@ -978,7 +979,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
-  }
+  },
 
   // ===== METHOD: resetPassword =====
   async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
@@ -986,13 +987,13 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ email, reset_token: resetToken, new_password: newPassword }),
     });
-  }
+  },
 
   // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
     return this.request<{ auth_url: string }>('/api/users/github/auth');
-  }
+  },
 
   // ===== METHOD: handleGitHubCallback =====
   async handleGitHubCallback(code: string): Promise<{ access_token: string; user: User }> {
@@ -1000,7 +1001,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ code }),
     });
-  }
+  },
 
   // ===== METHOD: getCurrentUser =====
   // User management
@@ -1017,7 +1018,7 @@ class ApiClient {
       // This prevents real users from being replaced with demo data
       throw error;
     }
-  }
+  },
 
   // ===== METHOD: createSubscription =====
   // Subscriptions
@@ -1038,7 +1039,7 @@ class ApiClient {
         user_type: userType
       }),
     });
-  }
+  },
 
   // ===== METHOD: getSubscriptionPlans =====
   async getSubscriptionPlans(token: string): Promise<{ plans: any[] }> {
@@ -1047,7 +1048,7 @@ class ApiClient {
         'Authorization': `Bearer ${token}`,
       },
     });
-  }
+  },
 
   // ===== METHOD: getCurrentSubscription =====
   async getCurrentSubscription(token: string): Promise<{
@@ -1066,7 +1067,7 @@ class ApiClient {
         'Authorization': `Bearer ${token}`,
       },
     });
-  }
+  },
 
   // ===== METHOD: getDashboardStats =====
   // Admin methods (for the admin dashboard)
@@ -1087,7 +1088,7 @@ class ApiClient {
         total_revenue: 15420
       };
     }
-  }
+  },
 
   // ===== METHOD: getAdminUsers =====
   async getAdminUsers(token: string, search?: string, filter?: string) {
@@ -1123,7 +1124,7 @@ class ApiClient {
         }
       ];
     }
-  }
+  },
 
   // ===== METHOD: getAdminReviews =====
   async getAdminReviews(token: string, status?: string) {
@@ -1148,7 +1149,7 @@ class ApiClient {
         }
       ];
     }
-  }
+  },
 
   // ===== METHOD: getAdminDisputes =====
   async getAdminDisputes(token: string, status?: string) {
@@ -1172,7 +1173,7 @@ class ApiClient {
         }
       ];
     }
-  }
+  },
 
   // ===== METHOD: getAdminCompanies =====
   async getAdminCompanies(token: string, search?: string) {
@@ -1197,7 +1198,7 @@ class ApiClient {
         }
       ];
     }
-  }
+  },
 
   // ===== METHOD: createCompany =====
   async createCompany(token: string, companyData: any) {
@@ -1214,7 +1215,7 @@ class ApiClient {
       console.error('Failed to create company:', error);
       throw new Error('Failed to create company');
     }
-  }
+  },
 
   // ===== METHOD: updateUserSubscription =====
   async updateUserSubscription(token: string, userId: string, subscriptionData: any) {
@@ -1231,7 +1232,7 @@ class ApiClient {
       console.error('Failed to update subscription:', error);
       throw new Error('Failed to update subscription');
     }
-  }
+  },
 
   // ===== METHOD: approveReview =====
   async approveReview(token: string, reviewId: string) {
@@ -1244,7 +1245,7 @@ class ApiClient {
       console.error('Failed to approve review:', error);
       throw new Error('Failed to approve review');
     }
-  }
+  },
 
   // ===== METHOD: rejectReview =====
   async rejectReview(token: string, reviewId: string) {
@@ -1257,7 +1258,7 @@ class ApiClient {
       console.error('Failed to reject review:', error);
       throw new Error('Failed to reject review');
     }
-  }
+  },
 
   // ===== METHOD: resolveDispute =====
   async resolveDispute(token: string, disputeId: string) {
@@ -1270,7 +1271,7 @@ class ApiClient {
       console.error('Failed to resolve dispute:', error);
       throw new Error('Failed to resolve dispute');
     }
-  }
+  },
 
   // Payment processing (for PaymentModal)
   // ===== METHOD: processPayment =====
