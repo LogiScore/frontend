@@ -268,31 +268,45 @@
 
 <!-- Admin Dashboard -->
 <section class="admin-dashboard">
+  <div class="admin-banner">
+    <div class="container">
+      <div class="admin-header">
+        <h1>🔐 Admin Dashboard</h1>
+        <p>Manage reviews, disputes, users, and company data</p>
+        <div class="admin-user-info">
+          <span class="admin-badge">Administrator</span>
+          <span class="user-email">{authState.user?.email || 'Loading...'}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
-    <div class="admin-header">
-      <h1>Admin Dashboard</h1>
-      <p>Manage reviews, disputes, users, and company data</p>
+    <!-- Admin Indicator -->
+    <div class="admin-indicator">
+      <span class="indicator-dot"></span>
+      <span class="indicator-text">Administrative Interface</span>
     </div>
 
     <!-- Tab Navigation -->
     <div class="tab-navigation">
       <button class="tab-button {activeTab === 'dashboard' ? 'active' : ''}" on:click={() => activeTab = 'dashboard'}>
-        Dashboard
+        📊 Dashboard
       </button>
       <button class="tab-button {activeTab === 'reviews' ? 'active' : ''}" on:click={() => activeTab = 'reviews'}>
-        Review Management
+        📝 Review Management
       </button>
       <button class="tab-button {activeTab === 'disputes' ? 'active' : ''}" on:click={() => activeTab = 'disputes'}>
-        Disputes
+        ⚖️ Disputes
       </button>
       <button class="tab-button {activeTab === 'companies' ? 'active' : ''}" on:click={() => activeTab = 'companies'}>
-        Company Management
+        🏢 Company Management
       </button>
       <button class="tab-button {activeTab === 'users' ? 'active' : ''}" on:click={() => activeTab = 'users'}>
-        User Management
+        👥 User Management
       </button>
       <button class="tab-button {activeTab === 'analytics' ? 'active' : ''}" on:click={() => activeTab = 'analytics'}>
-        Analytics
+        📈 Analytics
       </button>
     </div>
 
@@ -661,25 +675,57 @@
 
   /* Admin Dashboard */
   .admin-dashboard {
-    padding: 40px 0;
+    padding: 0;
     background: #f8f9fa;
     min-height: calc(100vh - 200px);
   }
 
-  .admin-header {
+  .admin-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 80px 0;
     text-align: center;
     margin-bottom: 40px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .admin-header {
+    text-align: center;
+    margin-bottom: 0;
   }
 
   .admin-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    color: #333;
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
   }
 
   .admin-header p {
-    color: #666;
-    font-size: 1.1rem;
+    color: #e0e0e0;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+  }
+
+  .admin-user-info {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+  }
+
+  .admin-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    color: white;
+    margin-right: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .user-email {
+    font-weight: 500;
   }
 
   /* Tab Navigation */
@@ -688,26 +734,73 @@
     gap: 10px;
     margin-bottom: 30px;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
   .tab-button {
-    padding: 12px 24px;
+    padding: 15px 25px;
     border: none;
     background: white;
     color: #666;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.95rem;
   }
 
   .tab-button:hover {
     background: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .tab-button.active {
     background: #667eea;
     color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Admin Indicator */
+  .admin-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+  }
+
+  .indicator-dot {
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .indicator-text {
+    font-size: 0.85rem;
+    color: #667eea;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 
   /* Dashboard Stats */
@@ -724,6 +817,13 @@
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     text-align: center;
+    border-left: 4px solid #667eea;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
 
   .stat-card h3 {
