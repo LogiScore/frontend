@@ -130,8 +130,6 @@
       newForwarder = {
         name: '',
         website: '',
-        contact_email: '',
-        contact_phone: '',
         description: ''
       };
       showNewForwarderForm = false;
@@ -342,25 +340,6 @@
                     />
                   </div>
                 </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="newEmail">Contact Email</label>
-                    <input 
-                      id="newEmail" 
-                      type="email" 
-                      bind:value={newForwarder.contact_email} 
-                      placeholder="contact@company.com"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="newPhone">Contact Phone</label>
-                    <input 
-                      id="newPhone" 
-                      type="tel" 
-                      bind:value={newForwarder.contact_phone} 
-                      placeholder="+1-234-567-8900"
-                    />
-                  </div>
                 </div>
                 <div class="form-group">
                   <label for="newDescription">Description</label>
@@ -380,7 +359,6 @@
                     Create Company
                   </button>
                 </div>
-              </div>
             {/if}
 
             <div class="form-group">
