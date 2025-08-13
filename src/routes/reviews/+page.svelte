@@ -262,7 +262,10 @@
   }
   
   function selectLocation(location: any) {
-    selectedBranch = location.Location;
+    console.log('Selected location:', location);
+    console.log('Location ID:', location.id);
+    console.log('Location name:', location.name);
+    selectedBranch = location.id; // Use the UUID instead of the location name
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
@@ -583,8 +586,8 @@
                       on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
                       tabindex="0"
                     >
-                      <strong>{suggestion.Location}</strong>
-                      <span class="suggestion-details">{suggestion.City}, {suggestion.State}, {suggestion.Country}</span>
+                      <strong>{suggestion.name}</strong>
+                      <span class="suggestion-details">{suggestion.region}, {suggestion.country}</span>
                     </div>
                   {/each}
                 </div>
