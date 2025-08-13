@@ -968,21 +968,21 @@ class ApiClient {
       },
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
-  }
+  },
 
   async forgotPassword(email: string): Promise<{ message: string; reset_token?: string; expires_in?: string }> {
     return this.request<{ message: string; reset_token?: string; expires_in?: string }>('/api/users/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
-  }
+  },
 
   async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email, reset_token: resetToken, new_password: newPassword }),
     });
-  }
+  },
 
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
@@ -994,7 +994,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ code }),
     });
-  }
+  },
 
   // User management
   async getCurrentUser(token: string): Promise<User> {
@@ -1010,7 +1010,7 @@ class ApiClient {
       // This prevents real users from being replaced with demo data
       throw error;
     }
-  }
+  },
 
   // Subscriptions
   async createSubscription(
