@@ -391,8 +391,8 @@ class ApiClient {
             }
           },
           {
-            id: 'price_stability',
-            text: 'Final invoice matches quoted price (within reasonable variance)',
+            id: 'pre_alerts',
+            text: 'Sends pre-alerts before vessel ETA',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -402,8 +402,8 @@ class ApiClient {
             }
           },
           {
-            id: 'additional_costs',
-            text: 'Clearly explains any additional costs before they are incurred',
+            id: 'pod_delivery',
+            text: 'Provides POD (proof of delivery) within 24 hours of delivery',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -413,8 +413,8 @@ class ApiClient {
             }
           },
           {
-            id: 'payment_terms',
-            text: 'Payment terms are clearly communicated and reasonable',
+            id: 'proactive_delays',
+            text: 'Proactively notifies delays or disruptions',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -424,8 +424,8 @@ class ApiClient {
             }
           },
           {
-            id: 'currency_handling',
-            text: 'Handles currency conversions transparently with fair rates',
+            id: 'recovery_plans',
+            text: 'Offers recovery plans in case of delays or missed transshipments',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
