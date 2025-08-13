@@ -958,7 +958,7 @@ class ApiClient {
       }
       throw new Error('Admin authentication failed. Please try again later.');
     }
-  }
+  },
 
   async changePassword(currentPassword: string, newPassword: string, token: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/change-password', {
