@@ -228,7 +228,7 @@ Rating definitions:
 '4': 'Available and able to implement effortlessly'
 
 **Question**: 
-* Able to provides regular reporting (e.g., weekly shipment report, KPI report)
+* Able to provide regular reporting (e.g., weekly shipment report, KPI report)
 Rating definitions:
 '0': 'Not applicable',
 '1': 'Not available',

@@ -926,34 +926,39 @@ class ApiClient {
     }
   }
 
-  // ===== METHOD: requestVerificationCode =====
-  async requestVerificationCode(email: string): Promise<{ message: string }> {
+  // ===== METHOD: sendVerificationCode =====
+  // Step 1: Send verification code to user's email
+  async sendVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
-      return await this.request<{ message: string }>('/api/users/request-code', {
+      return await this.request<{ message: string; expires_in: number }>('/api/auth/send-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
     } catch (error: any) {
-      console.error('Failed to request verification code:', error);
-      console.error('Error message:', error.message);
-      console.error('Error type:', typeof error);
-      
-      // Check if it's a CORS or network error
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
-        // Provide fallback verification code system for demo purposes
-        console.log('Using fallback verification code system');
-        return { message: 'Verification code sent to your email (demo mode)' };
-      }
-      
-      // If the endpoint doesn't exist (404), provide fallback
-      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
-        console.log('Backend verification code endpoint not implemented, using fallback');
-        return { message: 'Verification code sent to your email (demo mode)' };
-      }
-      
-      // If it's any other error, still provide fallback for demo purposes
-      console.log('Using fallback verification code system due to unknown error');
-      return { message: 'Verification code sent to your email (demo mode)' };
+      console.error('Failed to send verification code:', error);
+      throw error;
+    }
+  }
+
+  // ===== METHOD: verifyCode =====
+  // Step 2: Verify code and get JWT token
+  async verifyCode(email: string, code: string): Promise<{ 
+    access_token: string; 
+    token_type: string; 
+    user: User 
+  }> {
+    try {
+      return await this.request<{ 
+        access_token: string; 
+        token_type: string; 
+        user: User 
+      }>('/api/auth/verify-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      });
+    } catch (error: any) {
+      console.error('Failed to verify code:', error);
+      throw error;
     }
   }
 
@@ -1044,87 +1049,16 @@ class ApiClient {
       }
     }
 
-  // Legacy signin method (for demo account)
+  // ===== METHOD: signin =====
+  // Legacy signin method - now redirects to email verification
   async signin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
-    try {
-      return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/signin', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-    } catch (error: any) {
-      console.error('Signin failed:', error);
-      
-      // Check if it's a CORS or network error
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
-        // Provide fallback authentication for demo purposes
-        if (email === 'demo@example.com' && password === 'demo123') {
-          console.log('Using fallback demo authentication');
-          return {
-            user: {
-              id: 'demo-user',
-              username: 'Demo User',
-              full_name: 'Demo User',
-              email: 'demo@example.com',
-              user_type: 'shipper',
-              subscription_tier: 'free',
-              is_verified: true,
-              is_active: true
-            },
-            access_token: 'demo-token',
-            token_type: 'bearer'
-          };
-        }
-        throw new Error('Network error: Unable to connect to the server. Please check your internet connection or try the demo account (demo@example.com / demo123).');
-      }
-      
-      // Check if it's an authentication error
-      if (error.message?.includes('401') || error.message?.includes('Invalid email or password')) {
-        throw new Error('Invalid email or password. Please check your credentials and try again. You can also try signing up with a new account.');
-      }
-      throw new Error('Signin failed. Please try again later or sign up for a new account.');
-    }
+    throw new Error('Please use email verification instead. Enter your email to receive a verification code.');
   }
 
   // ===== METHOD: adminSignin =====
-  // Admin authentication method - uses username and password
+  // Admin authentication method - now redirects to email verification
   async adminSignin(username: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
-    try {
-      return await this.request<{ user: User; access_token: string; token_type: string }>('/api/admin/signin', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      });
-    } catch (error: any) {
-      console.error('Admin signin failed:', error);
-      
-      // Check if it's a CORS or network error
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
-        // Provide fallback admin authentication for demo purposes
-        if (username === 'admin' && password === 'admin123') {
-          console.log('Using fallback admin authentication');
-          return {
-            user: {
-              id: 'admin-user',
-              username: 'admin',
-              full_name: 'Administrator',
-              email: 'admin@logiscore.com',
-              user_type: 'admin',
-              subscription_tier: 'enterprise',
-              is_verified: true,
-              is_active: true
-            },
-            access_token: 'admin-token',
-            token_type: 'bearer'
-          };
-        }
-        throw new Error('Network error: Unable to connect to the server. Please check your internet connection or try the admin account (admin / admin123).');
-      }
-      
-      // Check if it's an authentication error
-      if (error.message?.includes('401') || error.message?.includes('Invalid username or password')) {
-        throw new Error('Invalid username or password. Please check your admin credentials and try again.');
-      }
-      throw new Error('Admin authentication failed. Please try again later.');
-    }
+    throw new Error('Please use email verification instead. Enter your email to receive a verification code.');
   }
 
   // ===== METHOD: changePassword =====

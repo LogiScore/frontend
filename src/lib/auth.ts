@@ -444,6 +444,73 @@ export const authMethods = {
       console.log('No stored session found');
       return { success: false, message: 'No stored session to recover' };
     }
+  },
+
+  // ===== METHOD: signinWithCode =====
+  // Sign in using email verification code
+  async signinWithCode(email: string, code: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('Signing in with verification code...');
+      
+      const response = await apiClient.verifyCode(email, code);
+      
+      if (response.user && response.access_token) {
+        // Save the real JWT token and user data
+        saveToken(response.access_token);
+        saveUser(response.user);
+        
+        // Update the auth store
+        auth.update(state => ({
+          ...state,
+          user: response.user,
+          token: response.access_token,
+          error: null,
+          isLoading: false
+        }));
+        
+        console.log('Sign in successful with real JWT token');
+        return { success: true };
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error: any) {
+      console.error('Sign in with code failed:', error);
+      
+      // Update the auth store with error
+      auth.update(state => ({
+        ...state,
+        error: error.message || 'Failed to sign in with verification code',
+        isLoading: false
+      }));
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to sign in with verification code' 
+      };
+    }
+  },
+
+  // ===== METHOD: requestCode =====
+  // Request verification code to be sent to email
+  async requestCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
+    try {
+      console.log('Requesting verification code...');
+      
+      const response = await apiClient.sendVerificationCode(email);
+      
+      console.log('Verification code sent successfully');
+      return { 
+        success: true, 
+        expires_in: response.expires_in 
+      };
+    } catch (error: any) {
+      console.error('Failed to request verification code:', error);
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to send verification code' 
+      };
+    }
   }
 };
 

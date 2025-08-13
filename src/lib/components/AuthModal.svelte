@@ -45,10 +45,14 @@
     errorMessage = '';
 
     try {
-      const result = await apiClient.requestVerificationCode(email);
-      successMessage = result.message;
-      codeRequested = true;
-      codeSent = true;
+      const result = await authMethods.requestCode(email);
+      if (result.success) {
+        successMessage = `Verification code sent! Check your email. Code expires in ${result.expires_in} minutes.`;
+        codeRequested = true;
+        codeSent = true;
+      } else {
+        errorMessage = result.error || 'Failed to send verification code';
+      }
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
     } finally {
@@ -72,24 +76,11 @@
           return;
         }
 
-        const result = await apiClient.signinWithCode(email, verificationCode);
-        if (result.user && result.access_token) {
-          // Use authMethods to properly handle authentication
-          auth.update(state => ({
-            ...state,
-            user: result.user,
-            token: result.access_token,
-            isLoading: false,
-            error: null
-          }));
-          // Save token and user to localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('logiscore_token', result.access_token);
-            localStorage.setItem('logiscore_user', JSON.stringify(result.user));
-          }
+        const result = await authMethods.signinWithCode(email, verificationCode);
+        if (result.success) {
           closeModal();
         } else {
-          errorMessage = 'Invalid verification code';
+          errorMessage = result.error || 'Invalid verification code';
         }
       } else {
         // For signup, we'll use the same email + code system
