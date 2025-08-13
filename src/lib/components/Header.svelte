@@ -6,6 +6,9 @@
   import ProfileModal from '$lib/components/ProfileModal.svelte';
   import ChangePasswordModal from '$lib/components/ChangePasswordModal.svelte';
   
+  // Props
+  export let hideSignUp = false;
+  
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
     token: null,
@@ -189,7 +192,10 @@
           </div>
         {:else}
           <button class="btn-secondary" on:click={openSignInModal}>Sign In</button>
-          <button class="btn-primary" on:click={openSignUpModal}>Sign Up</button>
+          <!-- Hide Sign Up button on admin pages for security -->
+          {#if !hideSignUp}
+            <button class="btn-primary" on:click={openSignUpModal}>Sign Up</button>
+          {/if}
         {/if}
       </div>
     </nav>

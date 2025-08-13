@@ -3,12 +3,16 @@
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import InactivityPrompt from '$lib/components/InactivityPrompt.svelte';
+	import { page } from '$app/stores';
 	
 	// Force cache buster to be included in build
 	console.log('Layout loaded with cache buster:', CACHE_BUSTER_CONFIG);
+	
+	// Check if we're on an admin page
+	$: isAdminPage = $page.url.pathname.includes('8x7k9m2p');
 </script>
 
-<Header />
+<Header hideSignUp={isAdminPage} />
 
 <slot />
 
