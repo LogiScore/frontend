@@ -559,18 +559,18 @@ class ApiClient {
         ]
       },
       {
-        id: 'technology_expertise',
-        name: 'Technology & Innovation',
+        id: 'technology_process',
+        name: 'Technology Process',
         questions: [
           {
-            id: 'tracking_system',
-            text: 'Provides real-time tracking and visibility of shipments',
+            id: 'track_and_trace',
+            text: 'Offers track-and-trace',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Unable to provide track and trace',
+              '2': 'Manual track and trace via phone or email request',
+              '3': 'Provided via web, however data is not dynamic nor current',
+              '4': 'Provided via web or mobile app, data is dynamic and current, able to schedule reports and triggered by milestones'
             }
           },
           {
