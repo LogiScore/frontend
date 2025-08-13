@@ -48,9 +48,7 @@ export interface ReviewCategory {
 export interface FreightForwarderCreate {
   name: string;
   website?: string;
-  logo_url?: string;
   description?: string;
-  headquarters_country?: string;
 }
 
 export interface Location {
@@ -204,6 +202,17 @@ class ApiClient {
       if (!token) {
         throw new Error('Authentication token is required');
       }
+      
+      // Debug: Log request details
+      console.log('API Request Details:', {
+        url: '/api/freight-forwarders/',
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Content-Type': 'application/json'
+        },
+        body: forwarderData
+      });
       
       return await this.request<FreightForwarder>('/api/freight-forwarders/', {
         method: 'POST',

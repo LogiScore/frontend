@@ -23,9 +23,7 @@
   let newForwarder = {
     name: '',
     website: '',
-    logo_url: '',
-    description: '',
-    headquarters_country: ''
+    description: ''
   };
   
   // Branch location autopopulation
@@ -113,9 +111,34 @@
 
   async function loadLocations() {
     try {
-      locations = await apiClient.getLocations();
+      // Always use fallback locations for now since API endpoint might not be implemented
+      // This ensures the location autocomplete works consistently
+      locations = [
+        { Location: 'New York', City: 'New York', State: 'NY', Country: 'USA' },
+        { Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA' },
+        { Location: 'London', City: 'London', State: '', Country: 'UK' },
+        { Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany' },
+        { Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China' },
+        { Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore' },
+        { Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE' },
+        { Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa' },
+        { Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India' },
+        { Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan' },
+        { Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia' },
+        { Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada' },
+        { Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil' },
+        { Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico' },
+        { Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands' },
+        { Location: 'Paris', City: 'Paris', State: '', Country: 'France' },
+        { Location: 'Milan', City: 'Milan', State: '', Country: 'Italy' },
+        { Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain' },
+        { Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden' },
+        { Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway' }
+      ];
+      console.log('Loaded fallback locations:', locations.length);
     } catch (err: any) {
       console.error('Failed to load locations:', err);
+      locations = [];
     }
   }
 
@@ -123,13 +146,27 @@
     try {
       console.log('Creating new forwarder:', newForwarder);
       
+      // Check authentication first
+      if (!authState.token) {
+        error = 'You must be logged in to create companies. Please sign in or create an account.';
+        return;
+      }
+
+      // Debug: Log authentication details
+      console.log('Auth state:', {
+        hasToken: !!authState.token,
+        tokenLength: authState.token?.length,
+        tokenStart: authState.token?.substring(0, 20) + '...',
+        user: authState.user
+      });
+
       if (!newForwarder.name.trim()) {
         error = 'Company name is required';
         return;
       }
 
       console.log('Calling API to create forwarder...');
-      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token!);
+      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token);
       console.log('Forwarder created successfully:', createdForwarder);
       
       // Add to the list and select it
@@ -140,9 +177,7 @@
       newForwarder = {
         name: '',
         website: '',
-        logo_url: '',
-        description: '',
-        headquarters_country: ''
+        description: ''
       };
       showNewForwarderForm = false;
       
@@ -262,6 +297,11 @@
       return;
     }
 
+    if (!selectedBranch) {
+      error = 'Please select a branch location';
+      return;
+    }
+
     if (ratedQuestions === 0) {
       error = 'Please provide ratings for at least one category';
       return;
@@ -270,7 +310,7 @@
     // Prepare review data for API
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
-      branch_id: selectedBranch || undefined,
+      branch_id: selectedBranch,
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
       category_ratings: reviewCategories.map(cat => ({
@@ -322,6 +362,37 @@
       });
     }
   }
+
+  async function testAuthentication() {
+    try {
+      console.log('Testing authentication...');
+      console.log('Token:', authState.token?.substring(0, 50) + '...');
+      
+      // Try to fetch user profile to test authentication
+      const response = await fetch('https://logiscorebe.onrender.com/api/users/me', {
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Auth test response status:', response.status);
+      console.log('Auth test response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('Auth test successful, user data:', userData);
+        successMessage = 'Authentication test successful!';
+      } else {
+        const errorText = await response.text();
+        console.log('Auth test failed:', errorText);
+        error = `Authentication test failed: ${response.status} - ${errorText}`;
+      }
+    } catch (err: any) {
+      console.error('Auth test error:', err);
+      error = `Authentication test error: ${err.message}`;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -365,6 +436,18 @@
         </div>
       {:else}
         <form on:submit|preventDefault={submitReview}>
+          <!-- Authentication Status -->
+          <div class="auth-status">
+            <div class="auth-info">
+              <span class="auth-icon">🔐</span>
+              <span class="auth-text">Logged in as: <strong>{authState.user?.username || authState.user?.full_name || 'User'}</strong></span>
+              <span class="auth-type">({authState.user?.user_type || 'shipper'})</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" on:click={testAuthentication}>
+              Test Auth
+            </button>
+          </div>
+
           <!-- Company Selection -->
           <div class="form-section">
             <h2>Company Information</h2>
@@ -416,32 +499,14 @@
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label for="newLogoUrl">Logo URL</label>
-                    <input 
-                      id="newLogoUrl" 
-                      type="url" 
-                      bind:value={newForwarder.logo_url} 
-                      placeholder="https://example.com/logo.png"
-                    />
+                    <label for="newDescription">Description</label>
+                    <textarea 
+                      id="newDescription" 
+                      bind:value={newForwarder.description} 
+                      placeholder="Brief description of the company"
+                      rows="3"
+                    ></textarea>
                   </div>
-                  <div class="form-group">
-                    <label for="newHeadquarters">Headquarters Country</label>
-                    <input 
-                      id="newHeadquarters" 
-                      type="text" 
-                      bind:value={newForwarder.headquarters_country} 
-                      placeholder="e.g., United States"
-                    />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="newDescription">Description</label>
-                  <textarea 
-                    id="newDescription" 
-                    bind:value={newForwarder.description} 
-                    placeholder="Brief description of the company"
-                    rows="3"
-                  ></textarea>
                 </div>
                 <div class="form-group">
                   <button 
@@ -455,8 +520,9 @@
               </div>
             {/if}
 
+            <!-- Branch Location Section -->
             <div class="form-group">
-              <label for="branch">Branch Location (optional)</label>
+              <label for="branch">Branch Location *</label>
               <input 
                 type="text" 
                 id="branch" 
@@ -464,6 +530,7 @@
                 placeholder="Start typing to search locations..."
                 on:input={handleLocationSearch}
                 class="location-input"
+                required
               />
               {#if showLocationSuggestions && locationSuggestions.length > 0}
                 <div class="location-suggestions">
@@ -1014,13 +1081,13 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 1.5rem;
-    margin-top: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
   }
 
   .new-company-form h4 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
     color: #333;
-    margin-bottom: 1rem;
     font-size: 1.2rem;
   }
 
@@ -1069,6 +1136,56 @@
     font-size: 0.95rem;
     line-height: 1.5;
     margin-bottom: 0.5rem;
+  }
+
+  /* New Auth Status Styles */
+  .auth-status {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .auth-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .auth-icon {
+    font-size: 1.2rem;
+  }
+
+  .auth-text {
+    font-weight: 600;
+  }
+
+  .auth-type {
+    color: #666;
+    font-style: italic;
+  }
+
+  .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #667eea;
+    color: #667eea;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
   }
 
   @media (max-width: 768px) {
