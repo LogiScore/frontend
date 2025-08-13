@@ -250,7 +250,7 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(review),
     });
-  }
+  },
 
   // New comprehensive review methods
   async getReviewQuestions(): Promise<ReviewCategory[]> {
