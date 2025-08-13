@@ -9,7 +9,6 @@
   let branches: any[] = [];
   let selectedCompany: string = '';
   let selectedBranch: string = '';
-  let reviewType: string = 'general';
   let isAnonymous: boolean = false;
   let isLoading = true;
   let error: string | null = null;
@@ -19,8 +18,6 @@
   let newForwarder = {
     name: '',
     website: '',
-    contact_email: '',
-    contact_phone: '',
     description: ''
   };
   
@@ -202,7 +199,6 @@
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
       branch_id: selectedBranch || undefined,
-      review_type: reviewType,
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
       category_ratings: reviewCategories.map(cat => ({
@@ -227,7 +223,6 @@
       // Reset form
       reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
-      reviewType = 'general';
       isAnonymous = false;
       
     } catch (err: any) {
@@ -421,17 +416,6 @@
                   </select>
                 </div>
               </div>
-            </div>
-
-            <div class="form-group">
-              <label for="reviewType">Review Type</label>
-              <select id="reviewType" bind:value={reviewType}>
-                <option value="general">General Service</option>
-                <option value="import">Import</option>
-                <option value="export">Export</option>
-                <option value="domestic">Domestic</option>
-                <option value="warehousing">Warehousing</option>
-              </select>
             </div>
           </div>
 
