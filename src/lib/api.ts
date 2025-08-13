@@ -959,7 +959,7 @@ class ApiClient {
       }
       throw new Error('Admin authentication failed. Please try again later.');
     }
-  },
+  }
 
   // ===== METHOD: changePassword =====
   async changePassword(currentPassword: string, newPassword: string, token: string): Promise<{ message: string }> {
