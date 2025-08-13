@@ -265,7 +265,7 @@
     console.log('Selected location:', location);
     console.log('Location ID:', location.id);
     console.log('Location name:', location.name);
-    selectedBranch = location.id; // Use the UUID instead of the location name
+    selectedBranch = location.name; // Use the location name since backend expects UUID or branch name
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
