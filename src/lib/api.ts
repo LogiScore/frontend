@@ -609,18 +609,18 @@ class ApiClient {
         ]
       },
       {
-        id: 'global_network',
-        name: 'Global Network & Coverage',
+        id: 'reliability_execution',
+        name: 'Reliability & Execution',
         questions: [
           {
-            id: 'geographic_coverage',
-            text: 'Provides services in all required geographic locations',
+            id: 'on_time_pickup_rate',
+            text: 'On-time pickup rate (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'Seldom (25%)',
+              '2': 'Often (50%)',
+              '3': 'Mostly (75%)',
+              '4': 'Always (100%)'
             }
           },
           {
