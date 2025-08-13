@@ -917,7 +917,7 @@ class ApiClient {
       }
       throw new Error('Signin failed. Please try again later or sign up for a new account.');
     }
-  },
+  }
 
   // ===== METHOD: adminSignin =====
   // Admin authentication method - uses username and password
