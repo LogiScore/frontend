@@ -239,7 +239,7 @@ class ApiClient {
   // Reviews - Legacy methods (for backward compatibility)
   async getReviews(freightForwarderId: string): Promise<Review[]> {
     return this.request<Review[]>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
-  }
+  },
 
   async createReview(review: {
     freight_forwarder_id: string;
