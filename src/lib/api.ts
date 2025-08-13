@@ -45,6 +45,22 @@ export interface ReviewCategory {
   questions: ReviewQuestion[];
 }
 
+export interface FreightForwarderCreate {
+  name: string;
+  website?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  description?: string;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  region: string;
+  subregion: string;
+  country: string;
+}
+
 export interface QuestionRating {
   question: string;
   rating: number;
@@ -183,7 +199,19 @@ class ApiClient {
       console.error('Failed to fetch freight forwarder details:', error);
       throw error;
     }
-  }
+  },
+
+  async createFreightForwarder(forwarderData: FreightForwarderCreate): Promise<FreightForwarder> {
+    try {
+      return await this.request<FreightForwarder>('/api/freight-forwarders', {
+        method: 'POST',
+        body: JSON.stringify(forwarderData),
+      });
+    } catch (error: any) {
+      console.error('Failed to create freight forwarder:', error);
+      throw error;
+    }
+  },
 
   // Reviews - Legacy methods (for backward compatibility)
   async getReviews(freightForwarderId: string): Promise<Review[]> {
@@ -250,12 +278,12 @@ class ApiClient {
     }
   }
 
-  // Fallback review questions (if API fails) - Full 35 questions
+  // Fallback review questions (if API fails) - Updated to match LogiScore Review Questions document
   private getFallbackReviewQuestions(): ReviewCategory[] {
     return [
       {
         id: 'responsiveness',
-        name: 'Responsiveness & Communication',
+        name: 'Responsiveness',
         questions: [
           {
             id: 'acknowledges_requests',
