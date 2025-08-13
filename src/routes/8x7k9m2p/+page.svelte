@@ -2,7 +2,6 @@
   import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -23,25 +22,18 @@
       if (state.user.user_type === 'admin' || state.user.username === 'admin') {
         console.log('Admin page: User has admin access');
       } else {
-        console.log('Admin page: User does not have admin access, redirecting to homepage');
-        goto('/');
+        console.log('Admin page: User does not have admin access');
+        // Don't redirect - just log the issue
       }
     } else if (!state.token) {
-      console.log('Admin page: No token, redirecting to homepage');
-      goto('/');
+      console.log('Admin page: No token');
+      // Don't redirect - just log the issue
     }
   });
 
   onMount(() => {
     console.log('Admin page mounted');
     console.log('Current auth state:', authState);
-    
-    // If no authentication, redirect to homepage
-    if (!authState.token) {
-      console.log('Admin page: No authentication on mount, redirecting');
-      goto('/');
-      return;
-    }
     
     // Try to recover session if needed
     if (authState.user && authState.user.username === 'Demo User') {
@@ -325,6 +317,17 @@
             <span class="status-value unauthenticated">❌ Not authenticated</span>
           {/if}
         </div>
+        
+        <!-- Authentication Warning -->
+        {#if !authState.token || !authState.user}
+          <div class="auth-warning">
+            <span class="warning-icon">⚠️</span>
+            <span class="warning-text">Please sign in to access the admin dashboard</span>
+            <button class="btn-primary" on:click={() => window.location.href = '/'}>
+              Go to Homepage
+            </button>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -342,314 +345,317 @@
       <span class="warning-text">You are in the Admin Dashboard. Use the navigation tabs above to switch between sections.</span>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="tab-navigation">
-      <button class="tab-button {activeTab === 'dashboard' ? 'active' : ''}" on:click={() => activeTab = 'dashboard'}>
-        📊 Dashboard
-      </button>
-      <button class="tab-button {activeTab === 'reviews' ? 'active' : ''}" on:click={() => activeTab = 'reviews'}>
-        📝 Review Management
-      </button>
-      <button class="tab-button {activeTab === 'disputes' ? 'active' : ''}" on:click={() => activeTab = 'disputes'}>
-        ⚖️ Disputes
-      </button>
-      <button class="tab-button {activeTab === 'companies' ? 'active' : ''}" on:click={() => activeTab = 'companies'}>
-        🏢 Company Management
-      </button>
-      <button class="tab-button {activeTab === 'users' ? 'active' : ''}" on:click={() => activeTab = 'users'}>
-        👥 User Management
-      </button>
-      <button class="tab-button {activeTab === 'analytics' ? 'active' : ''}" on:click={() => activeTab = 'analytics'}>
-        📈 Analytics
-      </button>
-    </div>
-
-    <!-- Dashboard Tab -->
-    {#if activeTab === 'dashboard'}
-      <div class="dashboard-content">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Total Users</h3>
-            <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
-          </div>
-          <div class="stat-card">
-            <h3>Total Companies</h3>
-            <div class="stat-number">{dashboardStats.totalCompanies}</div>
-          </div>
-          <div class="stat-card">
-            <h3>Total Reviews</h3>
-            <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
-          </div>
-          <div class="stat-card">
-            <h3>Pending Disputes</h3>
-            <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
-          </div>
-          <div class="stat-card">
-            <h3>Pending Reviews</h3>
-            <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
-          </div>
-          <div class="stat-card">
-            <h3>Monthly Revenue</h3>
-            <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
-          </div>
-        </div>
-
-        <div class="recent-activity">
-          <h2>Recent Activity</h2>
-          <div class="activity-list">
-            <div class="activity-item">
-              <span class="activity-time">2 hours ago</span>
-              <span class="activity-text">New review submitted for DHL Supply Chain</span>
-            </div>
-            <div class="activity-item">
-              <span class="activity-time">4 hours ago</span>
-              <span class="activity-text">Dispute opened for Kuehne + Nagel review</span>
-            </div>
-            <div class="activity-item">
-              <span class="activity-time">1 day ago</span>
-              <span class="activity-text">New company registered: C.H. Robinson</span>
-            </div>
-          </div>
-        </div>
+    <!-- Admin Content - Only show when authenticated -->
+    {#if authState.token && authState.user}
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <button class="tab-button {activeTab === 'dashboard' ? 'active' : ''}" on:click={() => activeTab = 'dashboard'}>
+          📊 Dashboard
+        </button>
+        <button class="tab-button {activeTab === 'reviews' ? 'active' : ''}" on:click={() => activeTab = 'reviews'}>
+          📝 Review Management
+        </button>
+        <button class="tab-button {activeTab === 'disputes' ? 'active' : ''}" on:click={() => activeTab = 'disputes'}>
+          ⚖️ Disputes
+        </button>
+        <button class="tab-button {activeTab === 'companies' ? 'active' : ''}" on:click={() => activeTab = 'companies'}>
+          🏢 Company Management
+        </button>
+        <button class="tab-button {activeTab === 'users' ? 'active' : ''}" on:click={() => activeTab = 'users'}>
+          👥 User Management
+        </button>
+        <button class="tab-button {activeTab === 'analytics' ? 'active' : ''}" on:click={() => activeTab = 'analytics'}>
+          📈 Analytics
+        </button>
       </div>
-    {/if}
 
-    <!-- Review Management Tab -->
-    {#if activeTab === 'reviews'}
-      <div class="reviews-content">
-        <h2>Review Management</h2>
-        <div class="reviews-table">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Company</th>
-                <th>Branch</th>
-                <th>Reviewer</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each pendingReviews as review}
+      <!-- Dashboard Tab -->
+      {#if activeTab === 'dashboard'}
+        <div class="dashboard-content">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Total Users</h3>
+              <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <h3>Total Companies</h3>
+              <div class="stat-number">{dashboardStats.totalCompanies}</div>
+            </div>
+            <div class="stat-card">
+              <h3>Total Reviews</h3>
+              <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <h3>Pending Disputes</h3>
+              <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
+            </div>
+            <div class="stat-card">
+              <h3>Pending Reviews</h3>
+              <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
+            </div>
+            <div class="stat-card">
+              <h3>Monthly Revenue</h3>
+              <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div class="recent-activity">
+            <h2>Recent Activity</h2>
+            <div class="activity-list">
+              <div class="activity-item">
+                <span class="activity-time">2 hours ago</span>
+                <span class="activity-text">New review submitted for DHL Supply Chain</span>
+              </div>
+              <div class="activity-item">
+                <span class="activity-time">4 hours ago</span>
+                <span class="activity-text">Dispute opened for Kuehne + Nagel review</span>
+              </div>
+              <div class="activity-item">
+                <span class="activity-time">1 day ago</span>
+                <span class="activity-text">New company registered: C.H. Robinson</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/if}
+
+      <!-- Review Management Tab -->
+      {#if activeTab === 'reviews'}
+        <div class="reviews-content">
+          <h2>Review Management</h2>
+          <div class="reviews-table">
+            <table>
+              <thead>
                 <tr>
-                  <td>{review.id}</td>
-                  <td>{review.freight_forwarder_name}</td>
-                  <td>{review.branch_name || 'N/A'}</td>
-                  <td>{review.reviewer_name}</td>
-                  <td><span class="status {review.status.toLowerCase()}">{review.status}</span></td>
-                  <td>{new Date(review.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
-                    <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
-                  </td>
+                  <th>ID</th>
+                  <th>Company</th>
+                  <th>Branch</th>
+                  <th>Reviewer</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              {/each}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {#each pendingReviews as review}
+                  <tr>
+                    <td>{review.id}</td>
+                    <td>{review.freight_forwarder_name}</td>
+                    <td>{review.branch_name || 'N/A'}</td>
+                    <td>{review.reviewer_name}</td>
+                    <td><span class="status {review.status.toLowerCase()}">{review.status}</span></td>
+                    <td>{new Date(review.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
+                      <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
 
-    <!-- Disputes Tab -->
-    {#if activeTab === 'disputes'}
-      <div class="disputes-content">
-        <h2>Dispute Resolution</h2>
-        <div class="disputes-table">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Company</th>
-                <th>Issue</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each disputes as dispute}
+      <!-- Disputes Tab -->
+      {#if activeTab === 'disputes'}
+        <div class="disputes-content">
+          <h2>Dispute Resolution</h2>
+          <div class="disputes-table">
+            <table>
+              <thead>
                 <tr>
-                  <td>{dispute.id}</td>
-                  <td>{dispute.freight_forwarder_name}</td>
-                  <td>{dispute.issue}</td>
-                  <td><span class="status {dispute.status.toLowerCase().replace(' ', '-')}">{dispute.status}</span></td>
-                  <td>{new Date(dispute.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <button class="btn-primary" on:click={() => resolveDispute(dispute.id)}>Resolve</button>
-                  </td>
+                  <th>ID</th>
+                  <th>Company</th>
+                  <th>Issue</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              {/each}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {#each disputes as dispute}
+                  <tr>
+                    <td>{dispute.id}</td>
+                    <td>{dispute.freight_forwarder_name}</td>
+                    <td>{dispute.issue}</td>
+                    <td><span class="status {dispute.status.toLowerCase().replace(' ', '-')}">{dispute.status}</span></td>
+                    <td>{new Date(dispute.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <button class="btn-primary" on:click={() => resolveDispute(dispute.id)}>Resolve</button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
 
-    <!-- Company Management Tab -->
-    {#if activeTab === 'companies'}
-      <div class="companies-content">
-        <div class="companies-header">
-          <h2>Company Management</h2>
-          <button class="btn-primary" on:click={() => showAddCompanyModal = true}>Add Company</button>
+      <!-- Company Management Tab -->
+      {#if activeTab === 'companies'}
+        <div class="companies-content">
+          <div class="companies-header">
+            <h2>Company Management</h2>
+            <button class="btn-primary" on:click={() => showAddCompanyModal = true}>Add Company</button>
+          </div>
+
+          <!-- Add Company Form -->
+          <div class="add-company-form">
+            <h3>Add New Company</h3>
+            <form on:submit|preventDefault={addCompany}>
+              <div class="form-group">
+                <label for="company-name">Company Name</label>
+                <input type="text" id="company-name" bind:value={newCompany.name} required />
+              </div>
+              <div class="form-group">
+                <label for="company-website">Website</label>
+                <input type="url" id="company-website" bind:value={newCompany.website} />
+              </div>
+
+              <button type="submit" class="btn-primary">Add Company</button>
+            </form>
+          </div>
+
+          <!-- Companies Table -->
+          <div class="companies-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Logo</th>
+                  <th>Company Name</th>
+                  <th>Website</th>
+                  <th>Headquarters</th>
+                  <th>Description</th>
+                  <th>Branches</th>
+                  <th>Reviews</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each companies as company}
+                  <tr>
+                    <td>
+                      {#if company.logo_url}
+                        <img src={company.logo_url} alt="{company.name} logo" class="company-logo" />
+                      {:else}
+                        <div class="logo-placeholder">No Logo</div>
+                      {/if}
+                    </td>
+                    <td>{company.name}</td>
+                    <td>
+                      {#if company.website}
+                        <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
+                          🌐 Visit
+                        </a>
+                      {:else}
+                        <span class="no-data">-</span>
+                      {/if}
+                    </td>
+                    <td>
+                      {#if company.headquarters_country}
+                        <span class="headquarters">📍 {company.headquarters_country}</span>
+                      {:else}
+                        <span class="no-data">-</span>
+                      {/if}
+                    </td>
+                    <td>
+                      {#if company.description}
+                        <div class="description-cell" title={company.description}>
+                          {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
+                        </div>
+                      {:else}
+                        <span class="no-data">-</span>
+                      {/if}
+                    </td>
+                    <td>{company.branches_count}</td>
+                    <td>{company.reviews_count}</td>
+                    <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
+                    <td>
+                      <button class="btn-secondary">Edit</button>
+                      <button class="btn-secondary">Manage Branches</button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
         </div>
+      {/if}
 
-        <!-- Add Company Form -->
-        <div class="add-company-form">
-          <h3>Add New Company</h3>
-          <form on:submit|preventDefault={addCompany}>
-            <div class="form-group">
-              <label for="company-name">Company Name</label>
-              <input type="text" id="company-name" bind:value={newCompany.name} required />
+      <!-- User Management Tab -->
+      {#if activeTab === 'users'}
+        <div class="users-content">
+          <h2>User Management</h2>
+          <div class="users-filters">
+            <input type="text" placeholder="Search users..." class="search-input" />
+            <select class="filter-select">
+              <option value="">All Roles</option>
+              <option value="shipper">Shippers</option>
+              <option value="forwarder">Forwarders</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+          <div class="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Subscription</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each users as user}
+                  <tr>
+                    <td>{user.id}</td>
+                    <td>{user.full_name || user.username || 'N/A'}</td>
+                    <td>{user.email}</td>
+                    <td>{user.user_type}</td>
+                    <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
+                    <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                      <button class="btn-secondary">Edit</button>
+                      <button class="btn-secondary">Suspend</button>
+                      <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {/if}
+
+      <!-- Analytics Tab -->
+      {#if activeTab === 'analytics'}
+        <div class="analytics-content">
+          <h2>Platform Analytics</h2>
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Review Growth</h3>
+              <div class="chart-placeholder">📈 Chart: Monthly review submissions</div>
             </div>
-            <div class="form-group">
-              <label for="company-website">Website</label>
-              <input type="url" id="company-website" bind:value={newCompany.website} />
+            <div class="analytics-card">
+              <h3>User Engagement</h3>
+              <div class="chart-placeholder">📊 Chart: Active users over time</div>
             </div>
-
-            <button type="submit" class="btn-primary">Add Company</button>
-          </form>
-        </div>
-
-        <!-- Companies Table -->
-        <div class="companies-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Logo</th>
-                <th>Company Name</th>
-                <th>Website</th>
-                <th>Headquarters</th>
-                <th>Description</th>
-                <th>Branches</th>
-                <th>Reviews</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each companies as company}
-                <tr>
-                  <td>
-                    {#if company.logo_url}
-                      <img src={company.logo_url} alt="{company.name} logo" class="company-logo" />
-                    {:else}
-                      <div class="logo-placeholder">No Logo</div>
-                    {/if}
-                  </td>
-                  <td>{company.name}</td>
-                  <td>
-                    {#if company.website}
-                      <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
-                        🌐 Visit
-                      </a>
-                    {:else}
-                      <span class="no-data">-</span>
-                    {/if}
-                  </td>
-                  <td>
-                    {#if company.headquarters_country}
-                      <span class="headquarters">📍 {company.headquarters_country}</span>
-                    {:else}
-                      <span class="no-data">-</span>
-                    {/if}
-                  </td>
-                  <td>
-                    {#if company.description}
-                      <div class="description-cell" title={company.description}>
-                        {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
-                      </div>
-                    {:else}
-                      <span class="no-data">-</span>
-                    {/if}
-                  </td>
-                  <td>{company.branches_count}</td>
-                  <td>{company.reviews_count}</td>
-                  <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
-                  <td>
-                    <button class="btn-secondary">Edit</button>
-                    <button class="btn-secondary">Manage Branches</button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    {/if}
-
-    <!-- User Management Tab -->
-    {#if activeTab === 'users'}
-      <div class="users-content">
-        <h2>User Management</h2>
-        <div class="users-filters">
-          <input type="text" placeholder="Search users..." class="search-input" />
-          <select class="filter-select">
-            <option value="">All Roles</option>
-            <option value="shipper">Shippers</option>
-            <option value="forwarder">Forwarders</option>
-            <option value="admin">Admins</option>
-          </select>
-        </div>
-        <div class="users-table">
-          <table>
-            <thead>
-              <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Subscription</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each users as user}
-                <tr>
-                  <td>{user.id}</td>
-                  <td>{user.full_name || user.username || 'N/A'}</td>
-                  <td>{user.email}</td>
-                  <td>{user.user_type}</td>
-                  <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
-                  <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
-                  <td>
-                    <button class="btn-secondary">Edit</button>
-                    <button class="btn-secondary">Suspend</button>
-                    <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    {/if}
-
-    <!-- Analytics Tab -->
-    {#if activeTab === 'analytics'}
-      <div class="analytics-content">
-        <h2>Platform Analytics</h2>
-        <div class="analytics-grid">
-          <div class="analytics-card">
-            <h3>Review Growth</h3>
-            <div class="chart-placeholder">📈 Chart: Monthly review submissions</div>
-          </div>
-          <div class="analytics-card">
-            <h3>User Engagement</h3>
-            <div class="chart-placeholder">📊 Chart: Active users over time</div>
-          </div>
-          <div class="analytics-card">
-            <h3>Revenue Metrics</h3>
-            <div class="chart-placeholder">💰 Chart: Subscription revenue</div>
-          </div>
-          <div class="analytics-card">
-            <h3>Top Companies</h3>
-            <div class="chart-placeholder">🏆 Chart: Most reviewed companies</div>
+            <div class="analytics-card">
+              <h3>Revenue Metrics</h3>
+              <div class="chart-placeholder">💰 Chart: Subscription revenue</div>
+            </div>
+            <div class="analytics-card">
+              <h3>Top Companies</h3>
+              <div class="chart-placeholder">🏆 Chart: Most reviewed companies</div>
+            </div>
           </div>
         </div>
-      </div>
+      {/if}
     {/if}
   </div>
 </section>
@@ -810,6 +816,41 @@
 
   .status-value.unauthenticated {
     color: #f87171;
+  }
+
+  .auth-warning {
+    margin-top: 15px;
+    padding: 15px 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #dc2626;
+    text-align: center;
+  }
+
+  .auth-warning .warning-icon {
+    font-size: 1.2rem;
+    margin-right: 10px;
+  }
+
+  .auth-warning .warning-text {
+    font-weight: 500;
+    margin-right: 15px;
+  }
+
+  .auth-warning .btn-primary {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .auth-warning .btn-primary:hover {
+    background: #b91c1c;
   }
 
   /* Tab Navigation */
