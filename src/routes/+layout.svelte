@@ -12,7 +12,7 @@
 	$: isAdminPage = $page.url.pathname.includes('8x7k9m2p');
 </script>
 
-<Header hideSignUp={isAdminPage} />
+<Header hideSignUp={isAdminPage} hideNavigation={isAdminPage} />
 
 <slot />
 

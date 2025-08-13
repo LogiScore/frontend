@@ -307,29 +307,8 @@
           <span class="admin-badge">Administrator</span>
           <span class="user-email">{authState.user?.email || 'Loading...'}</span>
         </div>
-        <!-- Authentication Status Indicator -->
-        <div class="auth-status">
-          <span class="status-label">Status:</span>
-          {#if authState.token && authState.user}
-            <span class="status-value authenticated">✅ Authenticated as {authState.user.username}</span>
-          {:else if authState.token && !authState.user}
-            <span class="status-value loading">⏳ Loading user data...</span>
-          {:else}
-            <span class="status-value unauthenticated">❌ Not authenticated</span>
-          {/if}
-        </div>
-        
-        <!-- Authentication Warning -->
+        <!-- Admin Login Form -->
         {#if !authState.token || !authState.user}
-          <div class="auth-warning">
-            <span class="warning-icon">⚠️</span>
-            <span class="warning-text">Please sign in to access the admin dashboard</span>
-            <button class="btn-primary" on:click={() => window.location.href = '/'}>
-              Go to Homepage
-            </button>
-          </div>
-          
-          <!-- Admin Login Form -->
           <div class="admin-login-section">
             <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
           </div>
@@ -339,17 +318,9 @@
   </div>
 
   <div class="container">
-    <!-- Admin Indicator -->
-    <div class="admin-indicator">
-      <span class="indicator-dot"></span>
-      <span class="indicator-text">Administrative Interface</span>
-    </div>
 
-    <!-- Navigation Warning -->
-    <div class="navigation-warning">
-      <span class="warning-icon">⚠️</span>
-      <span class="warning-text">You are in the Admin Dashboard. Use the navigation tabs above to switch between sections.</span>
-    </div>
+
+
 
     <!-- Admin Content - Only show when authenticated -->
     {#if authState.token && authState.user}
@@ -794,70 +765,7 @@
     font-weight: 500;
   }
 
-  .auth-status {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.9rem;
-  }
 
-  .status-label {
-    color: #e0e0e0;
-    margin-right: 10px;
-  }
-
-  .status-value {
-    font-weight: 600;
-  }
-
-  .status-value.authenticated {
-    color: #4ade80;
-  }
-
-  .status-value.loading {
-    color: #fbbf24;
-  }
-
-  .status-value.unauthenticated {
-    color: #f87171;
-  }
-
-  .auth-warning {
-    margin-top: 15px;
-    padding: 15px 20px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    color: #dc2626;
-    text-align: center;
-  }
-
-  .auth-warning .warning-icon {
-    font-size: 1.2rem;
-    margin-right: 10px;
-  }
-
-  .auth-warning .warning-text {
-    font-weight: 500;
-    margin-right: 15px;
-  }
-
-  .auth-warning .btn-primary {
-    background: #dc2626;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-
-  .auth-warning .btn-primary:hover {
-    background: #b91c1c;
-  }
 
   .admin-login-section {
     margin-top: 2rem;
@@ -899,55 +807,7 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   }
 
-  /* Admin Indicator */
-  .admin-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(102, 126, 234, 0.2);
-  }
 
-  .indicator-dot {
-    width: 8px;
-    height: 8px;
-    background: #667eea;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  .indicator-text {
-    font-size: 0.85rem;
-    color: #667eea;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .navigation-warning {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 15px 20px;
-    background: #fef3c7;
-    border: 1px solid #f59e0b;
-    border-radius: 8px;
-    color: #92400e;
-  }
-
-  .warning-icon {
-    font-size: 1.2rem;
-  }
-
-  .warning-text {
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
 
   @keyframes pulse {
     0% {

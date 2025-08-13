@@ -8,6 +8,7 @@
   
   // Props
   export let hideSignUp = false;
+  export let hideNavigation = false;
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -112,14 +113,16 @@
         </a>
       </div>
       
-      <div class="nav-menu">
-        <a href="/search" class="nav-link">Search</a>
-        <a href="/about" class="nav-link">About</a>
-        <a href="/how-it-works" class="nav-link">How It Works</a>
-        <a href="/pricing" class="nav-link">Pricing</a>
-        <a href="/help" class="nav-link">Help</a>
-        <a href="/contact" class="nav-link">Contact</a>
-      </div>
+      {#if !hideNavigation}
+        <div class="nav-menu">
+          <a href="/search" class="nav-link">Search</a>
+          <a href="/about" class="nav-link">About</a>
+          <a href="/how-it-works" class="nav-link">How It Works</a>
+          <a href="/pricing" class="nav-link">Pricing</a>
+          <a href="/help" class="nav-link">Help</a>
+          <a href="/contact" class="nav-link">Contact</a>
+        </div>
+      {/if}
       
       <div class="nav-actions">
         {#if authState.user}
