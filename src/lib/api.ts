@@ -980,6 +980,7 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: resetPassword =====
   async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/reset-password', {
       method: 'POST',
@@ -987,11 +988,13 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
     return this.request<{ auth_url: string }>('/api/users/github/auth');
   }
 
+  // ===== METHOD: handleGitHubCallback =====
   async handleGitHubCallback(code: string): Promise<{ access_token: string; user: User }> {
     return this.request<{ access_token: string; user: User }>('/api/users/github/callback', {
       method: 'POST',
