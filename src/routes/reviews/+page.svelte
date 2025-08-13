@@ -16,6 +16,7 @@
   let locationSuggestions: any[] = [];
   let isLoading = true;
   let error: string | null = null;
+  let successMessage: string | null = null;
   
   // New forwarder creation
   let showNewForwarderForm = false;
@@ -118,12 +119,16 @@
 
   async function createNewForwarder() {
     try {
+      console.log('Creating new forwarder:', newForwarder);
+      
       if (!newForwarder.name.trim()) {
         error = 'Company name is required';
         return;
       }
 
+      console.log('Calling API to create forwarder...');
       const createdForwarder = await apiClient.createFreightForwarder(newForwarder);
+      console.log('Forwarder created successfully:', createdForwarder);
       
       // Add to the list and select it
       freightForwarders.push(createdForwarder);
@@ -137,10 +142,14 @@
       };
       showNewForwarderForm = false;
       
-      // Clear any previous errors
+      // Clear any previous errors and set success message
       error = null;
+      successMessage = `Company "${createdForwarder.name}" created successfully!`;
+      
+      console.log('New forwarder added to list, selected company:', selectedCompany);
       
     } catch (err: any) {
+      console.error('Error creating forwarder:', err);
       error = err.message || 'Failed to create new freight forwarder';
     }
   }
@@ -512,6 +521,12 @@
               {error}
             </div>
           {/if}
+          
+          {#if successMessage}
+            <div class="success-message">
+              {successMessage}
+            </div>
+          {/if}
         </form>
       {/if}
     </div>
@@ -795,6 +810,15 @@
     border-radius: 6px;
     margin-top: 1rem;
     border: 1px solid #f5c6cb;
+  }
+  
+  .success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #c3e6cb;
   }
 
   .loading {
