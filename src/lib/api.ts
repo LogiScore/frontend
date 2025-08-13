@@ -502,8 +502,8 @@ class ApiClient {
             }
           },
           {
-            id: 'solution_provided',
-            text: 'Provides practical solutions to problems within reasonable time',
+            id: 'rectify_documentation',
+            text: 'Rectifies documentation (shipping documents and invoices/credit notes) within 48 hours',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -513,8 +513,8 @@ class ApiClient {
             }
           },
           {
-            id: 'compensation_fairness',
-            text: 'Offers fair compensation for service failures or delays',
+            id: 'named_contacts',
+            text: 'Provides named contact person(s) for operations and customer service',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -524,8 +524,8 @@ class ApiClient {
             }
           },
           {
-            id: 'preventive_measures',
-            text: 'Implements measures to prevent similar problems in future',
+            id: 'escalation_contact',
+            text: 'Offers single point of contact for issue escalation',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -535,14 +535,25 @@ class ApiClient {
             }
           },
           {
-            id: 'customer_satisfaction',
-            text: 'Follows up to ensure customer satisfaction after problem resolution',
+            id: 'professional_tone',
+            text: 'Replies in professional tone, avoids jargon unless relevant',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
               '2': 'Usually',
               '3': 'Most of the time',
               '4': 'Every time'
+            }
+          },
+          {
+            id: 'vertical_knowledge',
+            text: 'Customer Service and Operations have vertical specific knowledge (e.g. Chemicals, Pharma, Hightech)',
+            ratingDefinitions: {
+              '0': 'Not applicable',
+              '1': 'Not aware',
+              '2': 'Aware but not knowledgable',
+              '3': 'Knowledgable',
+              '4': 'Very knowledgable'
             }
           }
         ]
