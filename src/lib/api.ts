@@ -968,11 +968,11 @@ class ApiClient {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-    });
-  },
+              body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      });
+    }
 
-  // ===== METHOD: forgotPassword =====
+    // ===== METHOD: forgotPassword =====
   async forgotPassword(email: string): Promise<{ message: string; reset_token?: string; expires_in?: string }> {
     return this.request<{ message: string; reset_token?: string; expires_in?: string }>('/api/users/forgot-password', {
       method: 'POST',
