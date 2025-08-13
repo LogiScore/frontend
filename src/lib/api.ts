@@ -1382,6 +1382,37 @@ class ApiClient {
       }, 1000);
     });
   }
+
+  // ===== METHOD: testAuthEndpoint =====
+  // Test method to check if auth endpoints are working
+  async testAuthEndpoint(): Promise<any> {
+    try {
+      console.log('Testing auth endpoint...');
+      const response = await fetch(`${API_BASE_URL}/api/auth/send-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: 'test@example.com' }),
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Success response:', data);
+      return data;
+    } catch (error: any) {
+      console.error('Auth endpoint test failed:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
