@@ -1199,6 +1199,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: createCompany =====
   async createCompany(token: string, companyData: any) {
     try {
       return await this.request('/admin/companies', {
@@ -1215,6 +1216,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: updateUserSubscription =====
   async updateUserSubscription(token: string, userId: string, subscriptionData: any) {
     try {
       return await this.request(`/admin/users/${userId}/subscription`, {
@@ -1231,6 +1233,7 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: approveReview =====
   async approveReview(token: string, reviewId: string) {
     try {
       return await this.request(`/admin/reviews/${reviewId}/approve`, {
