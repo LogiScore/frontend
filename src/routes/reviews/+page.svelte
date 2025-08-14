@@ -304,9 +304,9 @@
     console.log('Location ID:', location.id);
     console.log('Location Location:', location.Location);
     console.log('Location City:', location.City);
-    // Generate a proper branch name format that the backend will accept
-    // Format: "Branch - City, Country" (e.g., "Branch - New York, USA")
-    selectedBranch = `Branch - ${location.Location}, ${location.Country}`;
+    // Use the full location string as the branch identifier
+    // This provides the most specific location information (city, state, country)
+    selectedBranch = location.Location;
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
@@ -633,7 +633,7 @@
                   {/each}
                 </div>
               {/if}
-              <p class="help-text">Select a branch location for your review. This field is required.</p>
+              <p class="help-text">Select a branch location for your review. The full location (city, state, country) will be used to identify the specific branch.</p>
             </div>
 
           <!-- Review Options -->
