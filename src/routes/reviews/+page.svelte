@@ -304,8 +304,9 @@
     console.log('Location ID:', location.id);
     console.log('Location Location:', location.Location);
     console.log('Location City:', location.City);
-    // Use the location ID if available, otherwise use the Location name
-    selectedBranch = location.id || location.Location;
+    // Generate a proper branch name format that the backend will accept
+    // Format: "Branch - City, Country" (e.g., "Branch - New York, USA")
+    selectedBranch = `Branch - ${location.Location}, ${location.Country}`;
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
@@ -340,7 +341,10 @@
       return;
     }
 
-    // Branch location is optional, so no validation needed
+    if (!selectedBranch || selectedBranch.trim() === '') {
+      error = 'Please select a branch location';
+      return;
+    }
 
     if (ratedQuestions === 0) {
       error = 'Please provide ratings for at least one category';
@@ -350,8 +354,7 @@
     // Prepare review data for API
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
-      // Only include branch_id if it's a valid value (not empty string)
-      ...(selectedBranch && selectedBranch.trim() ? { branch_id: selectedBranch.trim() } : {}),
+      branch_id: selectedBranch.trim(), // Branch location is mandatory
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
       category_ratings: reviewCategories.map(cat => ({
@@ -605,14 +608,15 @@
 
             <!-- Branch Location Section -->
             <div class="form-group">
-              <label for="branch">Branch Location (Optional)</label>
+              <label for="branch">Branch Location *</label>
               <input 
                 type="text" 
                 id="branch" 
                 bind:value={selectedBranch}
-                placeholder="Start typing to search locations (optional)..."
+                placeholder="Start typing to search locations..."
                 on:input={handleLocationSearch}
                 class="location-input"
+                required
               />
               {#if showLocationSuggestions && locationSuggestions.length > 0}
                 <div class="location-suggestions">
@@ -629,7 +633,7 @@
                   {/each}
                 </div>
               {/if}
-              <p class="help-text">Specify a branch location if your review is for a specific office. Leave blank for general company review.</p>
+              <p class="help-text">Select a branch location for your review. This field is required.</p>
             </div>
 
           <!-- Review Options -->
@@ -653,7 +657,7 @@
               <ul class="tips-list">
                 <li>Base your review on recent experiences (within 12 months)</li>
                 <li>Consider multiple interactions, not just one shipment</li>
-                <li>Be specific about the branch/location you're reviewing (optional)</li>
+                <li>Be specific about the branch/location you're reviewing</li>
                 <li>Focus on objective criteria rather than personal preferences</li>
                 <li>Consider both positive and negative aspects</li>
               </ul>
