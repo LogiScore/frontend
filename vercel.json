@@ -6,5 +6,35 @@
     "env": {
       "VERCEL_FORCE_NO_BUILD_CACHE": "1"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "http://logiscore.net/(.*)",
+      "destination": "https://logiscore.net/$1",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
 } 
