@@ -111,34 +111,72 @@
 
   async function loadLocations() {
     try {
-      // Always use fallback locations for now since API endpoint might not be implemented
-      // This ensures the location autocomplete works consistently
+      // Try to get locations from API first
+      const apiLocations = await apiClient.getLocations();
+      if (apiLocations && apiLocations.length > 0) {
+        // Convert API locations to the expected format
+        locations = apiLocations.map(loc => ({
+          id: loc.id,
+          Location: loc.name,
+          City: loc.name,
+          State: '',
+          Country: loc.country,
+          region: loc.region,
+          subregion: loc.subregion
+        }));
+        console.log('Loaded API locations:', locations.length);
+      } else {
+        // Fallback to hardcoded locations if API returns empty
+        locations = [
+          { id: 'us-east', Location: 'New York', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
+          { id: 'us-west', Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
+          { id: 'uk-london', Location: 'London', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'de-hamburg', Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+          { id: 'cn-shanghai', Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
+          { id: 'sg-singapore', Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
+          { id: 'ae-dubai', Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
+          { id: 'za-cape-town', Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
+          { id: 'in-mumbai', Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
+          { id: 'jp-tokyo', Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
+          { id: 'au-sydney', Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
+          { id: 'ca-toronto', Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
+          { id: 'br-sao-paulo', Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
+          { id: 'mx-mexico-city', Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
+          { id: 'nl-amsterdam', Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'fr-paris', Location: 'Paris', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'it-milan', Location: 'Milan', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
+          { id: 'es-barcelona', Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
+          { id: 'se-stockholm', Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
+          { id: 'no-oslo', Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
+        ];
+        console.log('Loaded fallback locations:', locations.length);
+      }
+    } catch (err: any) {
+      console.error('Failed to load locations from API, using fallback:', err);
+      // Fallback to hardcoded locations if API fails
       locations = [
-        { Location: 'New York', City: 'New York', State: 'NY', Country: 'USA' },
-        { Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA' },
-        { Location: 'London', City: 'London', State: '', Country: 'UK' },
-        { Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany' },
-        { Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China' },
-        { Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore' },
-        { Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE' },
-        { Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa' },
-        { Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India' },
-        { Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan' },
-        { Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia' },
-        { Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada' },
-        { Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil' },
-        { Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico' },
-        { Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands' },
-        { Location: 'Paris', City: 'Paris', State: '', Country: 'France' },
-        { Location: 'Milan', City: 'Milan', State: '', Country: 'Italy' },
-        { Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain' },
-        { Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden' },
-        { Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway' }
+        { id: 'us-east', Location: 'New York', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'us-west', Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'uk-london', Location: 'London', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'de-hamburg', Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: 'cn-shanghai', Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
+        { id: 'sg-singapore', Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
+        { id: 'ae-dubai', Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
+        { id: 'za-cape-town', Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
+        { id: 'in-mumbai', Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
+        { id: 'jp-tokyo', Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
+        { id: 'au-sydney', Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
+        { id: 'ca-toronto', Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
+        { id: 'br-sao-paulo', Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: 'mx-mexico-city', Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
+        { id: 'nl-amsterdam', Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'fr-paris', Location: 'Paris', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'it-milan', Location: 'Milan', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
+        { id: 'es-barcelona', Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
+        { id: 'se-stockholm', Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
+                  { id: 'no-oslo', Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
       ];
       console.log('Loaded fallback locations:', locations.length);
-    } catch (err: any) {
-      console.error('Failed to load locations:', err);
-      locations = [];
     }
   }
 
@@ -253,7 +291,7 @@
     const filtered = locations.filter(location => 
       location.Location.toLowerCase().includes(query) ||
       location.City.toLowerCase().includes(query) ||
-      location.State.toLowerCase().includes(query) ||
+      (location.State && location.State.toLowerCase().includes(query)) ||
       location.Country.toLowerCase().includes(query)
     ).slice(0, 10); // Limit to 10 suggestions
     
@@ -264,8 +302,10 @@
   function selectLocation(location: any) {
     console.log('Selected location:', location);
     console.log('Location ID:', location.id);
-    console.log('Location name:', location.name);
-    selectedBranch = location.name; // Use the location name since backend expects UUID or branch name
+    console.log('Location Location:', location.Location);
+    console.log('Location City:', location.City);
+    // Use the location ID if available, otherwise use the Location name
+    selectedBranch = location.id || location.Location;
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
@@ -586,8 +626,8 @@
                       on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
                       tabindex="0"
                     >
-                      <strong>{suggestion.name}</strong>
-                      <span class="suggestion-details">{suggestion.region}, {suggestion.country}</span>
+                      <strong>{suggestion.Location}</strong>
+                      <span class="suggestion-details">{suggestion.City}{suggestion.State ? ', ' + suggestion.State : ''}, {suggestion.Country}</span>
                     </div>
                   {/each}
                 </div>
