@@ -127,54 +127,56 @@
         console.log('Loaded API locations:', locations.length);
       } else {
         // Fallback to hardcoded locations if API returns empty
+        // Format matches locations.csv: first field is combination of city, state, country
         locations = [
-          { id: 'us-east', Location: 'New York', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
-          { id: 'us-west', Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
-          { id: 'uk-london', Location: 'London', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
-          { id: 'de-hamburg', Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-          { id: 'cn-shanghai', Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
-          { id: 'sg-singapore', Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
-          { id: 'ae-dubai', Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
-          { id: 'za-cape-town', Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
-          { id: 'in-mumbai', Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
-          { id: 'jp-tokyo', Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
-          { id: 'au-sydney', Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
-          { id: 'ca-toronto', Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
-          { id: 'br-sao-paulo', Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
-          { id: 'mx-mexico-city', Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
-          { id: 'nl-amsterdam', Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
-          { id: 'fr-paris', Location: 'Paris', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
-          { id: 'it-milan', Location: 'Milan', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
-          { id: 'es-barcelona', Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
-          { id: 'se-stockholm', Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
-          { id: 'no-oslo', Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
+          { id: 'us-east', Location: 'New York, NY, USA', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
+          { id: 'us-west', Location: 'Los Angeles, CA, USA', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
+          { id: 'uk-london', Location: 'London, , UK', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'de-hamburg', Location: 'Hamburg, , Germany', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+          { id: 'cn-shanghai', Location: 'Shanghai, , China', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
+          { id: 'sg-singapore', Location: 'Singapore, , Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
+          { id: 'ae-dubai', Location: 'Dubai, , UAE', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
+          { id: 'za-cape-town', Location: 'Cape Town, , South Africa', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
+          { id: 'in-mumbai', Location: 'Mumbai, Maharashtra, India', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
+          { id: 'jp-tokyo', Location: 'Tokyo, , Japan', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
+          { id: 'au-sydney', Location: 'Sydney, NSW, Australia', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
+          { id: 'ca-toronto', Location: 'Toronto, ON, Canada', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
+          { id: 'br-sao-paulo', Location: 'São Paulo, SP, Brazil', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
+          { id: 'mx-mexico-city', Location: 'Mexico City, , Mexico', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
+          { id: 'nl-amsterdam', Location: 'Amsterdam, , Netherlands', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'fr-paris', Location: 'Paris, , France', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
+          { id: 'it-milan', Location: 'Milan, , Italy', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
+          { id: 'es-barcelona', Location: 'Barcelona, , Spain', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
+          { id: 'se-stockholm', Location: 'Stockholm, , Sweden', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
+          { id: 'no-oslo', Location: 'Oslo, , Norway', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
         ];
         console.log('Loaded fallback locations:', locations.length);
       }
     } catch (err: any) {
       console.error('Failed to load locations from API, using fallback:', err);
       // Fallback to hardcoded locations if API fails
+      // Format matches locations.csv: first field is combination of city, state, country
       locations = [
-        { id: 'us-east', Location: 'New York', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: 'us-west', Location: 'Los Angeles', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: 'uk-london', Location: 'London', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
-        { id: 'de-hamburg', Location: 'Hamburg', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: 'cn-shanghai', Location: 'Shanghai', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
-        { id: 'sg-singapore', Location: 'Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
-        { id: 'ae-dubai', Location: 'Dubai', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
-        { id: 'za-cape-town', Location: 'Cape Town', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
-        { id: 'in-mumbai', Location: 'Mumbai', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
-        { id: 'jp-tokyo', Location: 'Tokyo', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
-        { id: 'au-sydney', Location: 'Sydney', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
-        { id: 'ca-toronto', Location: 'Toronto', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
-        { id: 'br-sao-paulo', Location: 'São Paulo', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
-        { id: 'mx-mexico-city', Location: 'Mexico City', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
-        { id: 'nl-amsterdam', Location: 'Amsterdam', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
-        { id: 'fr-paris', Location: 'Paris', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
-        { id: 'it-milan', Location: 'Milan', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
-        { id: 'es-barcelona', Location: 'Barcelona', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
-        { id: 'se-stockholm', Location: 'Stockholm', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
-                  { id: 'no-oslo', Location: 'Oslo', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
+        { id: 'us-east', Location: 'New York, NY, USA', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'us-west', Location: 'Los Angeles, CA, USA', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'uk-london', Location: 'London, , UK', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'de-hamburg', Location: 'Hamburg, , Germany', City: 'Hamburg', State: '', Country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: 'cn-shanghai', Location: 'Shanghai, , China', City: 'Shanghai', State: '', Country: 'China', region: 'Asia', subregion: 'East Asia' },
+        { id: 'sg-singapore', Location: 'Singapore, , Singapore', City: 'Singapore', State: '', Country: 'Singapore', region: 'Asia', subregion: 'Southeast Asia' },
+        { id: 'ae-dubai', Location: 'Dubai, , UAE', City: 'Dubai', State: '', Country: 'UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council' },
+        { id: 'za-cape-town', Location: 'Cape Town, , South Africa', City: 'Cape Town', State: '', Country: 'South Africa', region: 'Africa', subregion: 'Southern Africa' },
+        { id: 'in-mumbai', Location: 'Mumbai, Maharashtra, India', City: 'Mumbai', State: 'Maharashtra', Country: 'India', region: 'Asia', subregion: 'South Asia' },
+        { id: 'jp-tokyo', Location: 'Tokyo, , Japan', City: 'Tokyo', State: '', Country: 'Japan', region: 'Asia', subregion: 'East Asia' },
+        { id: 'au-sydney', Location: 'Sydney, NSW, Australia', City: 'Sydney', State: 'NSW', Country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
+        { id: 'ca-toronto', Location: 'Toronto, ON, Canada', City: 'Toronto', State: 'ON', Country: 'Canada', region: 'Americas', subregion: 'North America' },
+        { id: 'br-sao-paulo', Location: 'São Paulo, SP, Brazil', City: 'São Paulo', State: 'SP', Country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: 'mx-mexico-city', Location: 'Mexico City, , Mexico', City: 'Mexico City', State: '', Country: 'Mexico', region: 'Americas', subregion: 'North America' },
+        { id: 'nl-amsterdam', Location: 'Amsterdam, , Netherlands', City: 'Amsterdam', State: '', Country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'fr-paris', Location: 'Paris, , France', City: 'Paris', State: '', Country: 'France', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'it-milan', Location: 'Milan, , Italy', City: 'Milan', State: '', Country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
+        { id: 'es-barcelona', Location: 'Barcelona, , Spain', City: 'Barcelona', State: '', Country: 'Spain', region: 'Europe', subregion: 'Southern Europe' },
+        { id: 'se-stockholm', Location: 'Stockholm, , Sweden', City: 'Stockholm', State: '', Country: 'Sweden', region: 'Europe', subregion: 'Northern Europe' },
+        { id: 'no-oslo', Location: 'Oslo, , Norway', City: 'Oslo', State: '', Country: 'Norway', region: 'Europe', subregion: 'Northern Europe' }
       ];
       console.log('Loaded fallback locations:', locations.length);
     }
@@ -281,6 +283,9 @@
     const input = event.target as HTMLInputElement;
     const query = input.value.toLowerCase().trim();
     
+    console.log('Location search triggered with query:', query);
+    console.log('Available locations:', locations.length);
+    
     if (query.length < 2) {
       showLocationSuggestions = false;
       locationSuggestions = [];
@@ -294,6 +299,9 @@
       (location.State && location.State.toLowerCase().includes(query)) ||
       location.Country.toLowerCase().includes(query)
     ).slice(0, 10); // Limit to 10 suggestions
+    
+    console.log('Filtered locations:', filtered.length);
+    console.log('Filtered results:', filtered.map(l => l.Location));
     
     locationSuggestions = filtered;
     showLocationSuggestions = true;
