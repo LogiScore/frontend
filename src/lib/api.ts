@@ -930,7 +930,7 @@ class ApiClient {
   // Step 1: Send verification code to user's email
   async sendVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
-      return await this.request<{ message: string; expires_in: number }>('/api/auth/send-code', {
+      return await this.request<{ message: string; expires_in: number }>('/api/users/request-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
@@ -952,7 +952,7 @@ class ApiClient {
         access_token: string; 
         token_type: string; 
         user: User 
-      }>('/api/auth/verify-code', {
+      }>('/api/users/signin-with-code', {
         method: 'POST',
         body: JSON.stringify({ email, code }),
       });
