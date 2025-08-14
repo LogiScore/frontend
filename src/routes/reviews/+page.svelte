@@ -340,10 +340,7 @@
       return;
     }
 
-    if (!selectedBranch) {
-      error = 'Please select a branch location';
-      return;
-    }
+    // Branch location is optional, so no validation needed
 
     if (ratedQuestions === 0) {
       error = 'Please provide ratings for at least one category';
@@ -353,7 +350,8 @@
     // Prepare review data for API
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
-      branch_id: selectedBranch,
+      // Only include branch_id if it's a valid value (not empty string)
+      ...(selectedBranch && selectedBranch.trim() ? { branch_id: selectedBranch.trim() } : {}),
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
       category_ratings: reviewCategories.map(cat => ({
@@ -607,15 +605,14 @@
 
             <!-- Branch Location Section -->
             <div class="form-group">
-              <label for="branch">Branch Location *</label>
+              <label for="branch">Branch Location (Optional)</label>
               <input 
                 type="text" 
                 id="branch" 
                 bind:value={selectedBranch}
-                placeholder="Start typing to search locations..."
+                placeholder="Start typing to search locations (optional)..."
                 on:input={handleLocationSearch}
                 class="location-input"
-                required
               />
               {#if showLocationSuggestions && locationSuggestions.length > 0}
                 <div class="location-suggestions">
@@ -632,6 +629,7 @@
                   {/each}
                 </div>
               {/if}
+              <p class="help-text">Specify a branch location if your review is for a specific office. Leave blank for general company review.</p>
             </div>
 
           <!-- Review Options -->
@@ -655,7 +653,7 @@
               <ul class="tips-list">
                 <li>Base your review on recent experiences (within 12 months)</li>
                 <li>Consider multiple interactions, not just one shipment</li>
-                <li>Be specific about the branch/location you're reviewing</li>
+                <li>Be specific about the branch/location you're reviewing (optional)</li>
                 <li>Focus on objective criteria rather than personal preferences</li>
                 <li>Consider both positive and negative aspects</li>
               </ul>
