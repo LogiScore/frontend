@@ -9,6 +9,7 @@
   let branches: any[] = [];
   let selectedCompany: string = '';
   let selectedBranch: string = '';
+  let selectedBranchDisplay: string = '';
   let isAnonymous: boolean = false;
   
   // Location autocomplete
@@ -125,6 +126,8 @@
           subregion: loc.subregion
         }));
         console.log('Loaded API locations:', locations.length);
+        console.log('Sample API location:', apiLocations[0]);
+        console.log('Converted location:', locations[0]);
       } else {
         // Fallback to hardcoded locations if API returns empty
         // Format matches locations.csv: first field is combination of city, state, country
@@ -312,9 +315,15 @@
     console.log('Location ID:', location.id);
     console.log('Location Location:', location.Location);
     console.log('Location City:', location.City);
-    // Use the full location string as the branch identifier
-    // This provides the most specific location information (city, state, country)
-    selectedBranch = location.Location;
+    console.log('Location type:', typeof location.id);
+    console.log('Location ID length:', location.id?.length);
+    
+    // Use the location ID as the branch identifier for the API
+    // This ensures we send a valid branch_id format (UUID or branch name)
+    selectedBranch = location.id;
+    selectedBranchDisplay = location.Location;
+    console.log('Set selectedBranch (ID):', selectedBranch);
+    console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
     showLocationSuggestions = false;
     locationSuggestions = [];
   }
@@ -349,7 +358,7 @@
       return;
     }
 
-    if (!selectedBranch || selectedBranch.trim() === '') {
+    if (!selectedBranch || selectedBranch.trim() === '' || !selectedBranchDisplay || selectedBranchDisplay.trim() === '') {
       error = 'Please select a branch location';
       return;
     }
@@ -376,6 +385,40 @@
       weighted_rating: weightedRating
     };
 
+    // Debug: Log the review data being sent
+    console.log('Submitting review with data:', {
+      freight_forwarder_id: reviewData.freight_forwarder_id,
+      branch_id: reviewData.branch_id,
+      selectedBranch: selectedBranch,
+      selectedBranchDisplay: selectedBranchDisplay
+    });
+
+    // Additional validation: Ensure branch_id is not empty and is a valid format
+    if (!reviewData.branch_id || reviewData.branch_id.trim() === '') {
+      error = 'Branch ID is required. Please select a valid branch location.';
+      return;
+    }
+
+    // Additional validation: Check if branch_id looks like a valid format
+    console.log('Branch ID format check:', {
+      branch_id: reviewData.branch_id,
+      isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id),
+      isBranchName: /^[a-zA-Z0-9-]+$/.test(reviewData.branch_id),
+      length: reviewData.branch_id.length
+    });
+
+    // Try to format branch_id if it's not a UUID
+    // The backend might expect a specific format for branch names
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id)) {
+      // If it's not a UUID, try to format it as a proper branch name
+      // Remove any special characters and ensure it's alphanumeric with hyphens
+      const formattedBranchId = reviewData.branch_id.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase();
+      if (formattedBranchId !== reviewData.branch_id) {
+        console.log('Reformatting branch_id:', { original: reviewData.branch_id, formatted: formattedBranchId });
+        reviewData.branch_id = formattedBranchId;
+      }
+    }
+
     try {
       // Submit review using the new API method
       const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
@@ -387,6 +430,7 @@
       // Reset form
       reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
+      selectedBranchDisplay = '';
       isAnonymous = false;
       
     } catch (err: any) {
@@ -398,7 +442,12 @@
       } else if (err.message?.includes('401') || err.message?.includes('403')) {
         error = 'Authentication failed. Please log in again.';
       } else if (err.message?.includes('400')) {
-        error = 'Invalid review data. Please check your inputs and try again.';
+        // Check for specific branch_id error
+        if (err.message?.includes('Invalid branch_id format')) {
+          error = 'Invalid branch ID format. Please try selecting the branch location again.';
+        } else {
+          error = 'Invalid review data. Please check your inputs and try again.';
+        }
       } else if (err.message?.includes('500')) {
         error = 'Server error occurred. Please try again later.';
       } else {
@@ -620,7 +669,7 @@
               <input 
                 type="text" 
                 id="branch" 
-                bind:value={selectedBranch}
+                bind:value={selectedBranchDisplay}
                 placeholder="Start typing to search locations..."
                 on:input={handleLocationSearch}
                 class="location-input"
@@ -641,7 +690,7 @@
                   {/each}
                 </div>
               {/if}
-              <p class="help-text">Select a branch location for your review. The full location (city, state, country) will be used to identify the specific branch.</p>
+              <p class="help-text">Select a branch location for your review. The location ID will be used for the API while displaying the full location name.</p>
             </div>
 
           <!-- Review Options -->

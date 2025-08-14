@@ -120,6 +120,14 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Debug: Log the full request details
+    console.log('API Request:', {
+      url,
+      method: options.method || 'GET',
+      headers: options.headers,
+      body: options.body
+    });
+    
     try {
       const response = await fetch(url, {
         headers: {
@@ -133,6 +141,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
+        
+        // Debug: Log the error response
+        console.log('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
         
         // Handle specific status codes
         if (response.status === 500) {
@@ -149,6 +165,13 @@ class ApiClient {
         throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
+      // Debug: Log successful response
+      console.log('API Success Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
       return response.json();
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
@@ -283,6 +306,15 @@ class ApiClient {
       if (!token) {
         throw new Error('Authentication token is required');
       }
+      
+      // Debug: Log the request details
+      console.log('Creating comprehensive review with data:', reviewData);
+      console.log('Request endpoint:', '/api/reviews/');
+      console.log('Request method:', 'POST');
+      console.log('Request headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`,
+        'Content-Type': 'application/json'
+      });
       
       return await this.request<ReviewResponse>('/api/reviews/', {
         method: 'POST',
