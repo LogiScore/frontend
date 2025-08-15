@@ -2,6 +2,13 @@ import { writable } from 'svelte/store';
 import { apiClient } from './api';
 import type { User } from './api';
 
+// Helper function to get current store value - moved to top
+function get<T>(store: any): T {
+  let value: T;
+  store.subscribe((v: T) => value = v)();
+  return value!;
+}
+
 // Define the auth store type
 interface AuthState {
   user: User | null;
@@ -53,12 +60,23 @@ const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 const PROMPT_TIMEOUT = 1 * 60 * 1000; // 1 minute to respond to prompt
 
 function resetInactivityTimer() {
+  // Check if user is authenticated before setting timer
+  const currentState = get<AuthState>(auth);
+  if (!currentState.user || !currentState.token) {
+    console.log('User not authenticated, skipping inactivity timer');
+    return;
+  }
+  
+  console.log('Resetting inactivity timer');
+  
   // Clear existing timers
   if (inactivityTimer) {
     clearTimeout(inactivityTimer);
+    inactivityTimer = null;
   }
   if (inactivityPromptTimer) {
     clearTimeout(inactivityPromptTimer);
+    inactivityPromptTimer = null;
   }
   
   // Reset the inactivity prompt state
@@ -75,21 +93,92 @@ function resetInactivityTimer() {
       authMethods.logout();
     }, PROMPT_TIMEOUT);
   }, INACTIVITY_TIMEOUT);
+  
+  console.log('New inactivity timer set for', INACTIVITY_TIMEOUT / 1000, 'seconds');
 }
 
 function setupInactivityTracking() {
   if (typeof window === 'undefined') return;
   
+  // Check if user is authenticated before setting up tracking
+  const currentState = get<AuthState>(auth);
+  if (!currentState.user || !currentState.token) {
+    console.log('User not authenticated, skipping inactivity tracking setup');
+    return;
+  }
+  
+  console.log('Setting up inactivity tracking...');
+  
   // Events that indicate user activity
   const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
   
+  // Remove any existing listeners first
+  activityEvents.forEach(event => {
+    document.removeEventListener(event, resetInactivityTimer, true);
+  });
+  
+  // Create a debounced version of resetInactivityTimer to avoid excessive calls
+  let debounceTimer: number | null = null;
+  const debouncedResetTimer = () => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+      resetInactivityTimer();
+      debounceTimer = null;
+    }, 100); // 100ms debounce
+  };
+  
   // Reset timer on any user activity
   activityEvents.forEach(event => {
-    document.addEventListener(event, resetInactivityTimer, true);
+    document.addEventListener(event, debouncedResetTimer, true);
+    console.log('Added event listener for:', event);
+  });
+  
+  // Also listen for window focus/blur events
+  window.addEventListener('focus', resetInactivityTimer);
+  window.addEventListener('blur', () => {
+    console.log('Window lost focus, pausing inactivity timer');
   });
   
   // Start the initial timer
   resetInactivityTimer();
+  
+  console.log('Inactivity tracking setup complete');
+  
+  // Log the current document state
+  console.log('Document ready state:', document.readyState);
+  console.log('Document body exists:', !!document.body);
+}
+
+function clearInactivityTracking() {
+  console.log('Clearing inactivity tracking');
+  
+  // Clear existing timers
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = null;
+  }
+  if (inactivityPromptTimer) {
+    clearTimeout(inactivityPromptTimer);
+    inactivityPromptTimer = null;
+  }
+  
+  // Reset the inactivity prompt state
+  auth.update(state => ({ ...state, showInactivityPrompt: false }));
+  
+  // Remove event listeners
+  if (typeof window !== 'undefined') {
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    activityEvents.forEach(event => {
+      document.removeEventListener(event, resetInactivityTimer, true);
+    });
+    
+    // Remove window event listeners
+    window.removeEventListener('focus', resetInactivityTimer);
+  }
+  
+  console.log('Inactivity tracking cleared');
 }
 
 // Create a writable store for authentication state
@@ -130,6 +219,12 @@ export const authMethods = {
         isLoading: false,
         error: null
       }));
+      
+      // Start inactivity tracking after successful login
+      setTimeout(() => {
+        authMethods.startInactivityTracking();
+      }, 100);
+      
       return { success: true };
     } catch (error: any) {
       auth.update(state => ({ 
@@ -157,6 +252,12 @@ export const authMethods = {
         isLoading: false,
         error: null
       }));
+      
+      // Start inactivity tracking after successful login
+      setTimeout(() => {
+        authMethods.startInactivityTracking();
+      }, 100);
+      
       return { success: true };
     } catch (error: any) {
       auth.update(state => ({ 
@@ -169,6 +270,9 @@ export const authMethods = {
   },
 
   logout: () => {
+    // Clear inactivity tracking before logout
+    clearInactivityTracking();
+    
     // Remove token from localStorage
     removeStoredToken();
     auth.update(state => ({
@@ -194,6 +298,12 @@ export const authMethods = {
         isLoading: false,
         error: null
       }));
+      
+      // Start inactivity tracking after successful registration
+      setTimeout(() => {
+        authMethods.startInactivityTracking();
+      }, 100);
+      
       return { success: true };
     } catch (error: any) {
       auth.update(state => ({ 
@@ -421,6 +531,76 @@ export const authMethods = {
     }, PROMPT_TIMEOUT);
   },
 
+  // Test inactivity timer with shorter duration
+  testInactivityTimer: (seconds: number = 30) => {
+    console.log(`Testing inactivity timer with ${seconds} second timeout`);
+    
+    // Clear existing timers
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = null;
+    }
+    if (inactivityPromptTimer) {
+      clearTimeout(inactivityPromptTimer);
+      inactivityPromptTimer = null;
+    }
+    
+    // Reset the inactivity prompt state
+    auth.update(state => ({ ...state, showInactivityPrompt: false }));
+    
+    // Set test timer
+    inactivityTimer = setTimeout(() => {
+      console.log(`Test: User inactive for ${seconds} seconds, showing prompt`);
+      auth.update(state => ({ ...state, showInactivityPrompt: true }));
+      
+      // Set prompt timeout - if user doesn't respond in 1 minute, logout
+      inactivityPromptTimer = setTimeout(() => {
+        console.log('Test: Inactivity prompt timeout, logging out user');
+        authMethods.logout();
+      }, PROMPT_TIMEOUT);
+    }, seconds * 1000);
+    
+    console.log(`Test timer set for ${seconds} seconds`);
+  },
+
+  // Check inactivity timer status
+  getInactivityStatus: () => {
+    const currentState = get<AuthState>(auth);
+    return {
+      showInactivityPrompt: currentState.showInactivityPrompt,
+      hasInactivityTimer: !!inactivityTimer,
+      hasPromptTimer: !!inactivityPromptTimer,
+      inactivityTimeout: INACTIVITY_TIMEOUT / 1000,
+      promptTimeout: PROMPT_TIMEOUT / 1000
+    };
+  },
+
+  // Debug inactivity tracking
+  debugInactivityTracking: () => {
+    console.log('=== INACTIVITY TRACKING DEBUG ===');
+    console.log('Window object exists:', typeof window !== 'undefined');
+    console.log('Document object exists:', typeof document !== 'undefined');
+    console.log('Document ready state:', document?.readyState);
+    console.log('Document body exists:', !!document?.body);
+    console.log('Current timers:');
+    console.log('  - Inactivity timer:', inactivityTimer);
+    console.log('  - Prompt timer:', inactivityPromptTimer);
+    console.log('Auth state:', get<AuthState>(auth));
+    console.log('================================');
+    
+    return {
+      windowExists: typeof window !== 'undefined',
+      documentExists: typeof document !== 'undefined',
+      readyState: document?.readyState,
+      bodyExists: !!document?.body,
+      timers: {
+        inactivity: inactivityTimer,
+        prompt: inactivityPromptTimer
+      },
+      authState: get<AuthState>(auth)
+    };
+  },
+
   // Recovery method - restore original user session from localStorage
   recoverSession: () => {
     console.log('Attempting to recover original user session...');
@@ -468,6 +648,11 @@ export const authMethods = {
           isLoading: false
         }));
         
+        // Start inactivity tracking after successful signin
+        setTimeout(() => {
+          authMethods.startInactivityTracking();
+        }, 100);
+        
         console.log('Sign in successful with real JWT token');
         return { success: true };
       } else {
@@ -511,15 +696,20 @@ export const authMethods = {
         error: error.message || 'Failed to send verification code' 
       };
     }
+  },
+
+  // Start inactivity tracking manually
+  startInactivityTracking: () => {
+    console.log('Manually starting inactivity tracking');
+    setupInactivityTracking();
+  },
+
+  // Stop inactivity tracking manually
+  stopInactivityTracking: () => {
+    console.log('Manually stopping inactivity tracking');
+    clearInactivityTracking();
   }
 };
-
-// Helper function to get current store value
-function get<T>(store: any): T {
-  let value: T;
-  store.subscribe((v: T) => value = v)();
-  return value!;
-}
 
 // Initialize auth check on app start
 if (typeof window !== 'undefined') {
@@ -554,7 +744,34 @@ if (typeof window !== 'undefined') {
     }
   }, 5 * 60 * 1000); // 5 minutes
 
-  // Set up inactivity tracking
-  setupInactivityTracking();
+  // Set up inactivity tracking with proper timing
+  const initializeInactivityTracking = () => {
+    // Check if user is authenticated before setting up tracking
+    const currentState = get<AuthState>(auth);
+    if (!currentState.user || !currentState.token) {
+      console.log('User not authenticated, skipping inactivity tracking initialization');
+      return;
+    }
+    
+    if (document.readyState === 'complete') {
+      console.log('Document ready, setting up inactivity tracking');
+      setupInactivityTracking();
+    } else {
+      console.log('Document not ready, waiting for load event');
+      window.addEventListener('load', () => {
+        console.log('Window load event fired, setting up inactivity tracking');
+        setupInactivityTracking();
+      });
+      
+      // Also try on DOMContentLoaded as backup
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded fired, setting up inactivity tracking');
+        setupInactivityTracking();
+      });
+    }
+  };
+  
+  // Initialize with a slight delay to ensure everything is ready
+  setTimeout(initializeInactivityTracking, 100);
 }
 
