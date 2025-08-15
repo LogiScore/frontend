@@ -215,18 +215,21 @@
 
 {#if showSubscriptionModal}
   <SubscriptionModal 
+    isOpen={showSubscriptionModal}
     on:close={closeSubscriptionModal}
   />
 {/if}
 
 {#if showProfileModal}
   <ProfileModal 
+    isOpen={showProfileModal}
     on:close={closeProfileModal}
   />
 {/if}
 
 {#if showChangePasswordModal}
   <ChangePasswordModal 
+    isOpen={showChangePasswordModal}
     on:close={closeChangePasswordModal}
   />
 {/if}
