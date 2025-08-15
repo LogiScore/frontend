@@ -1433,6 +1433,55 @@ class ApiClient {
       throw error;
     }
   }
+
+  // ===== METHOD: getLocationsFromCSV =====
+  async getLocationsFromCSV(): Promise<Location[]> {
+    try {
+      // Try to fetch from backend API first
+      const response = await fetch(`${API_BASE_URL}/api/locations`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.map((loc: any) => ({
+          id: loc.id || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+          name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+          region: loc.region || '',
+          subregion: loc.subregion || '',
+          country: loc.country || ''
+        }));
+      }
+      
+      // Fallback: Load from static CSV data
+      // This will be replaced by the backend API when available
+      const fallbackLocations = [
+        { id: 'us-east', name: 'New York, NY, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
+        { id: 'us-west', name: 'Los Angeles, CA, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
+        { id: 'uk-london', name: 'London, , UK', region: 'Europe', subregion: 'Western Europe', country: 'UK' },
+        { id: 'de-hamburg', name: 'Hamburg, , Germany', region: 'Europe', subregion: 'Central Europe', country: 'Germany' },
+        { id: 'cn-shanghai', name: 'Shanghai, , China', region: 'Asia', subregion: 'East Asia', country: 'China' },
+        { id: 'sg-singapore', name: 'Singapore, , Singapore', region: 'Asia', subregion: 'Southeast Asia', country: 'Singapore' },
+        { id: 'ae-dubai', name: 'Dubai, , UAE', region: 'Middle East', subregion: 'Gulf Cooperation Council', country: 'UAE' },
+        { id: 'za-cape-town', name: 'Cape Town, , South Africa', region: 'Africa', subregion: 'Southern Africa', country: 'South Africa' },
+        { id: 'in-mumbai', name: 'Mumbai, Maharashtra, India', region: 'Asia', subregion: 'South Asia', country: 'India' },
+        { id: 'jp-tokyo', name: 'Tokyo, , Japan', region: 'Asia', subregion: 'East Asia', country: 'Japan' },
+        { id: 'au-sydney', name: 'Sydney, NSW, Australia', region: 'Oceania', subregion: 'Australia and New Zealand', country: 'Australia' },
+        { id: 'ca-toronto', name: 'Toronto, ON, Canada', region: 'Americas', subregion: 'North America', country: 'Canada' },
+        { id: 'br-sao-paulo', name: 'São Paulo, SP, Brazil', region: 'Americas', subregion: 'South America', country: 'Brazil' },
+        { id: 'mx-mexico-city', name: 'Mexico City, , Mexico', region: 'Americas', subregion: 'North America', country: 'Mexico' },
+        { id: 'nl-amsterdam', name: 'Amsterdam, , Netherlands', region: 'Europe', subregion: 'Western Europe', country: 'Netherlands' },
+        { id: 'fr-paris', name: 'Paris, , France', region: 'Europe', subregion: 'Southern Europe', country: 'France' },
+        { id: 'it-milan', name: 'Milan, , Italy', region: 'Europe', subregion: 'Southern Europe', country: 'Italy' },
+        { id: 'es-barcelona', name: 'Barcelona, , Spain', region: 'Europe', subregion: 'Southern Europe', country: 'Spain' },
+        { id: 'se-stockholm', name: 'Stockholm, , Sweden', region: 'Europe', subregion: 'Northern Europe', country: 'Sweden' },
+        { id: 'no-oslo', name: 'Oslo, , Norway', region: 'Europe', subregion: 'Northern Europe', country: 'Norway' }
+      ];
+      
+      console.log('Using fallback locations, backend API not available');
+      return fallbackLocations;
+    } catch (error: any) {
+      console.error('Failed to load locations:', error);
+      throw new Error('Failed to load locations');
+    }
+  }
 }
 
 // Export singleton instance
