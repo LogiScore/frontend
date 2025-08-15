@@ -474,78 +474,7 @@
     }
   }
 
-  async function testAuthentication() {
-    try {
-      console.log('=== AUTHENTICATION DEBUG ===');
-      console.log('Token exists:', !!authState.token);
-      console.log('Token length:', authState.token?.length);
-      console.log('Token preview:', authState.token?.substring(0, 50) + '...');
-      console.log('Token ends with:', authState.token?.substring(-20));
-      console.log('User info:', authState.user);
-      
-      // Check if token looks like JWT (should have 3 parts separated by dots)
-      if (authState.token) {
-        const parts = authState.token.split('.');
-        console.log('Token parts count:', parts.length);
-        if (parts.length === 3) {
-          try {
-            const header = JSON.parse(atob(parts[0]));
-            const payload = JSON.parse(atob(parts[1]));
-            console.log('JWT Header:', header);
-            console.log('JWT Payload:', payload);
-            console.log('Token issued at:', new Date(payload.iat * 1000));
-            console.log('Token expires at:', new Date(payload.exp * 1000));
-            console.log('Current time:', new Date());
-            console.log('Token expired:', payload.exp ? Date.now() > payload.exp * 1000 : 'Unknown');
-          } catch (e) {
-            console.log('Could not decode JWT parts:', e);
-          }
-        } else {
-          console.log('Token does not appear to be JWT format');
-        }
-      }
-      
-      console.log('=== TESTING API CALLS ===');
-      
-      // Test 1: Try the freight forwarders endpoint
-      console.log('Testing freight forwarders endpoint...');
-      const ffResponse = await fetch('https://logiscorebe.onrender.com/api/freight-forwarders/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authState.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: 'Test Company' })
-      });
-      
-      console.log('Freight forwarders response status:', ffResponse.status);
-      const ffText = await ffResponse.text();
-      console.log('Freight forwarders response:', ffText);
-      
-      // Test 2: Try a different endpoint to see if it's specific to freight forwarders
-      console.log('Testing users/me endpoint...');
-      const userResponse = await fetch('https://logiscorebe.onrender.com/api/users/me', {
-        headers: {
-          'Authorization': `Bearer ${authState.token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('Users/me response status:', userResponse.status);
-      const userText = await userResponse.text();
-      console.log('Users/me response:', userText);
-      
-      if (ffResponse.ok) {
-        successMessage = 'Authentication test successful!';
-      } else {
-        error = `Authentication test failed: Freight forwarders (${ffResponse.status}) - ${ffText}`;
-      }
-      
-    } catch (err: any) {
-      console.error('Auth test error:', err);
-      error = `Authentication test error: ${err.message}`;
-    }
-  }
+
 </script>
 
 <svelte:head>
@@ -589,17 +518,7 @@
         </div>
       {:else}
         <form on:submit|preventDefault={submitReview}>
-          <!-- Authentication Status -->
-          <div class="auth-status">
-            <div class="auth-info">
-              <span class="auth-icon">🔐</span>
-              <span class="auth-text">Logged in as: <strong>{authState.user?.username || authState.user?.full_name || 'User'}</strong></span>
-              <span class="auth-type">({authState.user?.user_type || 'shipper'})</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline" on:click={testAuthentication}>
-              Test Auth
-            </button>
-          </div>
+
 
           <!-- Company Selection -->
           <div class="form-section">

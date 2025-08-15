@@ -9,7 +9,7 @@
   },
   "redirects": [
     {
-      "source": "http://logiscore.net/(.*)",
+      "source": "logiscore.net/(.*)",
       "destination": "https://logiscore.net/$1",
       "permanent": true
     }
