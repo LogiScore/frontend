@@ -1437,21 +1437,21 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Fetch locations from the backend API (which should query the locations table)
-      const response = await fetch(`${API_BASE_URL}/api/locations`);
-      if (response.ok) {
-        const data = await response.json();
-        return data.map((loc: any) => ({
-          id: loc.UUID || loc.id?.toString() || `${loc.City}-${loc.Country}`.toLowerCase().replace(/\s+/g, '-'),
-          name: loc.Location || `${loc.City}, ${loc.State ? loc.State + ', ' : ''}${loc.Country}`,
-          region: loc.Region || '',
-          subregion: loc.Subregion || '',
-          country: loc.Country || ''
-        }));
-      }
+      // Use standardized request method for proper CORS handling and error management
+      const data = await this.request<any[]>('/api/locations');
+      return data.map((loc: any) => ({
+        id: loc.UUID || loc.id?.toString() || `${loc.City}-${loc.Country}`.toLowerCase().replace(/\s+/g, '-'),
+        name: loc.Location || `${loc.City}, ${loc.State ? loc.State + ', ' : ''}${loc.Country}`,
+        region: loc.Region || '',
+        subregion: loc.Subregion || '',
+        country: loc.Country || ''
+      }));
+    } catch (error: any) {
+      console.error('Failed to load locations from database:', error);
       
       // Fallback: Load from static data if backend API is not available
       // This should be removed once the backend API is fully implemented
+      console.log('Using fallback locations due to API error');
       const fallbackLocations = [
         { id: 'us-east', name: 'New York, NY, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
         { id: 'us-west', name: 'Los Angeles, CA, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
@@ -1477,9 +1477,6 @@ class ApiClient {
       
       console.log('Using fallback locations, backend API not available');
       return fallbackLocations;
-    } catch (error: any) {
-      console.error('Failed to load locations from database:', error);
-      throw new Error('Failed to load locations from database');
     }
   }
 }
