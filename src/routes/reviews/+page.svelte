@@ -116,11 +116,11 @@
 
   async function loadLocations() {
     try {
-      // Use the new dynamic location loading method
-      const csvLocations = await apiClient.getLocationsFromCSV();
+      // Use the new dynamic location loading method from database
+      const databaseLocations = await apiClient.getLocationsFromDatabase();
       
       // Convert to the expected format for the existing code
-      locations = csvLocations.map(loc => ({
+      locations = databaseLocations.map(loc => ({
         id: loc.id,
         Location: loc.name,
         City: loc.name.split(',')[0]?.trim() || loc.name, // Extract city from name

@@ -1434,24 +1434,24 @@ class ApiClient {
     }
   }
 
-  // ===== METHOD: getLocationsFromCSV =====
-  async getLocationsFromCSV(): Promise<Location[]> {
+  // ===== METHOD: getLocationsFromDatabase =====
+  async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Try to fetch from backend API first
+      // Fetch locations from the backend API (which should query the locations table)
       const response = await fetch(`${API_BASE_URL}/api/locations`);
       if (response.ok) {
         const data = await response.json();
         return data.map((loc: any) => ({
-          id: loc.id || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
-          name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
-          region: loc.region || '',
-          subregion: loc.subregion || '',
-          country: loc.country || ''
+          id: loc.UUID || loc.id?.toString() || `${loc.City}-${loc.Country}`.toLowerCase().replace(/\s+/g, '-'),
+          name: loc.Location || `${loc.City}, ${loc.State ? loc.State + ', ' : ''}${loc.Country}`,
+          region: loc.Region || '',
+          subregion: loc.Subregion || '',
+          country: loc.Country || ''
         }));
       }
       
-      // Fallback: Load from static CSV data
-      // This will be replaced by the backend API when available
+      // Fallback: Load from static data if backend API is not available
+      // This should be removed once the backend API is fully implemented
       const fallbackLocations = [
         { id: 'us-east', name: 'New York, NY, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
         { id: 'us-west', name: 'Los Angeles, CA, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
@@ -1478,8 +1478,8 @@ class ApiClient {
       console.log('Using fallback locations, backend API not available');
       return fallbackLocations;
     } catch (error: any) {
-      console.error('Failed to load locations:', error);
-      throw new Error('Failed to load locations');
+      console.error('Failed to load locations from database:', error);
+      throw new Error('Failed to load locations from database');
     }
   }
 }
