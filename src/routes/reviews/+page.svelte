@@ -248,13 +248,14 @@
     console.log('Location search triggered with query:', query);
     console.log('Available locations:', locations.length);
     
-    if (query.length < 2) {
+    // Require at least 3 characters before filtering to improve performance
+    if (query.length < 3) {
       showLocationSuggestions = false;
       locationSuggestions = [];
       return;
     }
     
-    // Filter locations based on input
+    // Filter locations based on input with improved performance
     const filtered = locations.filter(location => 
       location.Location.toLowerCase().includes(query) ||
       location.City.toLowerCase().includes(query) ||
@@ -559,6 +560,11 @@
                 class="location-input"
                 required
               />
+              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 3}
+                <div class="location-hint">
+                  <span class="hint-text">Type at least 3 characters to search locations...</span>
+                </div>
+              {/if}
               {#if showLocationSuggestions && locationSuggestions.length > 0}
                 <div class="location-suggestions">
                   {#each locationSuggestions as suggestion}
@@ -574,7 +580,7 @@
                   {/each}
                 </div>
               {/if}
-              <p class="help-text">Select a branch location for your review. A unique identifier will be generated for the selected location.</p>
+              <p class="help-text">Select a branch location for your review. A unique identifier will be generated for the selected location. <strong>Type at least 3 characters to search.</strong></p>
             </div>
 
           <!-- Review Options -->
@@ -774,6 +780,28 @@
     font-size: 0.875rem;
     color: #666;
     margin-top: 0.25rem;
+  }
+
+  .location-hint {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 0.75rem;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .hint-text {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+    font-style: italic;
+    text-align: center;
   }
 
   .form-group label {
