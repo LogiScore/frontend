@@ -695,7 +695,7 @@
               
               <!-- Create new branch section -->
               <div class="new-branch-section">
-                <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : 'Select a location to create a new branch:'}</p>
+                <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : ''}</p>
                 
                 <input 
                   type="text" 
