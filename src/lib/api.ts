@@ -1439,32 +1439,57 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Try different HTTP methods and endpoints for locations
-      let data: any[];
+      // Try to get all locations by implementing client-side pagination
+      // since the backend has a 50-record hard limit
+      let allData: any[] = [];
+      let offset = 0;
+      const limit = 50; // Backend's hard limit
+      let hasMore = true;
+      let attemptCount = 0;
+      const maxAttempts = 100; // Prevent infinite loops
       
-      try {
-        // First try: GET /api/locations/ without any limit to get ALL data
-        data = await this.request<any[]>('/api/locations/');
-        console.log(`Successfully loaded ${data.length} locations via GET /api/locations/ (no limit)`);
-        
-        // If we only got 50 records, this suggests a backend limit - try to get more
-        if (data.length <= 50) {
-          console.log('Warning: Only got 50 records, backend may have a hard limit');
-          console.log('This severely limits search functionality - backend needs to be updated');
-        }
-      } catch (getError: any) {
-        console.log('GET /api/locations/ failed, trying alternative endpoint...');
-        
+      console.log('🔄 Implementing client-side pagination due to backend 50-record limit...');
+      
+      while (hasMore && attemptCount < maxAttempts) {
         try {
-          // Second try: GET /api/locations (without trailing slash as fallback)
-          data = await this.request<any[]>('/api/locations');
-          console.log(`Successfully loaded ${data.length} locations via GET /api/locations (fallback)`);
-        } catch (altError: any) {
-          throw new Error('All location endpoints failed. Check backend implementation.');
+          const url = `/api/locations/?limit=${limit}&offset=${offset}`;
+          console.log(`📡 Fetching locations: offset=${offset}, limit=${limit}`);
+          
+          const batch = await this.request<any[]>(url);
+          console.log(`📦 Received batch: ${batch.length} locations`);
+          
+          if (batch.length === 0) {
+            console.log('✅ No more locations found, pagination complete');
+            hasMore = false;
+          } else {
+            allData = allData.concat(batch);
+            offset += batch.length;
+            attemptCount++;
+            
+            // If we get less than the limit, we've reached the end
+            if (batch.length < limit) {
+              console.log('✅ Reached end of data, pagination complete');
+              hasMore = false;
+            }
+            
+            // Add a small delay to prevent overwhelming the backend
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        } catch (error: any) {
+          console.log(`❌ Failed to fetch batch at offset ${offset}:`, error.message);
+          hasMore = false;
         }
       }
       
-      return data.map((loc: any) => ({
+      console.log(`🎯 Total locations loaded via pagination: ${allData.length}`);
+      
+      // Check if we got limited data (backend limitation)
+      if (allData.length <= 50) {
+        console.warn(`⚠️ BACKEND LIMITATION: Only ${allData.length} locations returned. Backend appears to have a 50-record hard limit.`);
+        console.warn(`⚠️ This severely limits search functionality. Backend needs to remove this limitation.`);
+      }
+      
+      return allData.map((loc: any) => ({
         id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
         name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
         city: loc.city || '',

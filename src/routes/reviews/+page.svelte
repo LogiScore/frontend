@@ -594,7 +594,7 @@
                   {/each}
                 </div>
               {/if}
-              <p class="help-text">Select a branch location for your review. A unique identifier will be generated for the selected location. <strong>Type at least 3 characters to search.</strong></p>
+              <p class="help-text">Select a branch location for your review. A unique identifier will be generated for the selected location.</p>
             </div>
 
           <!-- Review Options -->
