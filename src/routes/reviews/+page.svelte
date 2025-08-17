@@ -554,7 +554,7 @@
     // Prepare review data for API
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
-      branch_id: selectedBranch.trim(), // Branch location is mandatory
+      location_id: selectedBranch.trim(), // Changed from branch_id to location_id
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
       category_ratings: reviewCategories.map(cat => ({
@@ -571,22 +571,22 @@
     // Debug: Log the review data being sent
     console.log('Submitting review with data:', {
       freight_forwarder_id: reviewData.freight_forwarder_id,
-      branch_id: reviewData.branch_id,
+      location_id: reviewData.location_id,
       selectedBranch: selectedBranch,
       selectedBranchDisplay: selectedBranchDisplay
     });
 
-    // Validate branch_id format
-    if (!reviewData.branch_id || reviewData.branch_id.trim() === '') {
-      error = 'Branch ID is required. Please select a valid branch location.';
+    // Validate location_id format
+    if (!reviewData.location_id || reviewData.location_id.trim() === '') {
+      error = 'Location ID is required. Please select a valid location.';
       return;
     }
 
-    // Debug: Log the branch ID being sent
-    console.log('Branch ID validation:', {
-      branch_id: reviewData.branch_id,
-      isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id),
-      length: reviewData.branch_id.length,
+    // Debug: Log the location ID being sent
+    console.log('Location ID validation:', {
+      location_id: reviewData.location_id,
+      isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.location_id),
+      length: reviewData.location_id.length,
       selectedBranchType: typeof selectedBranch,
       selectedBranchValue: selectedBranch,
       selectedBranchDisplay: selectedBranchDisplay
@@ -594,10 +594,10 @@
 
     // Try using location name as branch_id if UUID format fails
     // Backend accepts either UUID or branch name
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id)) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.location_id)) {
       console.log('Location ID is not in UUID format, trying location name instead');
-      reviewData.branch_id = selectedBranchDisplay || 'Unknown Location';
-      console.log('Updated branch_id to use location name:', reviewData.branch_id);
+      reviewData.location_id = selectedBranchDisplay || 'Unknown Location';
+      console.log('Updated location_id to use location name:', reviewData.location_id);
     }
 
     try {
@@ -623,9 +623,9 @@
       } else if (err.message?.includes('401') || err.message?.includes('403')) {
         error = 'Authentication failed. Please log in again.';
       } else if (err.message?.includes('400')) {
-        // Check for specific branch_id error
-        if (err.message?.includes('Invalid branch_id format')) {
-          error = 'Invalid branch ID format. Please try selecting the branch location again.';
+        // Check for specific location_id error
+        if (err.message?.includes('Invalid location_id format') || err.message?.includes('Invalid branch_id format')) {
+          error = 'Invalid location ID format. Please try selecting the location again.';
         } else {
           error = 'Invalid review data. Please check your inputs and try again.';
         }

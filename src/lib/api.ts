@@ -73,7 +73,7 @@ export interface CategoryRating {
 
 export interface ReviewCreate {
   freight_forwarder_id: string;
-  branch_id?: string;
+  location_id: string; // Changed from branch_id to location_id
   is_anonymous: boolean;
   review_weight: number;
   category_ratings: CategoryRating[];
@@ -84,7 +84,7 @@ export interface ReviewCreate {
 export interface ReviewResponse {
   id: string;
   freight_forwarder_id: string;
-  branch_id?: string;
+  location_id?: string; // Changed from branch_id to location_id
   is_anonymous: boolean;
   review_weight: number;
   aggregate_rating: number;
