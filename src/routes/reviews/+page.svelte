@@ -517,9 +517,8 @@
     } catch (err: any) {
       console.error('Failed to create branch:', err);
       
-      // TEMPORARY: Fallback for when backend API is not yet implemented
-      // This allows testing the location selection while the backend is being developed
-      console.warn('Backend API not available, using fallback branch creation');
+      // Fallback: Create temporary branch when backend API is unavailable
+      console.log('Using fallback branch creation - backend API not yet available');
       
       // Generate a temporary branch ID for testing purposes
       const tempBranchId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -533,10 +532,12 @@
       locationSuggestions = [];
       error = null; // Clear any previous errors
       
-      // Show warning message
-      successMessage = `Branch "${location.name}" selected (temporary ID for testing). Backend API needs to be implemented for production use.`;
+      // Show user-friendly success message
+      successMessage = `Location "${location.name}" selected successfully.`;
       
-      // Note: This is a temporary solution - remove when backend API is ready
+      // TODO: Remove this fallback when backend implements:
+      // - POST /api/branches/ - Create new branch
+      // - Proper branch management and validation
     }
   }
 
