@@ -278,7 +278,7 @@
       const searchResults = await apiClient.searchLocations(query);
       console.log('Backend search results:', searchResults.length);
       
-      const filtered = searchResults.slice(0, 10);
+      const filtered = searchResults.slice(0, 25); // Increased from 10 to 25
       console.log(`✅ Backend search found ${searchResults.length} locations, showing ${filtered.length}`);
       
       locationSuggestions = filtered;
@@ -296,7 +296,7 @@
         const countryMatch = location.country && location.country.toLowerCase().includes(query);
         
         return nameMatch || cityMatch || stateMatch || countryMatch;
-      }).slice(0, 10);
+      }).slice(0, 25); // Increased from 10 to 25
       
       console.log('Fallback filtered locations:', filtered.length);
       locationSuggestions = filtered;
@@ -702,6 +702,15 @@
                   class="location-input"
                   required
                 />
+                <div class="search-tips">
+                  <small>
+                    💡 <strong>Search Tips:</strong> 
+                    Type city names (e.g., "London"), country names (e.g., "Germany"), or specific locations (e.g., "New York") for better results.
+                    {#if locations.length <= 50}
+                      <br>⚠️ <strong>Limited Data:</strong> Currently only {locations.length} locations available. Backend needs to be updated for full location database.
+                    {/if}
+                  </small>
+                </div>
                 {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
                   <div class="location-hint">
                     <span class="hint-text">Type at least 4 characters to search locations...</span>
@@ -730,6 +739,13 @@
                         <span class="suggestion-details">{suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}</span>
                       </div>
                     {/each}
+                    
+                    <!-- Show More option if there are more results -->
+                    {#if locationSuggestions.length >= 25}
+                      <div class="show-more-item">
+                        <em>Showing first 25 results. Try a more specific search for better results.</em>
+                      </div>
+                    {/if}
                   </div>
                 {/if}
               </div>
@@ -1540,6 +1556,37 @@
 
   .new-branch-section {
     margin-top: 1.5rem;
+  }
+
+  .show-more-item {
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+  }
+
+  .search-tips {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+  }
+
+  .search-tips small {
+    display: block;
+    line-height: 1.4;
+  }
+
+  .search-tips strong {
+    color: #333;
   }
 </style>
 
