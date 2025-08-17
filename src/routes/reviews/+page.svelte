@@ -248,40 +248,48 @@
     }
   }
 
-  function handleLocationSearch(event: Event) {
+  async function handleLocationSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     const query = input.value.toLowerCase().trim();
     
     console.log('Location search triggered with query:', query);
-    console.log('Available locations:', locations.length);
-    console.log('First few locations:', locations.slice(0, 3).map(l => ({ name: l.name, city: l.city, state: l.state, country: l.country })));
     
-    // Require at least 3 characters before filtering to improve performance
-    if (query.length < 3) {
+    // Require at least 2 characters before searching to improve performance
+    if (query.length < 2) {
       showLocationSuggestions = false;
       locationSuggestions = [];
       return;
     }
     
-    // Filter locations based on input with improved performance
-    const filtered = locations.filter(location => {
-      const nameMatch = location.name && location.name.toLowerCase().includes(query);
-      const cityMatch = location.city && location.city.toLowerCase().includes(query);
-      const stateMatch = location.state && location.state.toLowerCase().includes(query);
-      const countryMatch = location.country && location.country.toLowerCase().includes(query);
+    try {
+      // Use the new backend search API instead of client-side filtering
+      console.log(`🔍 Searching backend for: "${query}"`);
+      const searchResults = await apiClient.searchLocations(query);
       
-      if (nameMatch || cityMatch || stateMatch || countryMatch) {
-        console.log('Match found:', { name: location.name, city: location.city, state: location.state, country: location.country });
-      }
+      // Limit to 15 suggestions for better UX
+      const filtered = searchResults.slice(0, 15);
       
-      return nameMatch || cityMatch || stateMatch || countryMatch;
-    }).slice(0, 10); // Limit to 10 suggestions
-    
-    console.log('Filtered locations:', filtered.length);
-    console.log('Filtered results:', filtered.map(l => l.name));
-    
-    locationSuggestions = filtered;
-    showLocationSuggestions = true;
+      console.log(`✅ Backend search found ${searchResults.length} locations, showing ${filtered.length}`);
+      
+      locationSuggestions = filtered;
+      showLocationSuggestions = true;
+    } catch (error) {
+      console.error('Search failed, falling back to client-side filtering:', error);
+      
+      // Fallback to client-side filtering if backend search fails
+      const filtered = locations.filter(location => {
+        const nameMatch = location.name && location.name.toLowerCase().includes(query);
+        const cityMatch = location.city && location.city.toLowerCase().includes(query);
+        const stateMatch = location.state && location.state.toLowerCase().includes(query);
+        const countryMatch = location.country && location.country.toLowerCase().includes(query);
+        
+        return nameMatch || cityMatch || stateMatch || countryMatch;
+      }).slice(0, 10);
+      
+      console.log('Fallback filtered locations:', filtered.length);
+      locationSuggestions = filtered;
+      showLocationSuggestions = true;
+    }
   }
   
   // Generate consistent UUIDs for locations to satisfy backend validation
@@ -574,9 +582,9 @@
                 class="location-input"
                 required
               />
-              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 3}
+              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 2}
                 <div class="location-hint">
-                  <span class="hint-text">Type at least 3 characters to search locations...</span>
+                  <span class="hint-text">Type at least 2 characters to search locations...</span>
                 </div>
               {/if}
               {#if showLocationSuggestions && locationSuggestions.length > 0}

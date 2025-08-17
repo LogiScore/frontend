@@ -1439,57 +1439,32 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Try to get all locations by implementing client-side pagination
-      // since the backend has a 50-record hard limit
-      let allData: any[] = [];
-      let offset = 0;
-      const limit = 50; // Backend's hard limit
-      let hasMore = true;
-      let attemptCount = 0;
-      const maxAttempts = 100; // Prevent infinite loops
+      // Backend now supports proper search and pagination - no more client-side pagination needed!
+      console.log('🎉 Backend limitation removed! Using new search-enabled API...');
       
-      console.log('🔄 Implementing client-side pagination due to backend 50-record limit...');
+      // Get all locations without search filter (for initial load)
+      const url = '/api/locations/?page=1&page_size=1000';
+      console.log(`📡 Fetching all locations: ${url}`);
       
-      while (hasMore && attemptCount < maxAttempts) {
-        try {
-          const url = `/api/locations/?limit=${limit}&offset=${offset}`;
-          console.log(`📡 Fetching locations: offset=${offset}, limit=${limit}`);
-          
-          const batch = await this.request<any[]>(url);
-          console.log(`📦 Received batch: ${batch.length} locations`);
-          
-          if (batch.length === 0) {
-            console.log('✅ No more locations found, pagination complete');
-            hasMore = false;
-          } else {
-            allData = allData.concat(batch);
-            offset += batch.length;
-            attemptCount++;
-            
-            // If we get less than the limit, we've reached the end
-            if (batch.length < limit) {
-              console.log('✅ Reached end of data, pagination complete');
-              hasMore = false;
-            }
-            
-            // Add a small delay to prevent overwhelming the backend
-            await new Promise(resolve => setTimeout(resolve, 100));
-          }
-        } catch (error: any) {
-          console.log(`❌ Failed to fetch batch at offset ${offset}:`, error.message);
-          hasMore = false;
-        }
+      const response = await this.request<any>(url);
+      console.log(`📦 Received response structure:`, response);
+      
+      // Handle the new response format with pagination metadata
+      let data: any[];
+      if (response.data && Array.isArray(response.data)) {
+        // New format: { data: [...], pagination: {...} }
+        data = response.data;
+        console.log(`✅ Successfully loaded ${data.length} locations via new API format`);
+        console.log(`📊 Pagination info:`, response.pagination);
+      } else if (Array.isArray(response)) {
+        // Fallback: direct array response
+        data = response;
+        console.log(`✅ Successfully loaded ${data.length} locations via direct array response`);
+      } else {
+        throw new Error('Unexpected API response format');
       }
       
-      console.log(`🎯 Total locations loaded via pagination: ${allData.length}`);
-      
-      // Check if we got limited data (backend limitation)
-      if (allData.length <= 50) {
-        console.warn(`⚠️ BACKEND LIMITATION: Only ${allData.length} locations returned. Backend appears to have a 50-record hard limit.`);
-        console.warn(`⚠️ This severely limits search functionality. Backend needs to remove this limitation.`);
-      }
-      
-      return allData.map((loc: any) => ({
+      return data.map((loc: any) => ({
         id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
         name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
         city: loc.city || '',
@@ -1502,7 +1477,6 @@ class ApiClient {
       console.error('Failed to load locations from database:', error);
       
       // Fallback: Load from static data if backend API is not available
-      // This should be removed once the backend API is fully implemented
       console.log('Using fallback locations due to API error');
       const fallbackLocations = [
         { id: 'us-east', name: 'New York, NY, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
@@ -1529,6 +1503,47 @@ class ApiClient {
       
       console.log('Using fallback locations, backend API not available');
       return fallbackLocations;
+    }
+  }
+
+  // ===== METHOD: searchLocations =====
+  async searchLocations(query: string): Promise<Location[]> {
+    try {
+      // Use the new backend search API with pagination
+      const url = `/api/locations/?q=${encodeURIComponent(query)}&page=1&page_size=1000`;
+      console.log(`🔍 Searching locations with query: "${query}"`);
+      console.log(`📡 Search URL: ${url}`);
+      
+      const response = await this.request<any>(url);
+      console.log(`📦 Search response structure:`, response);
+      
+      // Handle the new response format with pagination metadata
+      let data: any[];
+      if (response.data && Array.isArray(response.data)) {
+        // New format: { data: [...], pagination: {...} }
+        data = response.data;
+        console.log(`✅ Search found ${data.length} locations for "${query}"`);
+        console.log(`📊 Search pagination info:`, response.pagination);
+      } else if (Array.isArray(response)) {
+        // Fallback: direct array response
+        data = response;
+        console.log(`✅ Search found ${data.length} locations for "${query}" (direct response)`);
+      } else {
+        throw new Error('Unexpected search API response format');
+      }
+      
+      return data.map((loc: any) => ({
+        id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+        name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+        city: loc.city || '',
+        state: loc.state || '',
+        region: loc.region || '',
+        subregion: loc.subregion || '',
+        country: loc.country || ''
+      }));
+    } catch (error: any) {
+      console.error(`Failed to search locations for "${query}":`, error);
+      return [];
     }
   }
 }
