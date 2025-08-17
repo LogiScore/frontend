@@ -125,8 +125,12 @@
 
   async function loadLocations() {
     try {
+      console.log('🔄 Loading locations...');
+      
       // Use the new dynamic location loading method from database
       const databaseLocations = await apiClient.getLocationsFromDatabase();
+      console.log('📊 Raw database locations:', databaseLocations.length);
+      console.log('📊 Sample raw location:', databaseLocations[0]);
       
       // Convert to the expected format for the existing code
       locations = databaseLocations.map(loc => ({
@@ -139,8 +143,8 @@
         subregion: loc.subregion
       }));
       
-      console.log('Loaded dynamic locations:', locations.length);
-      console.log('Sample location:', locations[0]);
+      console.log('✅ Processed locations:', locations.length);
+      console.log('✅ Sample processed location:', locations[0]);
       
       // Warn if we have limited data due to backend restrictions
       if (locations.length <= 50) {
@@ -149,14 +153,14 @@
         console.warn('⚠️ Users cannot search for locations beyond the first', locations.length, 'records');
       }
     } catch (err: any) {
-      console.error('Failed to load dynamic locations:', err);
+      console.error('❌ Failed to load dynamic locations:', err);
       // Keep existing fallback logic as a safety net
       locations = [
-        { id: 'us-east', Location: 'New York, NY, USA', City: 'New York', State: 'NY', Country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: 'us-west', Location: 'Los Angeles, CA, USA', City: 'Los Angeles', State: 'CA', Country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: 'uk-london', Location: 'London, , UK', City: 'London', State: '', Country: 'UK', region: 'Europe', subregion: 'Western Europe' }
+        { id: 'us-east', name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'us-west', name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: 'uk-london', name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' }
       ];
-      console.log('Using minimal fallback locations due to error');
+      console.log('🔄 Using minimal fallback locations due to error');
     }
   }
 
@@ -258,30 +262,29 @@
   }
 
   async function handleLocationSearch(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const query = input.value.toLowerCase().trim();
+    const query = (event.target as HTMLInputElement).value.trim().toLowerCase();
     
-    console.log('Location search triggered with query:', query);
+    console.log('Location search query:', query);
+    console.log('Available locations:', locations.length);
     
-    // Require at least 4 characters before searching to improve performance
     if (query.length < 4) {
-      showLocationSuggestions = false;
       locationSuggestions = [];
+      showLocationSuggestions = false;
       return;
     }
-    
+
     try {
-      // Use the new backend search API instead of client-side filtering
-      console.log(`🔍 Searching backend for: "${query}"`);
+      // Try backend search first
       const searchResults = await apiClient.searchLocations(query);
+      console.log('Backend search results:', searchResults.length);
       
-      // Limit to 15 suggestions for better UX
-      const filtered = searchResults.slice(0, 15);
-      
+      const filtered = searchResults.slice(0, 10);
       console.log(`✅ Backend search found ${searchResults.length} locations, showing ${filtered.length}`);
       
       locationSuggestions = filtered;
       showLocationSuggestions = true;
+      console.log('Location suggestions set:', locationSuggestions.length);
+      console.log('Show location suggestions:', showLocationSuggestions);
     } catch (error) {
       console.error('Search failed, falling back to client-side filtering:', error);
       
@@ -298,6 +301,8 @@
       console.log('Fallback filtered locations:', filtered.length);
       locationSuggestions = filtered;
       showLocationSuggestions = true;
+      console.log('Fallback location suggestions set:', locationSuggestions.length);
+      console.log('Show location suggestions (fallback):', showLocationSuggestions);
     }
   }
   
@@ -354,9 +359,29 @@
       // Show success message
       successMessage = `Branch "${location.name}" created successfully for the selected company.`;
       
-    } catch (error: any) {
-      console.error('Failed to create branch:', error);
-      error = `Failed to create branch: ${error.message}. Please try again or contact support.`;
+    } catch (err: any) {
+      console.error('Failed to create branch:', err);
+      
+      // TEMPORARY: Fallback for when backend API is not yet implemented
+      // This allows testing the location selection while the backend is being developed
+      console.warn('Backend API not available, using fallback branch creation');
+      
+      // Generate a temporary branch ID for testing purposes
+      const tempBranchId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      selectedBranch = tempBranchId;
+      selectedBranchDisplay = location.name || 'Unknown Location';
+      console.log('Set selectedBranch (temporary ID):', selectedBranch);
+      console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
+      
+      showLocationSuggestions = false;
+      locationSuggestions = [];
+      error = null; // Clear any previous errors
+      
+      // Show warning message
+      successMessage = `Branch "${location.name}" selected (temporary ID for testing). Backend API needs to be implemented for production use.`;
+      
+      // Note: This is a temporary solution - remove when backend API is ready
     }
   }
 
@@ -654,6 +679,20 @@
               <!-- Create new branch section -->
               <div class="new-branch-section">
                 <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : 'Select a location to create a new branch:'}</p>
+                
+                <!-- TEMPORARY DEBUG INFO -->
+                <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;">
+                  <strong>Debug Info:</strong><br>
+                  showLocationSuggestions: {showLocationSuggestions}<br>
+                  locationSuggestions.length: {locationSuggestions.length}<br>
+                  selectedBranchDisplay: "{selectedBranchDisplay}"<br>
+                  selectedBranch: "{selectedBranch}"<br>
+                  Total locations loaded: {locations.length}
+                  <br><br>
+                  <button type="button" on:click={() => loadLocations()}>Reload Locations</button>
+                  <button type="button" on:click={() => console.log('Current locations:', locations)}>Log Locations</button>
+                </div>
+                
                 <input 
                   type="text" 
                   id="branch" 
@@ -673,9 +712,19 @@
                     {#each locationSuggestions as suggestion}
                       <div 
                         class="suggestion-item" 
-                        on:click={() => selectLocation(suggestion)}
-                        on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
+                        on:click={() => {
+                          console.log('Location suggestion clicked:', suggestion);
+                          selectLocation(suggestion);
+                        }}
+                        on:keydown={(e) => {
+                          if (e.key === 'Enter') {
+                            console.log('Location suggestion Enter key pressed:', suggestion);
+                            selectLocation(suggestion);
+                          }
+                        }}
                         tabindex="0"
+                        role="button"
+                        style="cursor: pointer;"
                       >
                         <strong>{suggestion.name || 'Unknown Location'}</strong>
                         <span class="suggestion-details">{suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}</span>
