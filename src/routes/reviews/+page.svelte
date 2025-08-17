@@ -589,9 +589,6 @@
           <!-- Company Information -->
           <div class="form-section">
             <h2>Company Information</h2>
-            <div class="form-note">
-              <p><strong>Important:</strong> Branch selection is mandatory because service quality can vary significantly between different locations. This ensures your review accurately reflects the specific office you're reviewing.</p>
-            </div>
             <div class="form-group">
               <label for="company">Company *</label>
               <select id="company" bind:value={selectedCompany} required>
@@ -699,19 +696,6 @@
               <!-- Create new branch section -->
               <div class="new-branch-section">
                 <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : 'Select a location to create a new branch:'}</p>
-                
-                <!-- TEMPORARY DEBUG INFO -->
-                <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;">
-                  <strong>Debug Info:</strong><br>
-                  showLocationSuggestions: {showLocationSuggestions}<br>
-                  locationSuggestions.length: {locationSuggestions.length}<br>
-                  selectedBranchDisplay: "{selectedBranchDisplay}"<br>
-                  selectedBranch: "{selectedBranch}"<br>
-                  Total locations loaded: {locations.length}
-                  <br><br>
-                  <button type="button" on:click={() => loadLocations()}>Reload Locations</button>
-                  <button type="button" on:click={() => console.log('Current locations:', locations)}>Log Locations</button>
-                </div>
                 
                 <input 
                   type="text" 
@@ -914,11 +898,10 @@
 
   .form-section {
     background: white;
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .form-section h2 {
@@ -1456,54 +1439,6 @@
     color: white;
   }
 
-  @media (max-width: 768px) {
-    .container {
-      padding: 1rem;
-    }
-    
-    .hero h1 {
-      font-size: 2rem;
-    }
-    
-    .form-section {
-      padding: 1.5rem;
-    }
-    
-    .star {
-      width: 35px;
-      height: 35px;
-      font-size: 1rem;
-    }
-    
-    .summary-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .auth-actions {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-  }
-
-  .form-note {
-    background: #e3f2fd;
-    border: 1px solid #2196f3;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    color: #1565c0;
-  }
-
-  .form-note p {
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-
-  .form-note strong {
-    color: #0d47a1;
-  }
-
   /* New Branch Selection Styles */
   .existing-branches {
     margin-bottom: 1.5rem;
@@ -1609,6 +1544,35 @@
 
   .search-tips strong {
     color: #333;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    
+    .hero h1 {
+      font-size: 2rem;
+    }
+    
+    .form-section {
+      padding: 1.5rem;
+    }
+    
+    .star {
+      width: 35px;
+      height: 35px;
+      font-size: 1rem;
+    }
+    
+    .summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .auth-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
   }
 
   .special-chars-warning {
