@@ -1437,14 +1437,39 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Use standardized request method for proper CORS handling and error management
-      const data = await this.request<any[]>('/api/locations');
+      // Try different HTTP methods and endpoints for locations
+      let data: any[];
+      
+      try {
+        // First try: GET /api/locations/ (with trailing slash)
+        data = await this.request<any[]>('/api/locations/');
+        console.log('Successfully loaded locations via GET /api/locations/');
+      } catch (getError: any) {
+        console.log('GET /api/locations/ failed, trying POST...');
+        
+        try {
+          // Second try: POST /api/locations/ (with trailing slash)
+          data = await this.request<any[]>('/api/locations/', { method: 'POST' });
+          console.log('Successfully loaded locations via POST /api/locations/');
+        } catch (postError: any) {
+          console.log('POST /api/locations/ failed, trying alternative endpoint...');
+          
+          try {
+            // Third try: GET /api/locations (without trailing slash as fallback)
+            data = await this.request<any[]>('/api/locations');
+            console.log('Successfully loaded locations via GET /api/locations (fallback)');
+          } catch (altError: any) {
+            throw new Error('All location endpoints failed. Check backend implementation.');
+          }
+        }
+      }
+      
       return data.map((loc: any) => ({
-        id: loc.UUID || loc.id?.toString() || `${loc.City}-${loc.Country}`.toLowerCase().replace(/\s+/g, '-'),
-        name: loc.Location || `${loc.City}, ${loc.State ? loc.State + ', ' : ''}${loc.Country}`,
-        region: loc.Region || '',
-        subregion: loc.Subregion || '',
-        country: loc.Country || ''
+        id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+        name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+        region: loc.region || '',
+        subregion: loc.subregion || '',
+        country: loc.country || ''
       }));
     } catch (error: any) {
       console.error('Failed to load locations from database:', error);
