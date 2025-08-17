@@ -133,7 +133,7 @@
       console.log('📊 Sample raw location:', databaseLocations[0]);
       
       // Convert to the expected format for the existing code
-      locations = databaseLocations.map(loc => ({
+      const processedLocations = databaseLocations.map(loc => ({
         id: loc.id,
         name: loc.name,
         city: loc.city || loc.name.split(',')[0]?.trim() || loc.name, // Use city from API or extract from name
@@ -143,14 +143,27 @@
         subregion: loc.subregion
       }));
       
-      console.log('✅ Processed locations:', locations.length);
-      console.log('✅ Sample processed location:', locations[0]);
+      // TEMPORARY: Always add test data with special characters for testing
+      const testLocations = [
+        { id: 'de-munchen', name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: 'br-sao-paulo', name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: 'ma-selibaby', name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
+      ];
+      
+      // Combine backend locations with test data
+      locations = [...processedLocations, ...testLocations];
+      
+      console.log('✅ Processed locations:', processedLocations.length);
+      console.log('✅ Test locations added:', testLocations.length);
+      console.log('✅ Total locations available:', locations.length);
+      console.log('✅ Sample processed location:', processedLocations[0]);
+      console.log('✅ Sample test location:', testLocations[0]);
       
       // Warn if we have limited data due to backend restrictions
-      if (locations.length <= 50) {
-        console.warn('⚠️ BACKEND LIMITATION: Only loaded', locations.length, 'locations');
+      if (processedLocations.length <= 50) {
+        console.warn('⚠️ BACKEND LIMITATION: Only loaded', processedLocations.length, 'locations');
         console.warn('⚠️ This severely limits search functionality - backend needs to be updated');
-        console.warn('⚠️ Users cannot search for locations beyond the first', locations.length, 'records');
+        console.warn('⚠️ Users cannot search for locations beyond the first', processedLocations.length, 'records');
       }
     } catch (err: any) {
       console.error('❌ Failed to load dynamic locations:', err);
@@ -268,8 +281,9 @@
   async function handleLocationSearch(event: Event) {
     const query = (event.target as HTMLInputElement).value.trim().toLowerCase();
     
-    console.log('Location search query:', query);
-    console.log('Available locations:', locations.length);
+    console.log('🔍 Location search query:', query);
+    console.log('📊 Available locations:', locations.length);
+    console.log('📊 Sample locations:', locations.slice(0, 3));
     
     if (query.length < 4) {
       locationSuggestions = [];
@@ -283,6 +297,8 @@
     
     if (forceFallback) {
       console.log('🔄 Forcing fallback to client-side filtering for testing special character handling');
+      console.log('🔍 Searching in', locations.length, 'locations for query:', query);
+      
       // Fallback to client-side filtering to test special character search
       const filtered = locations.filter(location => {
         // Strategy 1: Normalized search (remove accents)
@@ -329,14 +345,30 @@
           });
         }
         
+        // Debug logging for all matches
+        if (hasMatch) {
+          console.log('✅ Match found:', {
+            location: location.name,
+            query,
+            normalizedQuery,
+            nameMatch,
+            cityMatch,
+            exactNameMatch,
+            exactCityMatch,
+            partialNameMatch,
+            partialCityMatch
+          });
+        }
+        
         return hasMatch;
       }).slice(0, 25); // Increased from 10 to 25
       
-      console.log('Fallback filtered locations:', filtered.length);
+      console.log('🎯 Fallback filtered locations:', filtered.length);
+      console.log('🎯 Filtered results:', filtered.map(l => l.name));
       locationSuggestions = filtered;
       showLocationSuggestions = true;
-      console.log('Fallback location suggestions set:', locationSuggestions.length);
-      console.log('Show location suggestions (fallback):', showLocationSuggestions);
+      console.log('🎯 Location suggestions set:', locationSuggestions.length);
+      console.log('🎯 Show location suggestions:', showLocationSuggestions);
       return;
     }
 
