@@ -254,8 +254,8 @@
     
     console.log('Location search triggered with query:', query);
     
-    // Require at least 2 characters before searching to improve performance
-    if (query.length < 2) {
+    // Require at least 4 characters before searching to improve performance
+    if (query.length < 4) {
       showLocationSuggestions = false;
       locationSuggestions = [];
       return;
@@ -582,9 +582,9 @@
                 class="location-input"
                 required
               />
-              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 2}
+              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
                 <div class="location-hint">
-                  <span class="hint-text">Type at least 2 characters to search locations...</span>
+                  <span class="hint-text">Type at least 4 characters to search locations...</span>
                 </div>
               {/if}
               {#if showLocationSuggestions && locationSuggestions.length > 0}
