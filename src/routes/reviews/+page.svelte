@@ -291,9 +291,9 @@
       return;
     }
 
-    // TEMPORARY: Force fallback to test special character handling
-    // Remove this when backend is updated to handle special characters properly
-    const forceFallback = true;
+    // Use backend search by default for production
+    // Only fall back to client-side filtering if backend search fails
+    const forceFallback = false; // Set to true only for testing client-side filtering
     
     if (forceFallback) {
       console.log('🔄 Forcing fallback to client-side filtering for testing special character handling');
@@ -916,7 +916,9 @@
                     <br><br>
                     <small>Check console for results</small>
                     <br>
-                    <small style="color: #666;">Note: Search checks {locations.length} locations. Console logging limited to first 5 locations to avoid spam.</small>
+                    <small style="color: #666;">Note: Using backend search by default. Client-side filtering only used if backend fails.</small>
+                    <br>
+                    <small style="color: #666;">Backend handles: /api/locations/?q=search_term</small>
                   </div>
                 </div>
                 {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
