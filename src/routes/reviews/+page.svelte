@@ -290,27 +290,51 @@
       
       // Fallback to client-side filtering if backend search fails
       const filtered = locations.filter(location => {
-        // Normalize both query and location data for better matching
+        // Strategy 1: Normalized search (remove accents)
         const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normalizedName = (location.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normalizedCity = (location.city || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normalizedState = (location.state || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normalizedCountry = (location.country || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         
-        // Check for matches in normalized text
-        const nameMatch = normalizedName.includes(normalizedQuery);
-        const cityMatch = normalizedCity.includes(normalizedQuery);
-        const stateMatch = normalizedState.includes(normalizedQuery);
-        const countryMatch = normalizedCountry.includes(normalizedQuery);
-        
-        // Also check original text for exact matches (including special characters)
+        // Strategy 2: Exact character matching (including special characters)
         const exactNameMatch = location.name && location.name.toLowerCase().includes(query);
         const exactCityMatch = location.city && location.city.toLowerCase().includes(query);
         const exactStateMatch = location.state && location.state.toLowerCase().includes(query);
         const exactCountryMatch = location.country && location.country.toLowerCase().includes(query);
         
-        return nameMatch || cityMatch || stateMatch || countryMatch || 
-               exactNameMatch || exactCityMatch || exactStateMatch || exactCountryMatch;
+        // Strategy 3: Normalized matching (e.g., "munchen" matches "München")
+        const nameMatch = normalizedName.includes(normalizedQuery);
+        const cityMatch = normalizedCity.includes(normalizedQuery);
+        const stateMatch = normalizedState.includes(normalizedQuery);
+        const countryMatch = normalizedCountry.includes(normalizedQuery);
+        
+        // Strategy 4: Partial word matching for better results
+        const partialNameMatch = location.name && location.name.toLowerCase().split(/\s+/).some((word: string) => 
+          word.includes(query) || word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(normalizedQuery)
+        );
+        const partialCityMatch = location.city && location.city.toLowerCase().split(/\s+/).some((word: string) => 
+          word.includes(query) || word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(normalizedQuery)
+        );
+        
+        const hasMatch = nameMatch || cityMatch || stateMatch || countryMatch || 
+                        exactNameMatch || exactCityMatch || exactStateMatch || exactCountryMatch ||
+                        partialNameMatch || partialCityMatch;
+        
+        // Debug logging for specific cases
+        if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
+          console.log('🔍 Debug match for "munchen" → "München":', {
+            location: location.name,
+            normalizedQuery,
+            normalizedName,
+            nameMatch,
+            exactNameMatch,
+            partialNameMatch,
+            hasMatch
+          });
+        }
+        
+        return hasMatch;
       }).slice(0, 25); // Increased from 10 to 25
       
       console.log('Fallback filtered locations:', filtered.length);
@@ -540,6 +564,20 @@
     }
   }
 
+  async function testSearch(query: string) {
+    console.log('Testing search with query:', query);
+    try {
+      const results = await apiClient.searchLocations(query);
+      console.log('Test search results:', results.length);
+      if (results.length > 0) {
+        console.log('First result:', results[0]);
+      } else {
+        console.log('No results found for query:', query);
+      }
+    } catch (error) {
+      console.error('Error during test search:', error);
+    }
+  }
 
 </script>
 
@@ -715,6 +753,14 @@
                       <br>⚠️ <strong>Limited Data:</strong> Currently only {locations.length} locations available. Backend needs to be updated for full location database.
                     {/if}
                   </small>
+                  
+                  <!-- TEMPORARY: Test search functionality -->
+                  <div class="test-search" style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 4px;">
+                    <strong>Test Search:</strong> 
+                    <button type="button" on:click={() => testSearch('munchen')} style="margin: 0 5px; padding: 2px 8px;">Test "munchen"</button>
+                    <button type="button" on:click={() => testSearch('münchen')} style="margin: 0 5px; padding: 2px 8px;">Test "München"</button>
+                    <small>Check console for results</small>
+                  </div>
                 </div>
                 {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
                   <div class="location-hint">
