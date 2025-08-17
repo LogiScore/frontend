@@ -12,9 +12,10 @@
   let freightForwarders: any[] = [];
   let branches: any[] = [];
   let selectedCompany: string = '';
-  let selectedBranch: string = '';
-  let selectedBranchDisplay: string = '';
-  let isAnonymous: boolean = false;
+  let selectedBranch = '';
+  let selectedBranchDisplay = '';
+  let isTemporaryBranch = false; // Track if this is a temporary branch
+  let isAnonymous = false;
   
   // Location autocomplete
   let showLocationSuggestions = false;
@@ -56,6 +57,7 @@
     // Clear previous branch selection when company changes
     selectedBranch = '';
     selectedBranchDisplay = '';
+    isTemporaryBranch = false; // Reset temporary branch flag
     // Branches will be loaded in loadCompanyData
   }
   
@@ -529,6 +531,7 @@
       
       selectedBranch = tempBranchId;
       selectedBranchDisplay = location.name || 'Unknown Location';
+      isTemporaryBranch = true; // Mark as temporary
       console.log('Set selectedBranch (temporary UUID):', selectedBranch);
       console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
       
@@ -548,6 +551,7 @@
   async function selectExistingBranch(branch: any) {
     selectedBranch = branch.id;
     selectedBranchDisplay = branch.name;
+    isTemporaryBranch = false; // Reset temporary branch flag
     showLocationSuggestions = false;
     locationSuggestions = [];
     error = null; // Clear any previous errors
@@ -635,7 +639,23 @@
     });
 
     try {
-      // Submit review using the new API method
+      // Check if this is a temporary branch (for development/testing)
+      if (isTemporaryBranch) {
+        // For temporary branches, show development message instead of submitting to backend
+        alert(`Development Mode: Review data prepared successfully!\n\nCompany: ${selectedCompany}\nBranch: ${selectedBranchDisplay}\nBranch ID: ${selectedBranch}\n\nThis is a temporary branch ID for testing. In production, this would create a real branch and submit the review to the backend.\n\nBackend team needs to implement:\n- POST /api/branches/ - Create new branch\n- Branch validation and management`);
+        
+        console.log('Development mode - Review data prepared:', reviewData);
+        
+        // Reset form
+        reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
+        selectedBranch = '';
+        selectedBranchDisplay = '';
+        isTemporaryBranch = false;
+        isAnonymous = false;
+        return;
+      }
+      
+      // Submit review using the new API method (for real branches)
       const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
       
       // Show success message
@@ -647,6 +667,7 @@
       selectedBranch = '';
       selectedBranchDisplay = '';
       isAnonymous = false;
+      isTemporaryBranch = false; // Reset temporary branch flag
       
     } catch (err: any) {
       console.error('Review submission failed:', err);
@@ -666,7 +687,11 @@
       } else if (err.message?.includes('404')) {
         // Check for specific branch not found error
         if (err.message?.includes('Branch not found') || err.message?.includes('does not belong to the specified freight forwarder')) {
-          error = 'The selected branch location was not found or does not belong to the selected company. Please create a new branch for this company or select an existing one.';
+          if (isTemporaryBranch) {
+            error = 'Development Mode: This is expected behavior. Temporary branch IDs are not stored in the backend database. The backend team needs to implement the branch creation API. For now, you can test the review form functionality.';
+          } else {
+            error = 'The selected branch location was not found or does not belong to the selected company. Please create a new branch for this company or select an existing one.';
+          }
         } else {
           error = 'The requested resource was not found. Please check your selection and try again.';
         }
@@ -882,6 +907,20 @@
                   <div class="branch-divider">
                     <span>or</span>
                   </div>
+                </div>
+              {/if}
+              
+              <!-- Branch Selection Status -->
+              {#if selectedBranch && selectedBranchDisplay}
+                <div class="branch-status {isTemporaryBranch ? 'temporary' : 'existing'}">
+                  {#if isTemporaryBranch}
+                    <span class="status-icon">🔄</span>
+                    <strong>Development Mode:</strong> Temporary branch "{selectedBranchDisplay}" selected
+                    <br><small>This allows testing the review form while the backend API is being developed.</small>
+                  {:else}
+                    <span class="status-icon">✅</span>
+                    <strong>Branch Selected:</strong> {selectedBranchDisplay}
+                  {/if}
                 </div>
               {/if}
               
@@ -1813,6 +1852,36 @@
   .special-chars-warning strong {
     color: #d63031;
     text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* New Branch Status Styles */
+  .branch-status {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .branch-status.temporary {
+    background: #fff3cd;
+    border-color: #ffeeba;
+    color: #856404;
+  }
+
+  .branch-status.existing {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+    color: #2e7d32;
+  }
+
+  .status-icon {
+    font-size: 1.1rem;
   }
 </style>
 
