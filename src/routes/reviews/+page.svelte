@@ -257,10 +257,10 @@
     
     // Filter locations based on input with improved performance
     const filtered = locations.filter(location => 
-      location.Location.toLowerCase().includes(query) ||
-      location.City.toLowerCase().includes(query) ||
-      (location.State && location.State.toLowerCase().includes(query)) ||
-      location.Country.toLowerCase().includes(query)
+      location.name.toLowerCase().includes(query) ||
+      (location.city && location.city.toLowerCase().includes(query)) ||
+      (location.state && location.state.toLowerCase().includes(query)) ||
+      location.country.toLowerCase().includes(query)
     ).slice(0, 10); // Limit to 10 suggestions
     
     console.log('Filtered locations:', filtered.length);
@@ -292,15 +292,15 @@
   function selectLocation(location: any) {
     console.log('Selected location:', location);
     console.log('Location ID:', location.id);
-    console.log('Location Location:', location.Location);
-    console.log('Location City:', location.City);
+    console.log('Location name:', location.name);
+    console.log('Location city:', location.city);
     console.log('Location type:', typeof location.id);
     console.log('Location ID length:', location.id?.length);
     
     // Generate a valid UUID for the location to satisfy backend validation
     const branchUUID = generateLocationUUID(location.id);
     selectedBranch = branchUUID;
-    selectedBranchDisplay = location.Location;
+    selectedBranchDisplay = location.name;
     console.log('Set selectedBranch (UUID):', selectedBranch);
     console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
     showLocationSuggestions = false;
@@ -574,8 +574,8 @@
                       on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
                       tabindex="0"
                     >
-                      <strong>{suggestion.Location}</strong>
-                      <span class="suggestion-details">{suggestion.City}{suggestion.State ? ', ' + suggestion.State : ''}, {suggestion.Country}</span>
+                      <strong>{suggestion.name}</strong>
+                      <span class="suggestion-details">{suggestion.city}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country}</span>
                     </div>
                   {/each}
                 </div>

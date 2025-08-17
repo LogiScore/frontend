@@ -1441,23 +1441,23 @@ class ApiClient {
       let data: any[];
       
       try {
-        // First try: GET /api/locations/ (with trailing slash)
-        data = await this.request<any[]>('/api/locations/');
-        console.log('Successfully loaded locations via GET /api/locations/');
+        // First try: GET /api/locations/ with higher limit to get more data
+        data = await this.request<any[]>('/api/locations/?limit=1000');
+        console.log(`Successfully loaded ${data.length} locations via GET /api/locations/?limit=1000`);
       } catch (getError: any) {
-        console.log('GET /api/locations/ failed, trying POST...');
+        console.log('GET /api/locations/?limit=1000 failed, trying without limit...');
         
         try {
-          // Second try: POST /api/locations/ (with trailing slash)
-          data = await this.request<any[]>('/api/locations/', { method: 'POST' });
-          console.log('Successfully loaded locations via POST /api/locations/');
+          // Second try: GET /api/locations/ without limit
+          data = await this.request<any[]>('/api/locations/');
+          console.log(`Successfully loaded ${data.length} locations via GET /api/locations/`);
         } catch (postError: any) {
-          console.log('POST /api/locations/ failed, trying alternative endpoint...');
+          console.log('GET /api/locations/ failed, trying alternative endpoint...');
           
           try {
             // Third try: GET /api/locations (without trailing slash as fallback)
             data = await this.request<any[]>('/api/locations');
-            console.log('Successfully loaded locations via GET /api/locations (fallback)');
+            console.log(`Successfully loaded ${data.length} locations via GET /api/locations (fallback)`);
           } catch (altError: any) {
             throw new Error('All location endpoints failed. Check backend implementation.');
           }
@@ -1467,6 +1467,8 @@ class ApiClient {
       return data.map((loc: any) => ({
         id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
         name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+        city: loc.city || '',
+        state: loc.state || '',
         region: loc.region || '',
         subregion: loc.subregion || '',
         country: loc.country || ''
