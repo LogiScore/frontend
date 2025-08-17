@@ -158,7 +158,11 @@
       locations = [
         { id: 'us-east', name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
         { id: 'us-west', name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: 'uk-london', name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' }
+        { id: 'uk-london', name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+        { id: 'de-munchen', name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: 'de-hamburg', name: 'Hamburg, , Germany', city: 'Hamburg', state: '', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: 'br-sao-paulo', name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: 'ma-selibaby', name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
       ];
       console.log('🔄 Using minimal fallback locations due to error');
     }
@@ -270,6 +274,69 @@
     if (query.length < 4) {
       locationSuggestions = [];
       showLocationSuggestions = false;
+      return;
+    }
+
+    // TEMPORARY: Force fallback to test special character handling
+    // Remove this when backend is updated to handle special characters properly
+    const forceFallback = true;
+    
+    if (forceFallback) {
+      console.log('🔄 Forcing fallback to client-side filtering for testing special character handling');
+      // Fallback to client-side filtering to test special character search
+      const filtered = locations.filter(location => {
+        // Strategy 1: Normalized search (remove accents)
+        const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedName = (location.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCity = (location.city || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedState = (location.state || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCountry = (location.country || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        
+        // Strategy 2: Exact character matching (including special characters)
+        const exactNameMatch = location.name && location.name.toLowerCase().includes(query);
+        const exactCityMatch = location.city && location.city.toLowerCase().includes(query);
+        const exactStateMatch = location.state && location.state.toLowerCase().includes(query);
+        const exactCountryMatch = location.country && location.country.toLowerCase().includes(query);
+        
+        // Strategy 3: Normalized matching (e.g., "munchen" matches "München")
+        const nameMatch = normalizedName.includes(normalizedQuery);
+        const cityMatch = normalizedCity.includes(normalizedQuery);
+        const stateMatch = normalizedState.includes(normalizedQuery);
+        const countryMatch = normalizedCountry.includes(normalizedQuery);
+        
+        // Strategy 4: Partial word matching for better results
+        const partialNameMatch = location.name && location.name.toLowerCase().split(/\s+/).some((word: string) => 
+          word.includes(query) || word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(normalizedQuery)
+        );
+        const partialCityMatch = location.city && location.city.toLowerCase().split(/\s+/).some((word: string) => 
+          word.includes(query) || word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(normalizedQuery)
+        );
+        
+        const hasMatch = nameMatch || cityMatch || stateMatch || countryMatch || 
+                        exactNameMatch || exactCityMatch || exactStateMatch || exactCountryMatch ||
+                        partialNameMatch || partialCityMatch;
+        
+        // Debug logging for specific cases
+        if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
+          console.log('🔍 Debug match for "munchen" → "München":', {
+            location: location.name,
+            normalizedQuery,
+            normalizedName,
+            nameMatch,
+            exactNameMatch,
+            partialNameMatch,
+            hasMatch
+          });
+        }
+        
+        return hasMatch;
+      }).slice(0, 25); // Increased from 10 to 25
+      
+      console.log('Fallback filtered locations:', filtered.length);
+      locationSuggestions = filtered;
+      showLocationSuggestions = true;
+      console.log('Fallback location suggestions set:', locationSuggestions.length);
+      console.log('Show location suggestions (fallback):', showLocationSuggestions);
       return;
     }
 
