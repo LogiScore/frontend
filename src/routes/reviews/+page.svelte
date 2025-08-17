@@ -520,12 +520,16 @@
       // Fallback: Create temporary branch when backend API is unavailable
       console.log('Using fallback branch creation - backend API not yet available');
       
-      // Generate a temporary branch ID for testing purposes
-      const tempBranchId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Generate a temporary branch ID in proper UUID format for testing purposes
+      const tempBranchId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
       
       selectedBranch = tempBranchId;
       selectedBranchDisplay = location.name || 'Unknown Location';
-      console.log('Set selectedBranch (temporary ID):', selectedBranch);
+      console.log('Set selectedBranch (temporary UUID):', selectedBranch);
       console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
       
       showLocationSuggestions = false;
@@ -626,7 +630,8 @@
     console.log('Branch ID validation:', {
       branch_id: reviewData.branch_id,
       isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id),
-      length: reviewData.branch_id.length
+      length: reviewData.branch_id.length,
+      isTemporary: reviewData.branch_id.startsWith('temp-') ? 'Yes (old format)' : 'No (UUID format)'
     });
 
     try {
