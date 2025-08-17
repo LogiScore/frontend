@@ -14,7 +14,6 @@
   let selectedCompany: string = '';
   let selectedBranch = '';
   let selectedBranchDisplay = '';
-  let isTemporaryBranch = false; // Track if this is a temporary branch
   let isAnonymous = false;
   
   // Location autocomplete
@@ -57,7 +56,6 @@
     // Clear previous branch selection when company changes
     selectedBranch = '';
     selectedBranchDisplay = '';
-    isTemporaryBranch = false; // Reset temporary branch flag
     // Branches will be loaded in loadCompanyData
   }
   
@@ -463,50 +461,16 @@
     }
   }
   
-  async function createBranchForCompany(location: any): Promise<string> {
-    if (!selectedCompany || !authState.token) {
-      throw new Error('Company and authentication required to create branch');
-    }
-
-    try {
-      // Create a new branch record for this company and location
-      const branchData = {
-        freight_forwarder_id: selectedCompany,
-        name: location.name || 'Unknown Location',
-        country: location.country || 'Unknown',
-        city: location.city || location.name?.split(',')[0]?.trim() || 'Unknown',
-        address: location.name || 'Unknown Address',
-        is_active: true
-      };
-
-      console.log('Creating branch for company:', branchData);
-      
-      // Call the API to create the branch
-      const newBranch = await apiClient.createBranch(branchData, authState.token);
-      console.log('Branch created successfully:', newBranch);
-      
-      return newBranch.id;
-    } catch (error: any) {
-      console.error('Failed to create branch:', error);
-      throw new Error(`Failed to create branch: ${error.message}`);
-    }
-  }
-
   async function selectLocation(location: any) {
-    console.log('Selected location:', location);
-    console.log('Location ID:', location.id);
-    console.log('Location name:', location.name);
-    console.log('Location city:', location.city);
-    console.log('Location type:', typeof location.id);
-    console.log('Location ID length:', location.id?.length);
+    console.log('🔍 selectLocation called with:', location);
     
     try {
-      // Create a real branch record for this company and location
-      const branchId = await createBranchForCompany(location);
-      
-      selectedBranch = branchId; // Use the real branch ID from the backend
+      // Use the location ID directly as the branch ID since locations already exist in the database
+      // This eliminates the need for temporary UUIDs and separate branch creation
+      selectedBranch = location.id;
       selectedBranchDisplay = location.name || 'Unknown Location';
-      console.log('Set selectedBranch (real ID):', selectedBranch);
+      
+      console.log('Set selectedBranch (location ID):', selectedBranch);
       console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
       
       showLocationSuggestions = false;
@@ -514,44 +478,19 @@
       error = null; // Clear any previous errors
       
       // Show success message
-      successMessage = `Branch "${location.name}" created successfully for the selected company.`;
-      
-    } catch (err: any) {
-      console.error('Failed to create branch:', err);
-      
-      // Fallback: Create temporary branch when backend API is unavailable
-      console.log('Using fallback branch creation - backend API not yet available');
-      
-      // Generate a temporary branch ID in proper UUID format for testing purposes
-      const tempBranchId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-      
-      selectedBranch = tempBranchId;
-      selectedBranchDisplay = location.name || 'Unknown Location';
-      isTemporaryBranch = true; // Mark as temporary
-      console.log('Set selectedBranch (temporary UUID):', selectedBranch);
-      console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
-      
-      showLocationSuggestions = false;
-      locationSuggestions = [];
-      error = null; // Clear any previous errors
-      
-      // Show user-friendly success message
       successMessage = `Location "${location.name}" selected successfully.`;
       
-      // TODO: Remove this fallback when backend implements:
-      // - POST /api/branches/ - Create new branch
-      // - Proper branch management and validation
+      console.log('Location selection completed successfully');
+      
+    } catch (err: any) {
+      console.error('Failed to select location:', err);
+      error = 'Failed to select location. Please try again.';
     }
   }
 
   async function selectExistingBranch(branch: any) {
     selectedBranch = branch.id;
     selectedBranchDisplay = branch.name;
-    isTemporaryBranch = false; // Reset temporary branch flag
     showLocationSuggestions = false;
     locationSuggestions = [];
     error = null; // Clear any previous errors
@@ -589,7 +528,7 @@
     }
 
     // Branch selection is mandatory for valid service reviews
-    if (!selectedBranch || selectedBranch.trim() === '' || !selectedBranchDisplay || selectedBranchDisplay.trim() === '') {
+    if (!selectedBranch || selectedBranch.trim() === '') {
       error = 'Please select a branch location. Service quality can vary significantly between different branches, so we require a specific location for accurate reviews.';
       return;
     }
@@ -639,23 +578,8 @@
     });
 
     try {
-      // Check if this is a temporary branch (for development/testing)
-      if (isTemporaryBranch) {
-        // For temporary branches, show development message instead of submitting to backend
-        alert(`Development Mode: Review data prepared successfully!\n\nCompany: ${selectedCompany}\nBranch: ${selectedBranchDisplay}\nBranch ID: ${selectedBranch}\n\nThis is a temporary branch ID for testing. In production, this would create a real branch and submit the review to the backend.\n\nBackend team needs to implement:\n- POST /api/branches/ - Create new branch\n- Branch validation and management`);
-        
-        console.log('Development mode - Review data prepared:', reviewData);
-        
-        // Reset form
-        reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
-        selectedBranch = '';
-        selectedBranchDisplay = '';
-        isTemporaryBranch = false;
-        isAnonymous = false;
-        return;
-      }
-      
-      // Submit review using the new API method (for real branches)
+      // Submit review using the location ID as branch ID
+      // Since locations already exist in the database, we can submit directly
       const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
       
       // Show success message
@@ -666,8 +590,6 @@
       reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
       selectedBranchDisplay = '';
-      isAnonymous = false;
-      isTemporaryBranch = false; // Reset temporary branch flag
       
     } catch (err: any) {
       console.error('Review submission failed:', err);
@@ -687,11 +609,7 @@
       } else if (err.message?.includes('404')) {
         // Check for specific branch not found error
         if (err.message?.includes('Branch not found') || err.message?.includes('does not belong to the specified freight forwarder')) {
-          if (isTemporaryBranch) {
-            error = 'Development Mode: This is expected behavior. Temporary branch IDs are not stored in the backend database. The backend team needs to implement the branch creation API. For now, you can test the review form functionality.';
-          } else {
-            error = 'The selected branch location was not found or does not belong to the selected company. Please create a new branch for this company or select an existing one.';
-          }
+          error = 'The selected branch location was not found or does not belong to the selected company. Please create a new branch for this company or select an existing one.';
         } else {
           error = 'The requested resource was not found. Please check your selection and try again.';
         }
@@ -912,15 +830,10 @@
               
               <!-- Branch Selection Status -->
               {#if selectedBranch && selectedBranchDisplay}
-                <div class="branch-status {isTemporaryBranch ? 'temporary' : 'existing'}">
-                  {#if isTemporaryBranch}
-                    <span class="status-icon">🔄</span>
-                    <strong>Development Mode:</strong> Temporary branch "{selectedBranchDisplay}" selected
-                    <br><small>This allows testing the review form while the backend API is being developed.</small>
-                  {:else}
-                    <span class="status-icon">✅</span>
-                    <strong>Branch Selected:</strong> {selectedBranchDisplay}
-                  {/if}
+                <div class="branch-status existing">
+                  <span class="status-icon">✅</span>
+                  <strong>Location Selected:</strong> {selectedBranchDisplay}
+                  <br><small>Using existing location from database (ID: {selectedBranch})</small>
                 </div>
               {/if}
               
