@@ -1443,26 +1443,24 @@ class ApiClient {
       let data: any[];
       
       try {
-        // First try: GET /api/locations/ with higher limit to get more data
-        data = await this.request<any[]>('/api/locations/?limit=1000');
-        console.log(`Successfully loaded ${data.length} locations via GET /api/locations/?limit=1000`);
+        // First try: GET /api/locations/ without any limit to get ALL data
+        data = await this.request<any[]>('/api/locations/');
+        console.log(`Successfully loaded ${data.length} locations via GET /api/locations/ (no limit)`);
+        
+        // If we only got 50 records, this suggests a backend limit - try to get more
+        if (data.length <= 50) {
+          console.log('Warning: Only got 50 records, backend may have a hard limit');
+          console.log('This severely limits search functionality - backend needs to be updated');
+        }
       } catch (getError: any) {
-        console.log('GET /api/locations/?limit=1000 failed, trying without limit...');
+        console.log('GET /api/locations/ failed, trying alternative endpoint...');
         
         try {
-          // Second try: GET /api/locations/ without limit
-          data = await this.request<any[]>('/api/locations/');
-          console.log(`Successfully loaded ${data.length} locations via GET /api/locations/`);
-        } catch (postError: any) {
-          console.log('GET /api/locations/ failed, trying alternative endpoint...');
-          
-          try {
-            // Third try: GET /api/locations (without trailing slash as fallback)
-            data = await this.request<any[]>('/api/locations');
-            console.log(`Successfully loaded ${data.length} locations via GET /api/locations (fallback)`);
-          } catch (altError: any) {
-            throw new Error('All location endpoints failed. Check backend implementation.');
-          }
+          // Second try: GET /api/locations (without trailing slash as fallback)
+          data = await this.request<any[]>('/api/locations');
+          console.log(`Successfully loaded ${data.length} locations via GET /api/locations (fallback)`);
+        } catch (altError: any) {
+          throw new Error('All location endpoints failed. Check backend implementation.');
         }
       }
       

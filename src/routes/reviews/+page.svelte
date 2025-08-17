@@ -132,6 +132,13 @@
       
       console.log('Loaded dynamic locations:', locations.length);
       console.log('Sample location:', locations[0]);
+      
+      // Warn if we have limited data due to backend restrictions
+      if (locations.length <= 50) {
+        console.warn('⚠️ BACKEND LIMITATION: Only loaded', locations.length, 'locations');
+        console.warn('⚠️ This severely limits search functionality - backend needs to be updated');
+        console.warn('⚠️ Users cannot search for locations beyond the first', locations.length, 'records');
+      }
     } catch (err: any) {
       console.error('Failed to load dynamic locations:', err);
       // Keep existing fallback logic as a safety net
