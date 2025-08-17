@@ -290,12 +290,27 @@
       
       // Fallback to client-side filtering if backend search fails
       const filtered = locations.filter(location => {
-        const nameMatch = location.name && location.name.toLowerCase().includes(query);
-        const cityMatch = location.city && location.city.toLowerCase().includes(query);
-        const stateMatch = location.state && location.state.toLowerCase().includes(query);
-        const countryMatch = location.country && location.country.toLowerCase().includes(query);
+        // Normalize both query and location data for better matching
+        const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedName = (location.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCity = (location.city || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedState = (location.state || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCountry = (location.country || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         
-        return nameMatch || cityMatch || stateMatch || countryMatch;
+        // Check for matches in normalized text
+        const nameMatch = normalizedName.includes(normalizedQuery);
+        const cityMatch = normalizedCity.includes(normalizedQuery);
+        const stateMatch = normalizedState.includes(normalizedQuery);
+        const countryMatch = normalizedCountry.includes(normalizedQuery);
+        
+        // Also check original text for exact matches (including special characters)
+        const exactNameMatch = location.name && location.name.toLowerCase().includes(query);
+        const exactCityMatch = location.city && location.city.toLowerCase().includes(query);
+        const exactStateMatch = location.state && location.state.toLowerCase().includes(query);
+        const exactCountryMatch = location.country && location.country.toLowerCase().includes(query);
+        
+        return nameMatch || cityMatch || stateMatch || countryMatch || 
+               exactNameMatch || exactCityMatch || exactStateMatch || exactCountryMatch;
       }).slice(0, 25); // Increased from 10 to 25
       
       console.log('Fallback filtered locations:', filtered.length);
@@ -650,6 +665,11 @@
             <div class="form-group">
               <label for="branch">Branch Location *</label>
               
+              <!-- Special Characters Warning -->
+              <div class="special-chars-warning">
+                <strong>⚠️ International Locations:</strong> For locations with special characters (like "Sélibaby", "São Paulo", "München"), type them exactly as they appear. The search will work with or without special characters.
+              </div>
+              
               <!-- Show existing branches if available -->
               {#if branches && branches.length > 0}
                 <div class="existing-branches">
@@ -706,6 +726,7 @@
                   <small>
                     💡 <strong>Search Tips:</strong> 
                     Type city names (e.g., "London"), country names (e.g., "Germany"), or specific locations (e.g., "New York") for better results.
+                    <br>⚠️ <strong>Special Characters:</strong> Enter special characters exactly as they appear (e.g., "Sélibaby", "São Paulo", "München").
                     {#if locations.length <= 50}
                       <br>⚠️ <strong>Limited Data:</strong> Currently only {locations.length} locations available. Backend needs to be updated for full location database.
                     {/if}
@@ -775,6 +796,7 @@
                 <li>Base your review on recent experiences (within 12 months)</li>
                 <li>Consider multiple interactions, not just one shipment</li>
                 <li>Always select the specific branch/location you're reviewing - service quality varies by location</li>
+                <li>For international locations, type special characters exactly as they appear (e.g., "Sélibaby", "São Paulo")</li>
                 <li>Focus on objective criteria rather than personal preferences</li>
                 <li>Consider both positive and negative aspects</li>
               </ul>
@@ -1587,6 +1609,35 @@
 
   .search-tips strong {
     color: #333;
+  }
+
+  .special-chars-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #fdcb6e;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #856404;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(253, 203, 110, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .special-chars-warning::before {
+    content: '🌍';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+  }
+
+  .special-chars-warning strong {
+    color: #d63031;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
   }
 </style>
 
