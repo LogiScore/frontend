@@ -253,6 +253,53 @@ class ApiClient {
     }
   }
 
+  async createBranch(branchData: {
+    freight_forwarder_id: string;
+    name: string;
+    country?: string;
+    city?: string;
+    address?: string;
+    is_active?: boolean;
+  }, token: string): Promise<{ id: string; name: string; freight_forwarder_id: string }> {
+    try {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+      
+      // Debug: Log request details
+      console.log('API Request Details:', {
+        url: '/api/branches/',
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Content-Type': 'application/json'
+        },
+        body: branchData
+      });
+      
+      return await this.request<{ id: string; name: string; freight_forwarder_id: string }>('/api/branches/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(branchData),
+      });
+    } catch (error: any) {
+      console.error('Failed to create branch:', error);
+      throw error;
+    }
+  }
+
+  async getBranchesByFreightForwarder(freightForwarderId: string): Promise<{ id: string; name: string; freight_forwarder_id: string; city?: string; country?: string }[]> {
+    try {
+      return await this.request<{ id: string; name: string; freight_forwarder_id: string; city?: string; country?: string }[]>(`/api/branches/?freight_forwarder_id=${freightForwarderId}`);
+    } catch (error: any) {
+      console.error('Failed to fetch branches for freight forwarder:', error);
+      return [];
+    }
+  }
+
   async getLocations(): Promise<Location[]> {
     try {
       return await this.request<Location[]>('/api/locations');

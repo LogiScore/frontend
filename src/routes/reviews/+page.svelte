@@ -51,6 +51,14 @@
     authState = state;
   });
 
+  // Watch for company changes to reset branch selection
+  $: if (selectedCompany) {
+    // Clear previous branch selection when company changes
+    selectedBranch = '';
+    selectedBranchDisplay = '';
+    // Branches will be loaded in loadCompanyData
+  }
+  
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
     const categoryRating = cat.questions.reduce((qSum: number, q: any) => qSum + (q.rating || 0), 0) / cat.questions.filter((q: any) => (q.rating || 0) > 0).length || 0;
     return sum + categoryRating;
@@ -106,11 +114,12 @@
   async function loadCompanyData(companyId: string) {
     try {
       const company = await apiClient.getFreightForwarder(companyId);
-      // Load branches for this company
-      // Note: This would need to be implemented in the API
-      branches = []; // Placeholder
+      // Load existing branches for this company
+      branches = await apiClient.getBranchesByFreightForwarder(companyId);
+      console.log('Loaded branches for company:', branches);
     } catch (err: any) {
       console.error('Failed to load company data:', err);
+      branches = [];
     }
   }
 
@@ -292,26 +301,36 @@
     }
   }
   
-  // Generate consistent UUIDs for locations to satisfy backend validation
-  function generateLocationUUID(locationId: string): string {
-    // Create a deterministic UUID based on the location ID
-    // This ensures the same location always generates the same UUID
-    const hash = locationId.split('').reduce((a, b) => {
-      a = ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff;
-      return a;
-    }, 0);
-    
-    // Convert to a valid UUID format with proper padding
-    const hex = Math.abs(hash).toString(16).padStart(8, '0');
-    
-    // Ensure we have enough characters for a valid UUID
-    // UUID format: 8-4-4-4-12 characters
-    const paddedHex = hex.padEnd(32, '0');
-    
-    return `${paddedHex.slice(0, 8)}-${paddedHex.slice(8, 12)}-${paddedHex.slice(12, 16)}-${paddedHex.slice(16, 20)}-${paddedHex.slice(20, 32)}`;
+  async function createBranchForCompany(location: any): Promise<string> {
+    if (!selectedCompany || !authState.token) {
+      throw new Error('Company and authentication required to create branch');
+    }
+
+    try {
+      // Create a new branch record for this company and location
+      const branchData = {
+        freight_forwarder_id: selectedCompany,
+        name: location.name || 'Unknown Location',
+        country: location.country || 'Unknown',
+        city: location.city || location.name?.split(',')[0]?.trim() || 'Unknown',
+        address: location.name || 'Unknown Address',
+        is_active: true
+      };
+
+      console.log('Creating branch for company:', branchData);
+      
+      // Call the API to create the branch
+      const newBranch = await apiClient.createBranch(branchData, authState.token);
+      console.log('Branch created successfully:', newBranch);
+      
+      return newBranch.id;
+    } catch (error: any) {
+      console.error('Failed to create branch:', error);
+      throw new Error(`Failed to create branch: ${error.message}`);
+    }
   }
 
-  function selectLocation(location: any) {
+  async function selectLocation(location: any) {
     console.log('Selected location:', location);
     console.log('Location ID:', location.id);
     console.log('Location name:', location.name);
@@ -319,14 +338,35 @@
     console.log('Location type:', typeof location.id);
     console.log('Location ID length:', location.id?.length);
     
-    // Generate a valid UUID for the location to satisfy backend validation
-    const branchUUID = generateLocationUUID(location.id || 'unknown');
-    selectedBranch = branchUUID;
-    selectedBranchDisplay = location.name || 'Unknown Location';
-    console.log('Set selectedBranch (UUID):', selectedBranch);
-    console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
+    try {
+      // Create a real branch record for this company and location
+      const branchId = await createBranchForCompany(location);
+      
+      selectedBranch = branchId; // Use the real branch ID from the backend
+      selectedBranchDisplay = location.name || 'Unknown Location';
+      console.log('Set selectedBranch (real ID):', selectedBranch);
+      console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
+      
+      showLocationSuggestions = false;
+      locationSuggestions = [];
+      error = null; // Clear any previous errors
+      
+      // Show success message
+      successMessage = `Branch "${location.name}" created successfully for the selected company.`;
+      
+    } catch (error: any) {
+      console.error('Failed to create branch:', error);
+      error = `Failed to create branch: ${error.message}. Please try again or contact support.`;
+    }
+  }
+
+  async function selectExistingBranch(branch: any) {
+    selectedBranch = branch.id;
+    selectedBranchDisplay = branch.name;
     showLocationSuggestions = false;
     locationSuggestions = [];
+    error = null; // Clear any previous errors
+    successMessage = `Branch "${branch.name}" selected for the selected company.`;
   }
   
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
@@ -359,8 +399,9 @@
       return;
     }
 
+    // Branch selection is mandatory for valid service reviews
     if (!selectedBranch || selectedBranch.trim() === '' || !selectedBranchDisplay || selectedBranchDisplay.trim() === '') {
-      error = 'Please select a branch location';
+      error = 'Please select a branch location. Service quality can vary significantly between different branches, so we require a specific location for accurate reviews.';
       return;
     }
 
@@ -394,7 +435,7 @@
       selectedBranchDisplay: selectedBranchDisplay
     });
 
-    // Additional validation: Ensure branch_id is not empty
+    // Validate branch_id format
     if (!reviewData.branch_id || reviewData.branch_id.trim() === '') {
       error = 'Branch ID is required. Please select a valid branch location.';
       return;
@@ -435,6 +476,13 @@
           error = 'Invalid branch ID format. Please try selecting the branch location again.';
         } else {
           error = 'Invalid review data. Please check your inputs and try again.';
+        }
+      } else if (err.message?.includes('404')) {
+        // Check for specific branch not found error
+        if (err.message?.includes('Branch not found') || err.message?.includes('does not belong to the specified freight forwarder')) {
+          error = 'The selected branch location was not found or does not belong to the selected company. Please create a new branch for this company or select an existing one.';
+        } else {
+          error = 'The requested resource was not found. Please check your selection and try again.';
         }
       } else if (err.message?.includes('500')) {
         error = 'Server error occurred. Please try again later.';
@@ -498,9 +546,12 @@
         <form on:submit|preventDefault={submitReview}>
 
 
-          <!-- Company Selection -->
+          <!-- Company Information -->
           <div class="form-section">
             <h2>Company Information</h2>
+            <div class="form-note">
+              <p><strong>Important:</strong> Branch selection is mandatory because service quality can vary significantly between different locations. This ensures your review accurately reflects the specific office you're reviewing.</p>
+            </div>
             <div class="form-group">
               <label for="company">Company *</label>
               <select id="company" bind:value={selectedCompany} required>
@@ -573,36 +624,68 @@
             <!-- Branch Location Section -->
             <div class="form-group">
               <label for="branch">Branch Location *</label>
-              <input 
-                type="text" 
-                id="branch" 
-                bind:value={selectedBranchDisplay}
-                placeholder="Start typing to search locations..."
-                on:input={handleLocationSearch}
-                class="location-input"
-                required
-              />
-              {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
-                <div class="location-hint">
-                  <span class="hint-text">Type at least 4 characters to search locations...</span>
+              
+              <!-- Show existing branches if available -->
+              {#if branches && branches.length > 0}
+                <div class="existing-branches">
+                  <p class="help-text">Select from existing branches or create a new one:</p>
+                  <div class="branch-options">
+                    {#each branches as branch}
+                      <button 
+                        type="button" 
+                        class="branch-option {selectedBranch === branch.id ? 'selected' : ''}"
+                        on:click={() => selectExistingBranch(branch)}
+                      >
+                        <strong>{branch.name}</strong>
+                        {#if branch.city || branch.country}
+                          <span class="branch-details">
+                            {branch.city}{branch.city && branch.country ? ', ' : ''}{branch.country}
+                          </span>
+                        {/if}
+                      </button>
+                    {/each}
+                  </div>
+                  <div class="branch-divider">
+                    <span>or</span>
+                  </div>
                 </div>
               {/if}
-              {#if showLocationSuggestions && locationSuggestions.length > 0}
-                <div class="location-suggestions">
-                  {#each locationSuggestions as suggestion}
-                    <div 
-                      class="suggestion-item" 
-                      on:click={() => selectLocation(suggestion)}
-                      on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
-                      tabindex="0"
-                    >
-                      <strong>{suggestion.name || 'Unknown Location'}</strong>
-                      <span class="suggestion-details">{suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}</span>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-              <p class="help-text">Select a branch location for your review. A unique identifier will be generated for the selected location.</p>
+              
+              <!-- Create new branch section -->
+              <div class="new-branch-section">
+                <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : 'Select a location to create a new branch:'}</p>
+                <input 
+                  type="text" 
+                  id="branch" 
+                  bind:value={selectedBranchDisplay}
+                  placeholder="Start typing to search locations..."
+                  on:input={handleLocationSearch}
+                  class="location-input"
+                  required
+                />
+                {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
+                  <div class="location-hint">
+                    <span class="hint-text">Type at least 4 characters to search locations...</span>
+                  </div>
+                {/if}
+                {#if showLocationSuggestions && locationSuggestions.length > 0}
+                  <div class="location-suggestions">
+                    {#each locationSuggestions as suggestion}
+                      <div 
+                        class="suggestion-item" 
+                        on:click={() => selectLocation(suggestion)}
+                        on:keydown={(e) => e.key === 'Enter' && selectLocation(suggestion)}
+                        tabindex="0"
+                      >
+                        <strong>{suggestion.name || 'Unknown Location'}</strong>
+                        <span class="suggestion-details">{suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}</span>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+              
+              <p class="help-text">Select a specific branch location for your review. Service quality can vary significantly between different branches, so we require a specific location for accurate reviews.</p>
             </div>
 
           <!-- Review Options -->
@@ -626,7 +709,7 @@
               <ul class="tips-list">
                 <li>Base your review on recent experiences (within 12 months)</li>
                 <li>Consider multiple interactions, not just one shipment</li>
-                <li>Be specific about the branch/location you're reviewing</li>
+                <li>Always select the specific branch/location you're reviewing - service quality varies by location</li>
                 <li>Focus on objective criteria rather than personal preferences</li>
                 <li>Consider both positive and negative aspects</li>
               </ul>
@@ -682,6 +765,10 @@
               <div class="summary-item">
                 <span class="label">Weighted Rating:</span>
                 <span class="value">{weightedRating.toFixed(1)}/4.0</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Review Scope:</span>
+                <span class="value">{selectedBranch && selectedBranch.trim() !== '' ? `Branch: ${selectedBranchDisplay}` : 'Company Overall'}</span>
               </div>
             </div>
           </div>
@@ -1010,6 +1097,22 @@
     margin-top: 1rem;
     border: 1px solid #f5c6cb;
   }
+
+  .error-help {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f5c6cb;
+  }
+
+  .error-help p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .error-help strong {
+    color: #721c24;
+  }
   
   .success-message {
     background: #d4edda;
@@ -1293,6 +1396,101 @@
       flex-direction: column;
       gap: 0.5rem;
     }
+  }
+
+  .form-note {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #1565c0;
+  }
+
+  .form-note p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .form-note strong {
+    color: #0d47a1;
+  }
+
+  /* New Branch Selection Styles */
+  .existing-branches {
+    margin-bottom: 1.5rem;
+  }
+
+  .branch-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .branch-option {
+    background: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .branch-option:hover {
+    background: #e0e0e0;
+    border-color: #667eea;
+  }
+
+  .branch-option.selected {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .branch-option strong {
+    font-weight: 600;
+  }
+
+  .branch-details {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  .branch-divider {
+    text-align: center;
+    margin: 1rem 0;
+    position: relative;
+  }
+
+  .branch-divider span {
+    background: #f8f9fa;
+    padding: 0 10px;
+    position: relative;
+    z-index: 1;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .branch-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e0e0e0;
+    z-index: 0;
+  }
+
+  .new-branch-section {
+    margin-top: 1.5rem;
   }
 </style>
 
