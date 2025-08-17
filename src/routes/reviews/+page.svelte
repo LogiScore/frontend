@@ -463,6 +463,17 @@
   
   async function selectLocation(location: any) {
     console.log('🔍 selectLocation called with:', location);
+    console.log('🔍 Location details:', {
+      id: location.id,
+      idType: typeof location.id,
+      idLength: location.id?.length,
+      idValue: location.id,
+      name: location.name,
+      nameType: typeof location.name,
+      city: location.city,
+      country: location.country,
+      fullObject: location
+    });
     
     try {
       // Use the location ID directly as the branch ID since locations already exist in the database
@@ -472,6 +483,8 @@
       
       console.log('Set selectedBranch (location ID):', selectedBranch);
       console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
+      console.log('Selected branch type:', typeof selectedBranch);
+      console.log('Selected branch value:', selectedBranch);
       
       showLocationSuggestions = false;
       locationSuggestions = [];
@@ -574,8 +587,18 @@
       branch_id: reviewData.branch_id,
       isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id),
       length: reviewData.branch_id.length,
-      isTemporary: reviewData.branch_id.startsWith('temp-') ? 'Yes (old format)' : 'No (UUID format)'
+      selectedBranchType: typeof selectedBranch,
+      selectedBranchValue: selectedBranch,
+      selectedBranchDisplay: selectedBranchDisplay
     });
+
+    // Try using location name as branch_id if UUID format fails
+    // Backend accepts either UUID or branch name
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.branch_id)) {
+      console.log('Location ID is not in UUID format, trying location name instead');
+      reviewData.branch_id = selectedBranchDisplay || 'Unknown Location';
+      console.log('Updated branch_id to use location name:', reviewData.branch_id);
+    }
 
     try {
       // Submit review using the location ID as branch ID
