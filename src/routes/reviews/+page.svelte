@@ -301,6 +301,8 @@
       
       // Fallback to client-side filtering to test special character search
       const filtered = locations.filter(location => {
+        console.log('🔍 Checking location:', location.name, 'for query:', query);
+        
         // Strategy 1: Normalized search (remove accents)
         const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normalizedName = (location.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -357,6 +359,14 @@
             exactCityMatch,
             partialNameMatch,
             partialCityMatch
+          });
+        } else {
+          console.log('❌ No match for:', {
+            location: location.name,
+            query,
+            normalizedQuery,
+            normalizedName: normalizedName.substring(0, 50),
+            normalizedCity: normalizedCity.substring(0, 50)
           });
         }
         
@@ -678,6 +688,38 @@
     }
   }
 
+  async function testAllSearches() {
+    console.log('Testing all search queries...');
+    await testSearch('munchen');
+    await testSearch('münchen');
+    await testSearch('london');
+    await testSearch('new york');
+    await testSearch('germany');
+    console.log('All search tests completed.');
+  }
+
+  function inspectLocationData() {
+    console.log('🔍 INSPECTING LOCATION DATA:');
+    console.log('Total locations:', locations.length);
+    console.log('All locations:', locations);
+    
+    // Check for data structure issues
+    locations.forEach((loc, index) => {
+      console.log(`Location ${index}:`, {
+        id: loc.id,
+        name: loc.name,
+        city: loc.city,
+        state: loc.state,
+        country: loc.country,
+        hasName: !!loc.name,
+        hasCity: !!loc.city,
+        hasState: !!loc.state,
+        hasCountry: !!loc.country,
+        nameType: typeof loc.name,
+        cityType: typeof loc.city
+      });
+    });
+  }
 </script>
 
 <svelte:head>
@@ -858,6 +900,12 @@
                     <strong>Test Search:</strong> 
                     <button type="button" on:click={() => testSearch('munchen')} style="margin: 0 5px; padding: 2px 8px;">Test "munchen"</button>
                     <button type="button" on:click={() => testSearch('münchen')} style="margin: 0 5px; padding: 2px 8px;">Test "München"</button>
+                    <button type="button" on:click={() => testSearch('london')} style="margin: 0 5px; padding: 2px 8px;">Test "london"</button>
+                    <button type="button" on:click={() => testSearch('new york')} style="margin: 0 5px; padding: 2px 8px;">Test "new york"</button>
+                    <button type="button" on:click={() => testSearch('germany')} style="margin: 0 5px; padding: 2px 8px;">Test "germany"</button>
+                    <br><br>
+                    <button type="button" on:click={() => testAllSearches()} style="margin: 0 5px; padding: 4px 12px; background: #007bff; color: white; border: none; border-radius: 4px;">Test All Searches</button>
+                    <button type="button" on:click={() => inspectLocationData()} style="margin: 0 5px; padding: 4px 12px; background: #dc3545; color: white; border: none; border-radius: 4px;">Inspect Data</button>
                     <small>Check console for results</small>
                   </div>
                 </div>
