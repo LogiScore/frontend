@@ -301,7 +301,12 @@
       
       // Fallback to client-side filtering to test special character search
       const filtered = locations.filter(location => {
-        console.log('🔍 Checking location:', location.name, 'for query:', query);
+        // Only log detailed info for the first few locations to avoid spam
+        const shouldLogDetailed = locations.indexOf(location) < 5;
+        
+        if (shouldLogDetailed) {
+          console.log('🔍 Checking location:', location.name, 'for query:', query);
+        }
         
         // Strategy 1: Normalized search (remove accents)
         const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -347,7 +352,7 @@
           });
         }
         
-        // Debug logging for all matches
+        // Debug logging for matches (always log matches)
         if (hasMatch) {
           console.log('✅ Match found:', {
             location: location.name,
@@ -360,7 +365,8 @@
             partialNameMatch,
             partialCityMatch
           });
-        } else {
+        } else if (shouldLogDetailed) {
+          // Only log detailed non-match info for first few locations
           console.log('❌ No match for:', {
             location: location.name,
             query,
@@ -375,6 +381,7 @@
       
       console.log('🎯 Fallback filtered locations:', filtered.length);
       console.log('🎯 Filtered results:', filtered.map(l => l.name));
+      console.log(`📊 Search summary: Checked ${locations.length} locations, found ${filtered.length} matches for query "${query}"`);
       locationSuggestions = filtered;
       showLocationSuggestions = true;
       console.log('🎯 Location suggestions set:', locationSuggestions.length);
@@ -906,7 +913,10 @@
                     <br><br>
                     <button type="button" on:click={() => testAllSearches()} style="margin: 0 5px; padding: 4px 12px; background: #007bff; color: white; border: none; border-radius: 4px;">Test All Searches</button>
                     <button type="button" on:click={() => inspectLocationData()} style="margin: 0 5px; padding: 4px 12px; background: #dc3545; color: white; border: none; border-radius: 4px;">Inspect Data</button>
+                    <br><br>
                     <small>Check console for results</small>
+                    <br>
+                    <small style="color: #666;">Note: Search checks {locations.length} locations. Console logging limited to first 5 locations to avoid spam.</small>
                   </div>
                 </div>
                 {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
