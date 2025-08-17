@@ -54,6 +54,8 @@ export interface FreightForwarderCreate {
 export interface Location {
   id: string;
   name: string;
+  city?: string;
+  state?: string;
   region: string;
   subregion: string;
   country: string;

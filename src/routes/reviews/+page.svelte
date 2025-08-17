@@ -122,10 +122,10 @@
       // Convert to the expected format for the existing code
       locations = databaseLocations.map(loc => ({
         id: loc.id,
-        Location: loc.name,
-        City: loc.name.split(',')[0]?.trim() || loc.name, // Extract city from name
-        State: loc.name.includes(',') ? loc.name.split(',')[1]?.trim() || '' : '',
-        Country: loc.country,
+        name: loc.name,
+        city: loc.city || loc.name.split(',')[0]?.trim() || loc.name, // Use city from API or extract from name
+        state: loc.state || (loc.name.includes(',') ? loc.name.split(',')[1]?.trim() || '' : ''),
+        country: loc.country,
         region: loc.region,
         subregion: loc.subregion
       }));
@@ -247,6 +247,7 @@
     
     console.log('Location search triggered with query:', query);
     console.log('Available locations:', locations.length);
+    console.log('First few locations:', locations.slice(0, 3).map(l => ({ name: l.name, city: l.city, state: l.state, country: l.country })));
     
     // Require at least 3 characters before filtering to improve performance
     if (query.length < 3) {
@@ -256,12 +257,18 @@
     }
     
     // Filter locations based on input with improved performance
-    const filtered = locations.filter(location => 
-      (location.name && location.name.toLowerCase().includes(query)) ||
-      (location.city && location.city.toLowerCase().includes(query)) ||
-      (location.state && location.state.toLowerCase().includes(query)) ||
-      (location.country && location.country.toLowerCase().includes(query))
-    ).slice(0, 10); // Limit to 10 suggestions
+    const filtered = locations.filter(location => {
+      const nameMatch = location.name && location.name.toLowerCase().includes(query);
+      const cityMatch = location.city && location.city.toLowerCase().includes(query);
+      const stateMatch = location.state && location.state.toLowerCase().includes(query);
+      const countryMatch = location.country && location.country.toLowerCase().includes(query);
+      
+      if (nameMatch || cityMatch || stateMatch || countryMatch) {
+        console.log('Match found:', { name: location.name, city: location.city, state: location.state, country: location.country });
+      }
+      
+      return nameMatch || cityMatch || stateMatch || countryMatch;
+    }).slice(0, 10); // Limit to 10 suggestions
     
     console.log('Filtered locations:', filtered.length);
     console.log('Filtered results:', filtered.map(l => l.name));
