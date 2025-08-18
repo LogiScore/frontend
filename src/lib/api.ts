@@ -310,6 +310,84 @@ class ApiClient {
     }
   }
 
+  async getFreightForwarderLocationScores(freightForwarderId: string, token: string): Promise<Array<{
+    location_id: string;
+    location_name: string;
+    country: string;
+    city?: string;
+    aggregate_score: number;
+    review_count: number;
+    category_scores: Array<{
+      category_name: string;
+      average_score: number;
+      review_count: number;
+    }>;
+  }>> {
+    try {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+      
+      return await this.request<Array<{
+        location_id: string;
+        location_name: string;
+        country: string;
+        city?: string;
+        aggregate_score: number;
+        review_count: number;
+        category_scores: Array<{
+          category_name: string;
+          average_score: number;
+          review_count: number;
+        }>;
+      }>>(`/api/freight-forwarders/${freightForwarderId}/location-scores`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch location scores:', error);
+      return [];
+    }
+  }
+
+  async getFreightForwarderCountryScores(freightForwarderId: string, token: string): Promise<Array<{
+    country: string;
+    aggregate_score: number;
+    review_count: number;
+    location_count: number;
+    category_scores: Array<{
+      category_name: string;
+      average_score: number;
+      review_count: number;
+    }>;
+  }>> {
+    try {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+      
+      return await this.request<Array<{
+        country: string;
+        aggregate_score: number;
+        review_count: number;
+        location_count: number;
+        category_scores: Array<{
+          category_name: string;
+          average_score: number;
+          review_count: number;
+        }>;
+      }>>(`/api/freight-forwarders/${freightForwarderId}/country-scores`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch country scores:', error);
+      return [];
+    }
+  }
+
   private getFallbackLocations(): Location[] {
     return [
       { id: 'us-east', name: 'New York', region: 'Americas', subregion: 'North America', country: 'USA' },

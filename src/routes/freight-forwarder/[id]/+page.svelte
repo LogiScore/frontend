@@ -2,12 +2,26 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { apiClient } from '$lib/api';
+  import { auth } from '$lib/auth';
   
   let freightForwarder: any = null;
+  let locationScores: any[] = [];
+  let countryScores: any[] = [];
   let isLoading = true;
+  let isLoadingScores = false;
   let error: string | null = null;
+  let activeTab: 'overview' | 'locations' | 'countries' = 'overview';
   
   $: freightForwarderId = $page.params?.id;
+  $: user = get(auth).user as any;
+  $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic';
+  
+  // Helper function to get current store value
+  function get<T>(store: any): T {
+    let value: T;
+    store.subscribe((v: T) => value = v)();
+    return value!;
+  }
   
   onMount(async () => {
     if (!freightForwarderId) {
@@ -21,12 +35,47 @@
       // Fetch freight forwarder details
       const details = await apiClient.getFreightForwarder(freightForwarderId);
       freightForwarder = details;
+      
+      // If user is subscribed, fetch location and country scores
+      if (isSubscribed && user?.token) {
+        await loadDetailedScores();
+      }
     } catch (err: any) {
       error = err.message || 'Failed to load freight forwarder details';
     } finally {
       isLoading = false;
     }
   });
+  
+  async function loadDetailedScores() {
+    if (!freightForwarderId || !user?.token) return;
+    
+    try {
+      isLoadingScores = true;
+      const [locationData, countryData] = await Promise.all([
+        apiClient.getFreightForwarderLocationScores(freightForwarderId, user.token),
+        apiClient.getFreightForwarderCountryScores(freightForwarderId, user.token)
+      ]);
+      
+      locationScores = locationData;
+      countryScores = countryData;
+    } catch (err: any) {
+      console.error('Failed to load detailed scores:', err);
+    } finally {
+      isLoadingScores = false;
+    }
+  }
+  
+  function switchTab(tab: 'overview' | 'locations' | 'countries') {
+    activeTab = tab;
+    
+    // Load scores if switching to a tab that needs them and they haven't been loaded yet
+    if ((tab === 'locations' || tab === 'countries') && isSubscribed && user?.token && 
+        ((tab === 'locations' && locationScores.length === 0) || 
+         (tab === 'countries' && countryScores.length === 0))) {
+      loadDetailedScores();
+    }
+  }
 </script>
 
 <svelte:head>
@@ -51,11 +100,22 @@
           {/if}
         </div>
         <div class="company-info">
+          <h1 class="company-name">{freightForwarder.name}</h1>
+          
+          <!-- Aggregate Score Display -->
           {#if freightForwarder.rating}
-            <div class="rating">
-              <span class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</span>
-              <span class="rating-text">{freightForwarder.rating.toFixed(1)}</span>
-              <span class="review-count">({freightForwarder.review_count} reviews)</span>
+            <div class="aggregate-score">
+              <div class="score-circle">
+                <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
+                <span class="score-max">/5.0</span>
+              </div>
+              <div class="score-details">
+                <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
+                <div class="review-count">{freightForwarder.review_count} reviews</div>
+                {#if freightForwarder.global_rank}
+                  <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
+                {/if}
+              </div>
             </div>
           {/if}
         </div>
@@ -100,29 +160,184 @@
         </div>
       </section>
 
-      <!-- Review Category Scores Section -->
-      <section class="review-scores">
-        <h2>Review Category Scores</h2>
-        {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
-          <div class="scores-grid">
-            {#each freightForwarder.category_scores as score}
-              <div class="score-item">
-                <h3>{score.category_name}</h3>
-                <div class="score-display">
-                  <span class="score-value">{score.average_score.toFixed(1)}</span>
-                  <span class="score-max">/ 5.0</span>
-                </div>
-                <div class="score-bar">
-                  <div class="score-fill" style="width: {(score.average_score / 5) * 100}%"></div>
-                </div>
-                <p class="score-count">{score.review_count} reviews</p>
-              </div>
-            {/each}
+      <!-- Tabbed Navigation for Detailed Scores -->
+      {#if isSubscribed}
+        <section class="scores-tabs">
+          <div class="tab-navigation">
+            <button 
+              class="tab-button {activeTab === 'overview' ? 'active' : ''}" 
+              on:click={() => switchTab('overview')}
+            >
+              Overview
+            </button>
+            <button 
+              class="tab-button {activeTab === 'locations' ? 'active' : ''}" 
+              on:click={() => switchTab('locations')}
+            >
+              Location Scores
+            </button>
+            <button 
+              class="tab-button {activeTab === 'countries' ? 'active' : ''}" 
+              on:click={() => switchTab('countries')}
+            >
+              Country Scores
+            </button>
           </div>
-        {:else}
-          <p class="no-scores">No category scores available yet.</p>
-        {/if}
-      </section>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            {#if activeTab === 'overview'}
+              <!-- Overview Tab - Show aggregate scores -->
+              <section class="review-scores">
+                <h2>Review Category Scores</h2>
+                {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
+                  <div class="scores-grid">
+                    {#each freightForwarder.category_scores as score}
+                      <div class="score-item">
+                        <h3>{score.category_name}</h3>
+                        <div class="score-display">
+                          <span class="score-value">{score.average_score.toFixed(1)}</span>
+                          <span class="score-max">/ 5.0</span>
+                        </div>
+                        <div class="score-bar">
+                          <div class="score-fill" style="width: {(score.average_score / 5) * 100}%"></div>
+                        </div>
+                        <p class="score-count">{score.review_count} reviews</p>
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <p class="no-scores">No category scores available yet.</p>
+                {/if}
+              </section>
+            {:else if activeTab === 'locations'}
+              <!-- Locations Tab -->
+              <section class="location-scores">
+                <h2>Location-Based Scores</h2>
+                {#if isLoadingScores}
+                  <div class="loading-scores">Loading location scores...</div>
+                {:else if locationScores.length > 0}
+                  <div class="location-scores-grid">
+                    {#each locationScores as location}
+                      <div class="location-score-card">
+                        <div class="location-header">
+                          <h3>{location.location_name}</h3>
+                          <div class="location-info">
+                            <span class="country">📍 {location.country}</span>
+                            {#if location.city}
+                              <span class="city">🏙️ {location.city}</span>
+                            {/if}
+                          </div>
+                        </div>
+                        <div class="location-score">
+                          <div class="score-circle small">
+                            <span class="score-number">{location.aggregate_score.toFixed(1)}</span>
+                            <span class="score-max">/5.0</span>
+                          </div>
+                          <div class="score-details">
+                            <div class="review-count">{location.review_count} reviews</div>
+                          </div>
+                        </div>
+                        {#if location.category_scores && location.category_scores.length > 0}
+                          <div class="category-breakdown">
+                            <h4>Category Breakdown</h4>
+                            <div class="category-scores">
+                              {#each location.category_scores as category}
+                                <div class="category-score">
+                                  <span class="category-name">{category.category_name}</span>
+                                  <span class="category-value">{category.average_score.toFixed(1)}</span>
+                                </div>
+                              {/each}
+                            </div>
+                          </div>
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <p class="no-scores">No location scores available yet.</p>
+                {/if}
+              </section>
+            {:else if activeTab === 'countries'}
+              <!-- Countries Tab -->
+              <section class="country-scores">
+                <h2>Country-Based Scores</h2>
+                {#if isLoadingScores}
+                  <div class="loading-scores">Loading country scores...</div>
+                {:else if countryScores.length > 0}
+                  <div class="country-scores-grid">
+                    {#each countryScores as country}
+                      <div class="country-score-card">
+                        <div class="country-header">
+                          <h3>🇺🇳 {country.country}</h3>
+                          <div class="country-stats">
+                            <span class="location-count">📍 {country.location_count} locations</span>
+                            <span class="review-count">📝 {country.review_count} reviews</span>
+                          </div>
+                        </div>
+                        <div class="country-score">
+                          <div class="score-circle small">
+                            <span class="score-number">{country.aggregate_score.toFixed(1)}</span>
+                            <span class="score-max">/5.0</span>
+                          </div>
+                        </div>
+                        {#if country.category_scores && country.category_scores.length > 0}
+                          <div class="category-breakdown">
+                            <h4>Category Breakdown</h4>
+                            <div class="category-scores">
+                              {#each country.category_scores as category}
+                                <div class="category-score">
+                                  <span class="category-name">{category.category_name}</span>
+                                  <span class="category-value">{category.average_score.toFixed(1)}</span>
+                                </div>
+                              {/each}
+                            </div>
+                          </div>
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <p class="no-scores">No country scores available yet.</p>
+                {/if}
+              </section>
+            {/if}
+          </div>
+        </section>
+      {:else}
+        <!-- For non-subscribed users, show basic category scores -->
+        <section class="review-scores">
+          <h2>Review Category Scores</h2>
+          {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
+            <div class="scores-grid">
+              {#each freightForwarder.category_scores as score}
+                <div class="score-item">
+                  <h3>{score.category_name}</h3>
+                  <div class="score-display">
+                    <span class="score-value">{score.average_score.toFixed(1)}</span>
+                    <span class="score-max">/ 5.0</span>
+                  </div>
+                  <div class="score-bar">
+                    <div class="score-fill" style="width: {(score.average_score / 5) * 100}%"></div>
+                  </div>
+                  <p class="score-count">{score.review_count} reviews</p>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <p class="no-scores">No category scores available yet.</p>
+          {/if}
+          
+          <!-- Subscription prompt for non-subscribed users -->
+          <div class="subscription-prompt">
+            <h3>🔒 Unlock Detailed Analytics</h3>
+            <p>Upgrade to Pro or Enterprise to view location and country-specific scores, advanced analytics, and more detailed insights.</p>
+            <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+          </div>
+        </section>
+      {/if}
+
+
 
       <!-- Submit Review Button -->
       <div class="review-section">
@@ -163,6 +378,78 @@
     padding: 3rem 0;
     border-bottom: 2px solid #e0e0e0;
     margin-bottom: 3rem;
+  }
+
+  .company-name {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .aggregate-score {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  }
+
+  .score-circle.small {
+    width: 80px;
+    height: 80px;
+  }
+
+  .score-number {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .score-circle.small .score-number {
+    font-size: 1.5rem;
+  }
+
+  .score-max {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .score-circle.small .score-max {
+    font-size: 0.8rem;
+  }
+
+  .score-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .stars {
+    color: #ffc107;
+    font-size: 1.2rem;
+  }
+
+  .review-count {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .global-rank {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.9rem;
   }
 
   .company-logo {
@@ -371,6 +658,157 @@
     color: white;
   }
 
+  /* Tabbed Navigation */
+  .scores-tabs {
+    margin-bottom: 3rem;
+  }
+
+  .tab-navigation {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .tab-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .tab-button:hover {
+    color: #667eea;
+  }
+
+  .tab-button.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+  }
+
+  .tab-content {
+    min-height: 400px;
+  }
+
+  /* Location and Country Score Cards */
+  .location-scores-grid,
+  .country-scores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+
+  .location-score-card,
+  .country-score-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+  }
+
+  .location-score-card:hover,
+  .country-score-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .location-header,
+  .country-header {
+    margin-bottom: 1rem;
+  }
+
+  .location-header h3,
+  .country-header h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .location-info,
+  .country-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .location-score,
+  .country-score {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .category-breakdown {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+  }
+
+  .category-breakdown h4 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+  }
+
+  .category-scores {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .category-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .category-name {
+    color: #666;
+  }
+
+  .category-value {
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  .loading-scores {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  /* Subscription Prompt */
+  .subscription-prompt {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .subscription-prompt h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .subscription-prompt p {
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
   /* Responsive Design */
   @media (max-width: 768px) {
     .company-header {
@@ -379,12 +817,31 @@
       gap: 1rem;
     }
 
-    .company-info h1 {
+    .company-name {
       font-size: 2rem;
+    }
+
+    .aggregate-score {
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .scores-grid {
       grid-template-columns: 1fr;
+    }
+
+    .location-scores-grid,
+    .country-scores-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tab-navigation {
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      flex: 1;
+      min-width: 120px;
     }
 
     .container {
