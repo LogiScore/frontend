@@ -22,6 +22,7 @@
   let isLoading = true;
   let error: string | null = null;
   let successMessage: string | null = null;
+  let isReviewSubmitted = false;
   
   // New forwarder creation - RE-ENABLED after backend implementation
   let showNewForwarderForm = false;
@@ -626,13 +627,55 @@
       const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
       
       // Show success message
-      alert('Review submitted successfully!');
+      alert('Review submitted successfully! A thank you email has been sent to your email address.');
       console.log('Review submitted:', response);
+      
+      // Send thank you email
+      try {
+        // Get company and location names for the email
+        const selectedCompanyData = freightForwarders.find(c => c.id === selectedCompany);
+        const selectedLocationData = locations.find(l => l.id === selectedBranch);
+        
+        // Calculate category ratings for email
+        const emailCategoryRatings = reviewCategories.map(cat => {
+          const ratedQuestions = cat.questions.filter(q => q.rating && q.rating > 0);
+          const averageRating = ratedQuestions.length > 0 
+            ? ratedQuestions.reduce((sum, q) => sum + (q.rating || 0), 0) / ratedQuestions.length 
+            : 0;
+          
+          return {
+            categoryName: cat.name,
+            averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+            questionCount: ratedQuestions.length
+          };
+        }).filter(cat => cat.questionCount > 0); // Only include categories with ratings
+        
+        // Send thank you email
+        await apiClient.sendReviewThankYouEmail(
+          authState.user?.email || 'user@example.com',
+          authState.user?.full_name || authState.user?.username || 'User',
+          selectedCompanyData?.name || 'Unknown Company',
+          selectedLocationData?.name || selectedBranchDisplay || 'Unknown Location',
+          emailCategoryRatings,
+          aggregateRating,
+          reviewWeight
+        );
+        
+        console.log('Thank you email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send thank you email:', emailError);
+        // Don't show error to user since review was submitted successfully
+        // Email failure shouldn't affect the review submission
+      }
       
       // Reset form
       reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
       selectedBranchDisplay = '';
+      
+      // Set success state
+      isReviewSubmitted = true;
+      successMessage = `Review submitted successfully! A thank you email has been sent to ${authState.user?.email || 'your email address'}.`;
       
     } catch (err: any) {
       console.error('Review submission failed:', err);
@@ -719,6 +762,13 @@
       });
     });
   }
+
+  function resetForm() {
+    isReviewSubmitted = false;
+    successMessage = null;
+    error = null;
+    // Form fields will be reset when the form is re-rendered
+  }
 </script>
 
 <svelte:head>
@@ -760,6 +810,8 @@
             </ul>
           </div>
         </div>
+      {:else if isReviewSubmitted}
+        <!-- Success View will be shown here -->
       {:else}
         <form on:submit|preventDefault={submitReview}>
 
@@ -903,24 +955,7 @@
                     {/if}
                   </small>
                   
-                  <!-- TEMPORARY: Test search functionality -->
-                  <div class="test-search" style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 4px;">
-                    <strong>Test Search:</strong> 
-                    <button type="button" on:click={() => testSearch('munchen')} style="margin: 0 5px; padding: 2px 8px;">Test "munchen"</button>
-                    <button type="button" on:click={() => testSearch('münchen')} style="margin: 0 5px; padding: 2px 8px;">Test "München"</button>
-                    <button type="button" on:click={() => testSearch('london')} style="margin: 0 5px; padding: 2px 8px;">Test "london"</button>
-                    <button type="button" on:click={() => testSearch('new york')} style="margin: 0 5px; padding: 2px 8px;">Test "new york"</button>
-                    <button type="button" on:click={() => testSearch('germany')} style="margin: 0 5px; padding: 2px 8px;">Test "germany"</button>
-                    <br><br>
-                    <button type="button" on:click={() => testAllSearches()} style="margin: 0 5px; padding: 4px 12px; background: #007bff; color: white; border: none; border-radius: 4px;">Test All Searches</button>
-                    <button type="button" on:click={() => inspectLocationData()} style="margin: 0 5px; padding: 4px 12px; background: #dc3545; color: white; border: none; border-radius: 4px;">Inspect Data</button>
-                    <br><br>
-                    <small>Check console for results</small>
-                    <br>
-                    <small style="color: #666;">Note: Using backend search by default. Client-side filtering only used if backend fails.</small>
-                    <br>
-                    <small style="color: #666;">Backend handles: /api/locations/?q=search_term</small>
-                  </div>
+
                 </div>
                 {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
                   <div class="location-hint">
@@ -1069,6 +1104,45 @@
             </div>
           {/if}
         </form>
+        
+        <!-- Success View -->
+        {#if isReviewSubmitted}
+          <div class="success-view">
+            <div class="success-content">
+              <div class="success-icon">✅</div>
+              <h2>Review Submitted Successfully!</h2>
+              <p>Thank you for taking the time to share your experience. Your review helps other users make informed decisions.</p>
+              
+              <div class="email-confirmation">
+                <h3>📧 Email Confirmation Sent</h3>
+                <p>A detailed thank you email has been sent to <strong>{authState.user?.email || 'your email address'}</strong> containing:</p>
+                <ul>
+                  <li>Confirmation of your review submission</li>
+                  <li>Company and location details</li>
+                  <li>Your individual category ratings</li>
+                  <li>Overall rating summary</li>
+                </ul>
+              </div>
+              
+              <div class="next-steps">
+                <h3>What's Next?</h3>
+                <ul>
+                  <li>Check your email for the confirmation</li>
+                  <li>Your review will be visible to other users</li>
+                  <li>You can submit more reviews for other companies</li>
+                </ul>
+              </div>
+              
+              <button 
+                type="button" 
+                class="btn btn-primary" 
+                on:click={resetForm}
+              >
+                Submit Another Review
+              </button>
+            </div>
+          </div>
+        {/if}
       {/if}
     </div>
   </section>
@@ -1838,6 +1912,111 @@
 
   .status-icon {
     font-size: 1.1rem;
+  }
+
+  /* Success View Styles */
+  .success-view {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .success-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .success-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .success-view h2 {
+    color: #28a745;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+  }
+
+  .success-view p {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .email-confirmation {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+  }
+
+  .email-confirmation h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .email-confirmation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .email-confirmation li {
+    color: #555;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .email-confirmation li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .next-steps {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+  }
+
+  .next-steps h3 {
+    color: #2e7d32;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .next-steps ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .next-steps li {
+    color: #2e7d32;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .next-steps li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #4caf50;
+    font-weight: bold;
   }
 </style>
 

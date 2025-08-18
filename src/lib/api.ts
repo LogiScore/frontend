@@ -1178,6 +1178,52 @@ class ApiClient {
     });
   }
 
+  // ===== METHOD: sendReviewThankYouEmail =====
+  // Send thank you email after review submission
+  async sendReviewThankYouEmail(
+    userEmail: string,
+    userName: string,
+    freightForwarderName: string,
+    locationName: string,
+    categoryRatings: Array<{
+      categoryName: string;
+      averageRating: number;
+      questionCount: number;
+    }>,
+    aggregateRating: number,
+    reviewWeight: number
+  ): Promise<{ message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/email/review-thank-you`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          user_name: userName,
+          freight_forwarder_name: freightForwarderName,
+          location_name: locationName,
+          category_ratings: categoryRatings,
+          aggregate_rating: aggregateRating,
+          review_weight: reviewWeight
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Email API error:', response.status, errorText);
+        throw new Error(`Failed to send thank you email: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error('Email sending failed:', error);
+      throw new Error(`Failed to send thank you email: ${error.message}`);
+    }
+  }
+
   // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
