@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { apiClient } from '$lib/api';
   import { auth, authMethods } from '$lib/auth';
   import type { ReviewCategory, ReviewCreate } from '$lib/api';
@@ -22,7 +23,7 @@
   let isLoading = true;
   let error: string | null = null;
   let successMessage: string | null = null;
-  let isReviewSubmitted = false;
+
   
   // New forwarder creation - RE-ENABLED after backend implementation
   let showNewForwarderForm = false;
@@ -672,10 +673,15 @@
       reviewCategories.forEach(cat => cat.questions.forEach((q: any) => q.rating = 0));
       selectedBranch = '';
       selectedBranchDisplay = '';
+      selectedCompany = ''; // Reset company selection
       
-      // Set success state
-      isReviewSubmitted = true;
-      successMessage = `Review submitted successfully! A thank you email has been sent to ${authState.user?.email || 'your email address'}.`;
+      // Show brief success message before redirect
+      successMessage = `Review submitted successfully! Redirecting to freight forwarder page...`;
+      
+      // Redirect to freight-forwarder page after successful submission
+      setTimeout(() => {
+        goto('/freight-forwarder');
+      }, 1500); // Give user 1.5 seconds to see the success message
       
     } catch (err: any) {
       console.error('Review submission failed:', err);
@@ -763,12 +769,7 @@
     });
   }
 
-  function resetForm() {
-    isReviewSubmitted = false;
-    successMessage = null;
-    error = null;
-    // Form fields will be reset when the form is re-rendered
-  }
+
 </script>
 
 <svelte:head>
@@ -810,8 +811,6 @@
             </ul>
           </div>
         </div>
-      {:else if isReviewSubmitted}
-        <!-- Success View will be shown here -->
       {:else}
         <form on:submit|preventDefault={submitReview}>
 
@@ -1097,46 +1096,13 @@
               {error}
             </div>
           {/if}
-        </form>
-        
-        <!-- Success View -->
-        {#if isReviewSubmitted}
-          <div class="success-view">
-            <div class="success-content">
-              <div class="success-icon">✅</div>
-              <h2>Review Submitted Successfully!</h2>
-              <p>Thank you for taking the time to share your experience. Your review helps other users make informed decisions.</p>
-              
-              <div class="email-confirmation">
-                <h3>📧 Email Confirmation Sent</h3>
-                <p>A detailed thank you email has been sent to <strong>{authState.user?.email || 'your email address'}</strong> containing:</p>
-                <ul>
-                  <li>Confirmation of your review submission</li>
-                  <li>Company and location details</li>
-                  <li>Your individual category ratings</li>
-                  <li>Overall rating summary</li>
-                </ul>
-              </div>
-              
-              <div class="next-steps">
-                <h3>What's Next?</h3>
-                <ul>
-                  <li>Check your email for the confirmation</li>
-                  <li>Your review will be visible to other users</li>
-                  <li>You can submit more reviews for other companies</li>
-                </ul>
-              </div>
-              
-              <button 
-                type="button" 
-                class="btn btn-primary" 
-                on:click={resetForm}
-              >
-                Submit Another Review
-              </button>
+          
+          {#if successMessage}
+            <div class="success-message">
+              {successMessage}
             </div>
-          </div>
-        {/if}
+          {/if}
+        </form>
       {/if}
     </div>
   </section>
