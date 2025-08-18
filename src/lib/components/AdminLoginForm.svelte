@@ -1,114 +1,109 @@
 <script lang="ts">
-  import { authMethods } from '$lib/auth';
   import { createEventDispatcher } from 'svelte';
-  
+  import { auth, authMethods } from '../auth';
+  import { apiClient } from '../api';
+
   const dispatch = createEventDispatcher();
-  
+
   let email = '';
   let verificationCode = '';
   let isLoading = false;
-  let error = '';
-  let showCodeInput = false;
-  let countdown = 0;
-  let countdownInterval: number | null = null;
-  
-  async function handleRequestCode() {
-    if (!email) {
-      error = 'Please enter your admin email address';
-      return;
-    }
-    
-    isLoading = true;
-    error = '';
-    
-    try {
-      // Use the regular verification code flow
-      const result = await authMethods.requestCode(email);
-      
-      if (result.success) {
-        showCodeInput = true;
-        startCountdown(result.expires_in || 300); // Default to 5 minutes
-        console.log('Verification code sent successfully');
-      } else {
-        error = result.error || 'Failed to send verification code';
-      }
-    } catch (err: any) {
-      error = err.message || 'An unexpected error occurred';
-    } finally {
-      isLoading = false;
-    }
-  }
-  
-  async function handleVerifyCode() {
-    if (!verificationCode) {
-      error = 'Please enter the verification code';
-      return;
-    }
-    
-    isLoading = true;
-    error = '';
-    
-    try {
-      // Use the regular signin with code flow
-      const result = await authMethods.signinWithCode(email, verificationCode);
-      
-      if (result.success) {
-        // Check if user has admin privileges by checking the auth store
-        // The user should already be logged in at this point
-        console.log('Admin login successful');
-        dispatch('loginSuccess');
-      } else {
-        error = result.error || 'Verification failed';
-      }
-    } catch (err: any) {
-      error = err.message || 'An unexpected error occurred';
-    } finally {
-      isLoading = false;
-    }
-  }
-  
-  function startCountdown(seconds: number) {
-    countdown = seconds;
-    countdownInterval = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        if (countdownInterval) {
-          clearInterval(countdownInterval);
-          countdownInterval = null;
-        }
-      }
-    }, 1000);
-  }
-  
-  function handleKeyPress(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      if (showCodeInput) {
-        handleVerifyCode();
-      } else {
-        handleRequestCode();
-      }
-    }
-  }
-  
+  let errorMessage = '';
+  let successMessage = '';
+  let codeRequested = false;
+  let codeSent = false;
+
   function resetForm() {
     email = '';
     verificationCode = '';
-    showCodeInput = false;
-    error = '';
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-    }
-    countdown = 0;
+    errorMessage = '';
+    successMessage = '';
+    codeRequested = false;
+    codeSent = false;
   }
-  
-  // Cleanup on component destroy
-  import { onDestroy } from 'svelte';
-  onDestroy(() => {
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
+
+  async function requestCode() {
+    if (!email) {
+      errorMessage = 'Please enter your admin email address';
+      return;
     }
-  });
+
+    isLoading = true;
+    errorMessage = '';
+
+    try {
+      const result = await authMethods.requestCode(email);
+      if (result.success) {
+        successMessage = `Verification code sent! Check your email. Code expires in ${result.expires_in} minutes.`;
+        codeRequested = true;
+        codeSent = true;
+      } else {
+        errorMessage = result.error || 'Failed to send verification code';
+      }
+    } catch (error: any) {
+      errorMessage = error.message || 'Failed to send verification code';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  async function handleSubmit() {
+    if (!codeSent) {
+      await requestCode();
+      return;
+    }
+    
+    if (!verificationCode) {
+      errorMessage = 'Please enter the verification code';
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = '';
+
+    try {
+      const result = await authMethods.signinWithCode(email, verificationCode);
+      if (result.success) {
+        // Check if user has admin privileges
+        try {
+          // Get current user from auth store
+          let currentUser: any = null;
+          auth.subscribe(state => {
+            currentUser = state.user;
+          })();
+          
+          if (currentUser && currentUser.user_type === 'admin') {
+            console.log('Admin login successful');
+            dispatch('loginSuccess');
+          } else {
+            errorMessage = 'Access denied. This page is restricted to administrators only.';
+            // Log out the non-admin user
+            authMethods.logout();
+          }
+        } catch (err) {
+          errorMessage = 'Failed to verify admin privileges. Please contact support.';
+          authMethods.logout();
+        }
+      } else {
+        errorMessage = result.error || 'Invalid verification code';
+      }
+    } catch (error: any) {
+      errorMessage = error.message || 'Verification failed';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function resendCode() {
+    resetForm();
+    requestCode();
+  }
+
+  function handleKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      handleSubmit();
+    }
+  }
 </script>
 
 <div class="admin-login-form">
@@ -117,9 +112,9 @@
     <p>Enter your admin email to receive a verification code</p>
   </div>
   
-  {#if !showCodeInput}
-    <!-- Email Input Step -->
-    <form on:submit|preventDefault={handleRequestCode}>
+  <form on:submit|preventDefault={handleSubmit}>
+    {#if !codeSent}
+      <!-- Email Input Step -->
       <div class="form-group">
         <label for="admin-email">Admin Email</label>
         <input
@@ -133,25 +128,11 @@
         />
       </div>
       
-      {#if error}
-        <div class="error-message">
-          <span class="error-icon">❌</span>
-          {error}
-        </div>
-      {/if}
-      
       <button type="submit" class="btn-admin-login" disabled={isLoading}>
-        {#if isLoading}
-          <span class="loading-spinner"></span>
-          Sending Code...
-        {:else}
-          📧 Send Verification Code
-        {/if}
+        {isLoading ? 'Sending Code...' : '📧 Send Verification Code'}
       </button>
-    </form>
-  {:else}
-    <!-- Verification Code Step -->
-    <form on:submit|preventDefault={handleVerifyCode}>
+    {:else}
+      <!-- Verification Code Step -->
       <div class="form-group">
         <label for="verification-code">Verification Code</label>
         <input
@@ -163,52 +144,47 @@
           required
           autocomplete="one-time-code"
           maxlength="6"
-          pattern="[0-9]{6}"
+          on:input={(e) => {
+            // Only allow numeric input
+            const target = e.target as HTMLInputElement;
+            verificationCode = target.value.replace(/[^0-9]/g, '');
+          }}
         />
-        <div class="help-text">
-          Code expires in {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
-        </div>
+        <small class="help-text">Enter the 6-digit code sent to your email</small>
       </div>
-      
-      {#if error}
-        <div class="error-message">
-          <span class="error-icon">❌</span>
-          {error}
+
+      {#if successMessage}
+        <div class="success-message">
+          {successMessage}
         </div>
       {/if}
       
-      <div class="button-group">
-        <button type="submit" class="btn-admin-login" disabled={isLoading}>
-          {#if isLoading}
-            <span class="loading-spinner"></span>
-            Verifying...
-          {:else}
-            ✅ Verify & Sign In
-          {/if}
+      {#if errorMessage}
+        <div class="error-message">
+          {errorMessage}
+        </div>
+      {/if}
+      
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" on:click={resetForm} disabled={isLoading}>
+          Start Over
         </button>
-        
-        <button type="button" class="btn-secondary" on:click={resetForm}>
-          🔄 Start Over
+        <button type="submit" class="btn-admin-login" disabled={isLoading}>
+          {isLoading ? 'Verifying...' : '✅ Verify & Sign In'}
         </button>
       </div>
-    </form>
-    
-    <div class="resend-section">
-      <p>Didn't receive the code?</p>
-      <button 
-        type="button" 
-        class="btn-resend" 
-        on:click={handleRequestCode}
-        disabled={countdown > 0}
-      >
-        {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
-      </button>
-    </div>
-  {/if}
+
+      <div class="resend-section">
+        <button type="button" class="link-btn" on:click={resendCode} disabled={isLoading}>
+          Send New Code
+        </button>
+      </div>
+    {/if}
+  </form>
   
   <div class="demo-info">
     <h4>Admin Access Required</h4>
-    <p>This dashboard is restricted to authorized administrators only.</p>
+    <p>This dashboard is restricted to users with <code>user_type = 'admin'</code>.</p>
     <small>Contact your system administrator if you need access.</small>
   </div>
 </div>
@@ -266,21 +242,28 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
   
-  .error-message {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .help-text {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+  
+  .success-message {
+    background: #d1fae5;
+    color: #065f46;
     padding: 0.75rem;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
     border-radius: 8px;
-    color: #dc2626;
     margin-bottom: 1rem;
     font-size: 0.9rem;
   }
   
-  .error-icon {
-    font-size: 1rem;
+  .error-message {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
   }
   
   .btn-admin-login {
@@ -298,6 +281,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    margin-bottom: 1rem;
   }
   
   .btn-admin-login:hover:not(:disabled) {
@@ -311,21 +295,61 @@
     transform: none;
   }
   
-  .loading-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  .btn-secondary {
+    width: 100%;
+    padding: 0.75rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
   }
   
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  .btn-secondary:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
   }
   
-  .demo-credentials {
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .resend-section {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  
+  .link-btn {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+  }
+  
+  .link-btn:hover:not(:disabled) {
+    color: #5a67d8;
+  }
+  
+  .link-btn:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+  
+  .demo-info {
     margin-top: 2rem;
     padding: 1rem;
     background: #f3f4f6;
@@ -333,20 +357,28 @@
     text-align: center;
   }
   
-  .demo-credentials h4 {
+  .demo-info h4 {
     color: #374151;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
   }
   
-  .demo-credentials p {
+  .demo-info p {
     color: #6b7280;
     margin: 0.25rem 0;
     font-size: 0.85rem;
   }
   
-  .demo-credentials small {
+  .demo-info small {
     color: #9ca3af;
     font-size: 0.75rem;
+  }
+  
+  .demo-info code {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.8rem;
   }
 </style>
