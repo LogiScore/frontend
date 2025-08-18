@@ -118,9 +118,32 @@
                 {/if}
               </div>
             </div>
+          {:else}
+            <!-- Fallback when no rating available -->
+            <div class="aggregate-score no-rating">
+              <div class="score-circle no-rating">
+                <span class="score-number">N/A</span>
+                <span class="score-max">No reviews yet</span>
+              </div>
+              <div class="score-details">
+                <div class="review-count">Be the first to review!</div>
+              </div>
+            </div>
           {/if}
         </div>
       </section>
+
+      <!-- Debug Section (temporary) -->
+      {#if import.meta.env.DEV}
+        <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
+          <h3>Debug Info (Development Only)</h3>
+          <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
+          <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
+          <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
+          <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
+          <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
+        </section>
+      {/if}
 
       <!-- Company Details Section -->
       <section class="company-details">
@@ -393,6 +416,20 @@
   .score-circle.small {
     width: 80px;
     height: 80px;
+  }
+
+  .score-circle.no-rating {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    opacity: 0.8;
+  }
+
+  .score-circle.no-rating .score-number {
+    font-size: 1.5rem;
+  }
+
+  .score-circle.no-rating .score-max {
+    font-size: 0.8rem;
+    opacity: 0.9;
   }
 
   .score-number {
