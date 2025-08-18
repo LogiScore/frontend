@@ -126,19 +126,17 @@
               <div class="plan-header">
                 <h3>Free</h3>
                 <div class="price">
-                  <span class="amount">Free</span>
+                  <span class="amount">$0</span>
                 </div>
                 <p class="plan-description">Basic access to freight forwarder reviews</p>
               </div>
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and aggregated company level reviews</li>
-                  <li>✓ Submit reviews (registered users only)</li>
-                  <li>✓ Anonymous review submissions</li>
-                  <li>✓ Visual star ratings only (no numerical values)</li>
-                  <li>✓ Company name in details section (not next to logo)</li>
-                  <li>✓ Stars displayed next to company logo</li>
+                  <li>Browse forwarders and aggregated company level reviews</li>
+                  <li>Submit reviews (registered users only)</li>
+                  <li>Anonymous review submissions</li>
+                  <li>Visual star ratings</li>
                 </ul>
               </div>
               
@@ -160,18 +158,14 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Single user subscription</li>
-                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>✓ Search reviews by company/country/branch</li>
-                  <li>✓ Receive email notifications when new reviews are posted about specific forwarders</li>
-                  <li>✓ Get notified if a forwarder's score drops by X% or below a threshold</li>
-                  <li>✓ Access trends of forwarder scores over time (past 12-24 months, category-by-category)</li>
-                  <li>✓ Compare multiple forwarders side-by-side by score, category, country, or branch</li>
-                  <li>✓ Full numerical score display (e.g., 4.2/5.0) with score circle</li>
-                  <li>✓ Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
-                  <li>✓ Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
-                  <li>✓ Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
-                  <li>✓ Review count and global rank information</li>
+                  <li>Single user subscription</li>
+                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>Search reviews by company/country/branch</li>
+                  <li>Compare multiple forwarders side-by-side by score, category, country, or branch</li>
+                  <li>Full numerical score display (e.g., 4.2/5.0) with score circle</li>
+                  <li>Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
+                  <li>Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
+                  <li>Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
                 </ul>
               </div>
               
@@ -194,19 +188,17 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Single user subscription</li>
-                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>✓ Search reviews by company/country/branch</li>
-                  <li>✓ Receive email notifications when new reviews are posted about specific forwarders</li>
-                  <li>✓ Get notified if a forwarder's score drops by X% or below a threshold</li>
-                  <li>✓ Access trends of forwarder scores over time (past 12-24 months, category-by-category)</li>
-                  <li>✓ Compare multiple forwarders side-by-side by score, category, country, or branch</li>
-                  <li>✓ Full numerical score display (e.g., 4.2/5.0) with score circle</li>
-                  <li>✓ Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
-                  <li>✓ Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
-                  <li>✓ Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
-                  <li>✓ Review count and global rank information</li>
-                  <li>✓ Save $38/year compared to monthly billing</li>
+                  <li>Single user subscription</li>
+                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>Search reviews by company/country/branch</li>
+                  <li>Receive email notifications when new reviews are posted about specific forwarders</li>
+                  <li>Get notified if a forwarder's score drops by X% or below a threshold</li>
+                  <li>Access trends of forwarder scores over time</li>
+                  <li>Compare multiple forwarders side-by-side by score, category, country, or branch</li>
+                  <li>Full numerical score</li>
+                  <li>Individual category scores</li>
+                  <li>Location-specific scores</li>
+                  <li>Save $38/year compared to monthly billing</li>
                 </ul>
               </div>
               
@@ -233,9 +225,9 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and aggregated company level reviews</li>
-                  <li>✓ Visual star ratings only (no numerical values)</li>
-                  <li>✓ Same visual experience as shipper free tier</li>
+                  <li>Browse forwarders and aggregated company level reviews</li>
+                  <li>Visual star ratings</li>
+                  <li>Same visual experience as shipper free tier</li>
                 </ul>
               </div>
               
@@ -257,7 +249,7 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
                 </ul>
               </div>
               
@@ -279,8 +271,8 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>✓ Save $76/year compared to monthly billing</li>
+                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>Save $76/year compared to monthly billing</li>
                 </ul>
               </div>
               
@@ -303,16 +295,16 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Up to three concurrent users</li>
-                  <li>✓ Manage forwarder profile description</li>
-                  <li>✓ Freight Forwarder Branded ads on their page</li>
-                  <li>✓ View aggregated scores by region and country</li>
-                  <li>✓ Comment on reviews</li>
-                  <li>✓ Receive email notification when a new review is posted</li>
-                  <li>✓ Shipper able to contact Freight Forwarder via LogiScore</li>
-                  <li>✓ Best in category per country badge</li>
-                  <li>✓ Analytics</li>
-                  <li>✓ Access trend of scores over time (past 12-24 months, category-by-category)</li>
+                  <li>Up to three concurrent users</li>
+                  <li>Manage forwarder profile description</li>
+                  <li>Freight Forwarder Branded ads on their page</li>
+                  <li>View aggregated scores by region and country</li>
+                  <li>Comment on reviews</li>
+                  <li>Receive email notification when a new review is posted</li>
+                  <li>Shipper able to contact Freight Forwarder via LogiScore</li>
+                  <li>Best in category per country badge</li>
+                  <li>Analytics</li>
+                  <li>Access trend of scores over time (past 12-24 months, category-by-category)</li>
                 </ul>
               </div>
               

@@ -26,9 +26,7 @@ const userPlans: Plan[] = [
 			'Browse forwarders and aggregated company level reviews',
 			'Submit reviews (registered users only)',
 			'Anonymous review submissions',
-			'Visual star ratings only (no numerical values)',
-			'Company name in details section (not next to logo)',
-			'Stars displayed next to company logo'
+			'Visual star ratings'
 		],
 		billingCycle: 'month',
 		planType: 'monthly'
@@ -42,15 +40,11 @@ const userPlans: Plan[] = [
 			'Single user subscription',
 			'Browse forwarders and view aggregated company/country/branch level reviews and by category',
 			'Search reviews by company/country/branch',
-			'Receive email notifications when new reviews are posted about specific forwarders',
-			'Get notified if a forwarder\'s score drops by X% or below a threshold',
-			'Access trends of forwarder scores over time (past 12-24 months, category-by-category)',
 			'Compare multiple forwarders side-by-side by score, category, country, or branch',
 			'Full numerical score display (e.g., 4.2/5.0) with score circle',
 			'Individual category scores (e.g., "Customer Service: 4.5/5.0")',
 			'Location-specific scores (e.g., "London Branch: 4.5/5.0")',
-			'Country-aggregated scores (e.g., "UK: 4.3/5.0")',
-			'Review count and global rank information'
+			'Country-aggregated scores (e.g., "UK: 4.3/5.0")'
 		],
 		billingCycle: 'month',
 		planType: 'monthly'
@@ -66,13 +60,11 @@ const userPlans: Plan[] = [
 			'Search reviews by company/country/branch',
 			'Receive email notifications when new reviews are posted about specific forwarders',
 			'Get notified if a forwarder\'s score drops by X% or below a threshold',
-			'Access trends of forwarder scores over time (past 12-24 months, category-by-category)',
+			'Access trends of forwarder scores over time',
 			'Compare multiple forwarders side-by-side by score, category, country, or branch',
-			'Full numerical score display (e.g., 4.2/5.0) with score circle',
-			'Individual category scores (e.g., "Customer Service: 4.5/5.0")',
-			'Location-specific scores (e.g., "London Branch: 4.5/5.0")',
-			'Country-aggregated scores (e.g., "UK: 4.3/5.0")',
-			'Review count and global rank information',
+			'Full numerical score',
+			'Individual category scores',
+			'Location-specific scores',
 			'Save $38/year compared to monthly billing'
 		],
 		popular: true,
@@ -89,7 +81,7 @@ const forwarderPlans: Plan[] = [
 		description: 'Basic listing for freight forwarders',
 		features: [
 			'Browse forwarders and aggregated company level reviews',
-			'Visual star ratings only (no numerical values)',
+			'Visual star ratings',
 			'Same visual experience as shipper free tier'
 		],
 		billingCycle: 'month',
