@@ -154,7 +154,11 @@
             <div class="aggregate-score">
               <div class="stars-only">
                 <div class="review-count">{freightForwarder.review_count} reviews</div>
-                <div class="no-rating-note">Rating being calculated</div>
+                <div class="rating-status">
+                  <div class="rating-indicator">⏳</div>
+                  <div class="rating-text">Rating being calculated from {freightForwarder.review_count} reviews</div>
+                  <div class="rating-info">Ratings are typically calculated within 24 hours of receiving reviews</div>
+                </div>
               </div>
             </div>
           {:else}
@@ -504,6 +508,36 @@
     font-size: 0.9rem;
     color: #666;
     font-style: italic;
+  }
+
+  .rating-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .rating-indicator {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+  }
+
+  .rating-text {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .rating-info {
+    font-size: 0.8rem;
+    color: #888;
+    font-style: italic;
+    margin-top: 0.25rem;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
 
   .no-reviews {
