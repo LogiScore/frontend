@@ -321,6 +321,7 @@
 
   .form-group input {
     width: 100%;
+    max-width: 320px;
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
