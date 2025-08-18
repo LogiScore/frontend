@@ -26,8 +26,18 @@
     
     try {
       isLoading = true;
-      // Fetch freight forwarder details
-      const details = await apiClient.getFreightForwarder(freightForwarderId);
+      console.log('Fetching freight forwarder details for ID:', freightForwarderId);
+      
+      // Fetch freight forwarder details with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const details = await Promise.race([
+        apiClient.getFreightForwarder(freightForwarderId),
+        timeoutPromise
+      ]);
+      console.log('Received freight forwarder details:', details);
       freightForwarder = details;
       
       // If user is subscribed, fetch location and country scores
@@ -35,7 +45,17 @@
         await loadDetailedScores();
       }
     } catch (err: any) {
+      console.error('Error loading freight forwarder:', err);
       error = err.message || 'Failed to load freight forwarder details';
+      
+      // Add more specific error handling
+      if (err.status === 404) {
+        error = 'Freight forwarder not found';
+      } else if (err.status === 500) {
+        error = 'Server error - please try again later';
+      } else if (err.message?.includes('fetch')) {
+        error = 'Network error - please check your connection';
+      }
     } finally {
       isLoading = false;
     }
@@ -82,7 +102,16 @@
     {#if isLoading}
       <div class="loading">Loading freight forwarder details...</div>
     {:else if error}
-      <div class="error">{error}</div>
+      <div class="error">
+        <h2>Unable to Load Freight Forwarder</h2>
+        <p>{error}</p>
+        <div class="error-actions">
+          <button class="btn btn-primary" on:click={() => window.location.reload()}>
+            Try Again
+          </button>
+          <a href="/search" class="btn btn-outline">Back to Search</a>
+        </div>
+      </div>
     {:else if freightForwarder}
       <!-- Header Section -->
       <section class="company-header">
@@ -380,6 +409,25 @@
 
   .error {
     color: #dc3545;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .error h2 {
+    margin-bottom: 1rem;
+    color: #dc3545;
+  }
+
+  .error p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .not-found {
