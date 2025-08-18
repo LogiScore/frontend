@@ -124,11 +124,32 @@
                 </div>
               {/if}
             </div>
+          {:else if freightForwarder.review_count && freightForwarder.review_count > 0}
+            <!-- Show review count when there are reviews but no rating calculated yet -->
+            <div class="aggregate-score">
+              <div class="stars-only">
+                <div class="review-count">{freightForwarder.review_count} reviews</div>
+                <div class="no-rating-note">Rating being calculated</div>
+              </div>
+            </div>
           {/if}
         </div>
       </section>
 
 
+
+      <!-- Debug Section (temporary) -->
+      {#if import.meta.env.DEV}
+        <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
+          <h3>Debug Info (Development Only)</h3>
+          <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
+          <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
+          <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
+          <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
+          <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
+          <p><strong>Raw Data:</strong> {JSON.stringify(freightForwarder, null, 2).substring(0, 500)}...</p>
+        </section>
+      {/if}
 
       <!-- Company Details Section -->
       <section class="company-details">
@@ -426,6 +447,12 @@
   .stars-only .stars {
     font-size: 2rem;
     color: #ffc107;
+  }
+
+  .no-rating-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
   }
 
   .score-number {
