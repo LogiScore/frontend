@@ -320,7 +320,7 @@
   }
 
   .form-group input {
-    width: 100%;
+    width: 380px;
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
