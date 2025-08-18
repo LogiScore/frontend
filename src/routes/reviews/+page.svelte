@@ -123,28 +123,37 @@
     }
   }
 
-  // Generate a proper UUID for locations that don't have one
-  function generateLocationUUID(locationId: string): string {
+  // Convert location ID to proper UUID format deterministically
+  // This ensures the same location always gets the same UUID
+  function convertLocationIdToUUID(locationId: string): string {
     // If it's already a UUID, return it
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(locationId)) {
       return locationId;
     }
     
-    // Generate a deterministic UUID based on the location ID
-    // This ensures the same location always gets the same UUID
-    const hash = locationId.split('').reduce((a, b) => {
-      a = ((a << 5) - a + b.charCodeAt(0)) & 0xffffffff;
-      return a;
-    }, 0);
+    // Create a deterministic hash from the location ID
+    let hash = 0;
+    for (let i = 0; i < locationId.length; i++) {
+      const char = locationId.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) & 0xffffffff;
+    }
     
-    // Convert to UUID v4 format
+    // Convert hash to UUID v4 format deterministically
     const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = (hash + Math.random() * 16) % 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
+      if (c === 'x') {
+        // Use hash for x positions (deterministic)
+        const r = (hash + Math.abs(hash >> 16)) % 16;
+        hash = (hash * 9301 + 49297) % 233280; // Simple PRNG
+        return r.toString(16);
+      } else {
+        // Use hash for y positions (deterministic)
+        const r = (hash + Math.abs(hash >> 8)) % 16;
+        hash = (hash * 9301 + 49297) % 233280; // Simple PRNG
+        return (r & 0x3 | 0x8).toString(16); // Ensure version 4
+      }
     });
     
-    console.log(`Generated UUID for location ID "${locationId}": ${uuid}`);
+    console.log(`Converted location ID "${locationId}" to UUID: ${uuid}`);
     return uuid;
   }
 
@@ -159,7 +168,7 @@
       
       // Convert to the expected format for the existing code
       const processedLocations = databaseLocations.map(loc => ({
-        id: generateLocationUUID(loc.id), // Generate proper UUID if needed
+        id: convertLocationIdToUUID(loc.id), // Convert to proper UUID format
         name: loc.name,
         city: loc.city || loc.name.split(',')[0]?.trim() || loc.name, // Use city from API or extract from name
         state: loc.state || (loc.name.includes(',') ? loc.name.split(',')[1]?.trim() || '' : ''),
@@ -170,9 +179,9 @@
       
       // TEMPORARY: Always add test data with special characters for testing
       const testLocations = [
-        { id: generateLocationUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: generateLocationUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
-        { id: generateLocationUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
+        { id: convertLocationIdToUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: convertLocationIdToUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: convertLocationIdToUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
       ];
       
       // Combine backend locations with test data
@@ -194,13 +203,13 @@
       console.error('❌ Failed to load dynamic locations:', err);
       // Keep existing fallback logic as a safety net
       locations = [
-        { id: generateLocationUUID('us-east'), name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: generateLocationUUID('us-west'), name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: generateLocationUUID('uk-london'), name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' },
-        { id: generateLocationUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: generateLocationUUID('de-hamburg'), name: 'Hamburg, , Germany', city: 'Hamburg', state: '', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: generateLocationUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
-        { id: generateLocationUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
+        { id: convertLocationIdToUUID('us-east'), name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('us-west'), name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('uk-london'), name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+        { id: convertLocationIdToUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: convertLocationIdToUUID('de-hamburg'), name: 'Hamburg, , Germany', city: 'Hamburg', state: '', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: convertLocationIdToUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: convertLocationIdToUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
       ];
       console.log('🔄 Using minimal fallback locations due to error');
     }
@@ -616,19 +625,6 @@
       selectedBranchValue: selectedBranch,
       selectedBranchDisplay: selectedBranchDisplay
     });
-
-    // Try using location name as location_id if UUID format fails
-    // Backend requires valid UUID format for location_id
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.location_id)) {
-      console.log('Location ID is not in UUID format, using location name instead');
-      console.log('Original location_id:', reviewData.location_id);
-      console.log('Location name to use:', selectedBranchDisplay);
-      
-      // For now, use location name as location_id since backend requires valid UUID
-      // TODO: Backend team needs to either accept location names or ensure location IDs are proper UUIDs
-      reviewData.location_id = selectedBranchDisplay || 'Unknown Location';
-      console.log('Updated location_id to use location name:', reviewData.location_id);
-    }
 
     try {
       // Submit review using the location ID as branch ID
