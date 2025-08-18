@@ -47,10 +47,8 @@
 
 <svelte:head>
   <title>Pricing - LogiScore Plans & Features</title>
-  <meta name="description" content="Choose the perfect LogiScore plan for your business. Free, Pro, and Enterprise plans available for shippers and freight forwarders." />
+  <meta name="description" content="Choose the perfect LogiScore plan for your business. Free and subscription plans available for shippers and freight forwarders." />
 </svelte:head>
-
-
 
 <!-- Hero Section -->
 <section class="hero">
@@ -88,8 +86,19 @@
             <div class="plan-header">
               <h3>{plan.name}</h3>
               <div class="price">
-                <span class="amount">${plan.price}</span>
-                <span class="period">/{plan.billingCycle}</span>
+                {#if plan.price === 0}
+                  <span class="amount">Free</span>
+                {:else}
+                  <span class="amount">${plan.price}</span>
+                  <span class="period">/{plan.billingCycle}</span>
+                  {#if plan.annualPrice}
+                    <div class="annual-price">
+                      <span class="annual-amount">${plan.annualPrice}</span>
+                      <span class="annual-period">/year</span>
+                      <span class="annual-savings">Save ${(plan.price * 12) - plan.annualPrice}/year</span>
+                    </div>
+                  {/if}
+                {/if}
               </div>
               <p class="plan-description">{plan.description}</p>
             </div>
@@ -103,7 +112,7 @@
             </div>
             
             <div class="plan-actions">
-              {#if plan.name === 'Basic'}
+              {#if plan.price === 0}
                 <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
               {:else}
                 <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
@@ -115,86 +124,167 @@
     {:else}
       <!-- Default plans for non-logged-in users -->
       <div class="plans-grid">
-        <!-- Free Plan -->
-        <div class="plan-card">
-          <div class="plan-header">
-            <h3>Free</h3>
-            <div class="price">
-              <span class="amount">$0</span>
-              <span class="period">/month</span>
+        <!-- Shipper Plans -->
+        <div class="plan-type-section">
+          <h2 class="section-title">Shipper Plans</h2>
+          <div class="plans-row">
+            <!-- Free Plan -->
+            <div class="plan-card">
+              <div class="plan-header">
+                <h3>Free</h3>
+                <div class="price">
+                  <span class="amount">Free</span>
+                </div>
+                <p class="plan-description">Basic access to freight forwarder reviews</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Browse forwarders and company reviews</li>
+                  <li>✓ Submit reviews (registered users only)</li>
+                  <li>✓ Anonymous review submissions</li>
+                  <li>✓ Visual star ratings only</li>
+                  <li>✓ Basic company profiles</li>
+                  <li>✓ Email support</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+              </div>
             </div>
-            <p class="plan-description">Perfect for getting started</p>
-          </div>
-          
-          <div class="plan-features">
-            <ul>
-              <li>✓ Search freight forwarders</li>
-              <li>✓ Read basic reviews</li>
-              <li>✓ Submit reviews</li>
-              <li>✓ Basic company profiles</li>
-              <li>✓ Email support</li>
-            </ul>
-          </div>
-          
-          <div class="plan-actions">
-            <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+            
+            <!-- Subscription Plan -->
+            <div class="plan-card featured">
+              <div class="plan-badge">Most Popular</div>
+              <div class="plan-header">
+                <h3>Subscription</h3>
+                <div class="price">
+                  <span class="amount">$38</span>
+                  <span class="period">/month</span>
+                  <div class="annual-price">
+                    <span class="annual-amount">$418</span>
+                    <span class="annual-period">/year</span>
+                    <span class="annual-savings">Save $38/year</span>
+                  </div>
+                </div>
+                <p class="plan-description">Full access to detailed reviews and analytics</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Everything in Free</li>
+                  <li>✓ Full numerical score display</li>
+                  <li>✓ Company/country/branch level reviews</li>
+                  <li>✓ Category-based reviews</li>
+                  <li>✓ Search reviews by company/country/branch</li>
+                  <li>✓ Email notifications for new reviews</li>
+                  <li>✓ Score drop alerts</li>
+                  <li>✓ Trend analysis (12-24 months)</li>
+                  <li>✓ Compare multiple forwarders</li>
+                  <li>✓ Export reports</li>
+                  <li>✓ Priority support</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Trial</button>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <!-- Pro Plan -->
-        <div class="plan-card featured">
-          <div class="plan-badge">Most Popular</div>
-          <div class="plan-header">
-            <h3>Pro</h3>
-            <div class="price">
-              <span class="amount">$99</span>
-              <span class="period">/month</span>
+
+        <!-- Freight Forwarder Plans -->
+        <div class="plan-type-section">
+          <h2 class="section-title">Freight Forwarder Plans</h2>
+          <div class="plans-row">
+            <!-- Free Plan -->
+            <div class="plan-card">
+              <div class="plan-header">
+                <h3>Free</h3>
+                <div class="price">
+                  <span class="amount">Free</span>
+                </div>
+                <p class="plan-description">Basic listing for freight forwarders</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Browse forwarders and company reviews</li>
+                  <li>✓ Visual star ratings only</li>
+                  <li>✓ Basic company profiles</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+              </div>
             </div>
-            <p class="plan-description">For serious shippers</p>
-          </div>
-          
-          <div class="plan-features">
-            <ul>
-              <li>✓ Everything in Free</li>
-              <li>✓ Detailed analytics</li>
-              <li>✓ Branch-level reviews</li>
-              <li>✓ Advanced search filters</li>
-              <li>✓ Export reports</li>
-              <li>✓ Priority support</li>
-              <li>✓ Custom alerts</li>
-            </ul>
-          </div>
-          
-          <div class="plan-actions">
-            <button class="btn-primary" on:click={openSubscriptionModal}>Start Pro Trial</button>
-          </div>
-        </div>
-        
-        <!-- Enterprise Plan -->
-        <div class="plan-card">
-          <div class="plan-header">
-            <h3>Enterprise</h3>
-            <div class="price">
-              <span class="amount">$299</span>
-              <span class="period">/month</span>
+            
+            <!-- Subscription Plan -->
+            <div class="plan-card">
+              <div class="plan-header">
+                <h3>Subscription</h3>
+                <div class="price">
+                  <span class="amount">$76</span>
+                  <span class="period">/month</span>
+                  <div class="annual-price">
+                    <span class="annual-amount">$836</span>
+                    <span class="annual-period">/year</span>
+                    <span class="annual-savings">Save $76/year</span>
+                  </div>
+                </div>
+                <p class="plan-description">Enhanced visibility and review management</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Everything in Free</li>
+                  <li>✓ Full numerical score display</li>
+                  <li>✓ Company/country/branch level reviews</li>
+                  <li>✓ Category-based reviews</li>
+                  <li>✓ Analytics dashboard</li>
+                  <li>✓ Trend analysis (12-24 months)</li>
+                  <li>✓ Review notifications</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Trial</button>
+              </div>
             </div>
-            <p class="plan-description">For large organizations</p>
-          </div>
-          
-          <div class="plan-features">
-            <ul>
-              <li>✓ Everything in Pro</li>
-              <li>✓ API access</li>
-              <li>✓ Custom integrations</li>
-              <li>✓ Dedicated account manager</li>
-              <li>✓ White-label reports</li>
-              <li>✓ Advanced analytics</li>
-              <li>✓ 24/7 phone support</li>
-            </ul>
-          </div>
-          
-          <div class="plan-actions">
-            <button class="btn-secondary" on:click={openSubscriptionModal}>Contact Sales</button>
+            
+            <!-- Subscription Plus Plan -->
+            <div class="plan-card featured">
+              <div class="plan-badge">Most Popular</div>
+              <div class="plan-header">
+                <h3>Subscription Plus</h3>
+                <div class="price">
+                  <span class="amount">$3,450</span>
+                  <span class="period">/year</span>
+                </div>
+                <p class="plan-description">Maximum visibility and control for businesses</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Everything in Subscription</li>
+                  <li>✓ Up to 3 concurrent users</li>
+                  <li>✓ Manage forwarder profile description</li>
+                  <li>✓ Branded ads on company page</li>
+                  <li>✓ View aggregated scores by region/country</li>
+                  <li>✓ Comment on reviews</li>
+                  <li>✓ Shipper contact via LogiScore</li>
+                  <li>✓ Best in category per country badge</li>
+                  <li>✓ Advanced analytics</li>
+                  <li>✓ Dedicated account manager</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Plus Trial</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -204,41 +294,7 @@
 
 
 
-<!-- Plan Type Selection for Non-Logged-In Users -->
-{#if !authState.user}
-  <section class="plan-selection">
-    <div class="container">
-      <h2>Choose Your Plan Type</h2>
-      <p class="section-subtitle">Select the plan type that matches your business needs</p>
-      
-      <div class="plan-type-grid">
-        <div class="plan-type-card">
-          <h3>Shipper Plans</h3>
-          <p>Find and review freight forwarders to make informed shipping decisions.</p>
-          <ul>
-            <li>✓ Search freight forwarders</li>
-            <li>✓ Read detailed reviews</li>
-            <li>✓ Compare companies</li>
-            <li>✓ Export reports</li>
-          </ul>
-          <button class="btn-primary" on:click={() => handlePlanSelection('shipper')}>View Shipper Plans</button>
-        </div>
-        
-        <div class="plan-type-card">
-          <h3>Freight Forwarder Plans</h3>
-          <p>Monitor and improve your reputation on LogiScore.</p>
-          <ul>
-            <li>✓ Monitor your ratings</li>
-            <li>✓ Respond to reviews</li>
-            <li>✓ Detailed analytics</li>
-            <li>✓ Reputation management</li>
-          </ul>
-          <button class="btn-primary" on:click={() => handlePlanSelection('forwarder')}>View Forwarder Plans</button>
-        </div>
-      </div>
-    </div>
-  </section>
-{/if}
+
 
 <!-- FAQ Section -->
 <section class="faq">
@@ -317,26 +373,7 @@
     padding: 0 20px;
   }
 
-  /* Header styles removed - now using Header component */
 
-  .nav-menu ul {
-    display: flex;
-    list-style: none;
-    gap: 30px;
-    align-items: center;
-  }
-
-  .nav-menu a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: color 0.3s;
-  }
-
-  .nav-menu a:hover {
-    color: #667eea;
-  }
 
   .btn-primary {
     background: #667eea;
@@ -403,11 +440,28 @@
   }
 
   .plans-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    max-width: 1200px;
     margin: 0 auto;
+  }
+
+  .plan-type-section {
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #333;
+  }
+
+  .plans-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    justify-content: center;
   }
 
   .plan-card {
@@ -467,6 +521,28 @@
   .period {
     font-size: 1.1rem;
     color: #666;
+  }
+
+  .annual-price {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  .annual-amount {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .annual-period {
+    font-weight: 600;
+    color: #666;
+  }
+
+  .annual-savings {
+    font-weight: 600;
+    color: #28a745;
+    margin-left: 10px;
   }
 
   .plan-description {
@@ -555,68 +631,21 @@
     border-bottom: none;
   }
 
-  /* Forwarder Plans */
-  .forwarder-plans {
-    padding: 80px 0;
-    background: #f8f9fa;
-  }
-
-  .forwarder-plans h2 {
+  .section-title {
     font-size: 2.5rem;
     text-align: center;
     margin-bottom: 15px;
     color: #333;
   }
 
-  .section-subtitle {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 50px;
+  .plans-row {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .forwarder-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
 
-  .forwarder-plan {
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    text-align: center;
-    position: relative;
-  }
-
-  .forwarder-plan.featured {
-    border: 2px solid #667eea;
-    transform: scale(1.05);
-  }
-
-  .forwarder-plan h3 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    color: #333;
-  }
-
-  .forwarder-plan .price {
-    margin-bottom: 30px;
-  }
-
-  .forwarder-plan ul {
-    list-style: none;
-    margin-bottom: 30px;
-    text-align: left;
-  }
-
-  .forwarder-plan li {
-    padding: 8px 0;
-    color: #666;
-  }
 
   /* FAQ Section */
   .faq {
@@ -685,27 +714,15 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    .nav-menu {
-      display: none;
-    }
-
     .hero-title {
       font-size: 2.5rem;
     }
 
-    .plans-grid {
+    .plans-row {
       grid-template-columns: 1fr;
     }
-
+    
     .plan-card.featured {
-      transform: none;
-    }
-
-    .forwarder-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .forwarder-plan.featured {
       transform: none;
     }
 
@@ -717,8 +734,6 @@
       flex-direction: column;
       align-items: center;
     }
-
-
   }
 </style>
 

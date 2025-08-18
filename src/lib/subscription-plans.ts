@@ -8,6 +8,7 @@ export interface Plan {
 	features: string[];
 	popular?: boolean;
 	billingCycle: string;
+	annualPrice?: number;
 }
 
 export interface UserPlans {
@@ -18,13 +19,14 @@ export interface UserPlans {
 const userPlans: Plan[] = [
 	{
 		id: 1,
-		name: 'Basic',
-		price: 29,
-		description: 'Essential freight forwarder reviews',
+		name: 'Free',
+		price: 0,
+		description: 'Basic access to freight forwarder reviews',
 		features: [
-			'Search freight forwarders',
-			'Read basic reviews',
-			'Submit reviews',
+			'Browse forwarders and company reviews',
+			'Submit reviews (registered users only)',
+			'Anonymous review submissions',
+			'Visual star ratings only',
 			'Basic company profiles',
 			'Email support'
 		],
@@ -32,81 +34,77 @@ const userPlans: Plan[] = [
 	},
 	{
 		id: 2,
-		name: 'Pro',
-		price: 79,
-		description: 'Advanced features for serious users',
+		name: 'Subscription',
+		price: 38,
+		annualPrice: 418,
+		description: 'Full access to detailed reviews and analytics',
 		features: [
-			'Everything in Basic',
-			'Detailed analytics',
-			'Branch-level reviews',
-			'Advanced search filters',
+			'Everything in Free',
+			'Full numerical score display',
+			'Company/country/branch level reviews',
+			'Category-based reviews',
+			'Search reviews by company/country/branch',
+			'Email notifications for new reviews',
+			'Score drop alerts',
+			'Trend analysis (12-24 months)',
+			'Compare multiple forwarders',
 			'Export reports',
-			'Priority support',
-			'Custom alerts'
+			'Priority support'
 		],
 		popular: true,
-		billingCycle: 'month'
-	},
-	{
-		id: 3,
-		name: 'Enterprise',
-		price: 199,
-		description: 'Complete solution for businesses',
-		features: [
-			'Everything in Pro',
-			'API access',
-			'Custom integrations',
-			'Dedicated account manager',
-			'White-label reports',
-			'Advanced analytics',
-			'24/7 phone support'
-		],
 		billingCycle: 'month'
 	}
 ];
 
 const forwarderPlans: Plan[] = [
 	{
-		id: 4,
-		name: 'Starter',
-		price: 29,
+		id: 3,
+		name: 'Free',
+		price: 0,
 		description: 'Basic listing for freight forwarders',
 		features: [
-			'Company profile',
-			'Basic listing',
-			'Review notifications',
-			'Basic analytics'
+			'Browse forwarders and company reviews',
+			'Visual star ratings only',
+			'Basic company profiles'
+		],
+		billingCycle: 'month'
+	},
+	{
+		id: 4,
+		name: 'Subscription',
+		price: 76,
+		annualPrice: 836,
+		description: 'Enhanced visibility and review management',
+		features: [
+			'Everything in Free',
+			'Full numerical score display',
+			'Company/country/branch level reviews',
+			'Category-based reviews',
+			'Analytics dashboard',
+			'Trend analysis (12-24 months)',
+			'Review notifications'
 		],
 		billingCycle: 'month'
 	},
 	{
 		id: 5,
-		name: 'Professional',
-		price: 79,
-		description: 'Enhanced visibility and features',
+		name: 'Subscription Plus',
+		price: 3450,
+		description: 'Maximum visibility and control for businesses',
 		features: [
-			'All Starter features',
-			'Enhanced profile',
-			'Analytics dashboard',
-			'Priority placement',
-			'Review management'
+			'Everything in Subscription',
+			'Up to 3 concurrent users',
+			'Manage forwarder profile description',
+			'Branded ads on company page',
+			'View aggregated scores by region/country',
+			'Comment on reviews',
+			'Shipper contact via LogiScore',
+			'Best in category per country badge',
+			'Advanced analytics',
+			'Dedicated account manager'
 		],
 		popular: true,
-		billingCycle: 'month'
-	},
-	{
-		id: 6,
-		name: 'Premium',
-		price: 199,
-		description: 'Maximum visibility and control',
-		features: [
-			'All Professional features',
-			'Custom branding',
-			'Advanced analytics',
-			'Dedicated account manager',
-			'API access'
-		],
-		billingCycle: 'month'
+		billingCycle: 'year'
 	}
 ];
 
