@@ -12,6 +12,7 @@ export interface FreightForwarder {
   is_active?: boolean | null;
   rating?: number | null;
   review_count?: number | null;
+  weighted_review_count?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
   category_scores?: Array<{

@@ -149,18 +149,23 @@
                 </div>
               {/if}
             </div>
+          {:else if freightForwarder.weighted_review_count && freightForwarder.weighted_review_count > 0 && freightForwarder.weighted_review_count <= 5}
+            <!-- Show stars based on weighted_review_count when it represents the rating (1-5 stars) -->
+            <div class="aggregate-score">
+              <div class="stars-only">
+                <div class="stars">{'★'.repeat(freightForwarder.weighted_review_count)}</div>
+                <div class="review-count">{freightForwarder.weighted_review_count} stars</div>
+              </div>
+            </div>
           {:else if freightForwarder.review_count && freightForwarder.review_count > 0}
-            <!-- Show review count when there are reviews but no rating calculated yet -->
+            <!-- Show review count when weighted_review_count is not available -->
             <div class="aggregate-score">
               <div class="stars-only">
                 <div class="review-count">{freightForwarder.review_count} reviews</div>
-                <div class="rating-status">
-                  <div class="rating-indicator">⏳</div>
-                  <div class="rating-text">Rating being calculated from {freightForwarder.review_count} reviews</div>
-                  <div class="rating-info">Ratings are typically calculated within 24 hours of receiving reviews</div>
-                </div>
+                <div class="rating-note">Rating being calculated</div>
               </div>
             </div>
+
           {:else}
             <!-- No reviews or rating available -->
             <div class="aggregate-score">
@@ -180,6 +185,7 @@
           <h3>Debug Info (Development Only)</h3>
           <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
           <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
+          <p><strong>Weighted Review Count:</strong> {freightForwarder.weighted_review_count || 'undefined'}</p>
           <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
           <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
           <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
@@ -535,6 +541,13 @@
     margin-top: 0.25rem;
   }
 
+  .rating-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 0.5rem;
+  }
+
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
@@ -574,6 +587,17 @@
   .stars {
     color: #ffc107;
     font-size: 1.2rem;
+  }
+
+  .stars.calculating {
+    color: #ccc;
+    opacity: 0.6;
+    animation: calculating-pulse 2s infinite;
+  }
+
+  @keyframes calculating-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.3; }
   }
 
   .review-count {
