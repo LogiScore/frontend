@@ -1097,12 +1097,6 @@
               {error}
             </div>
           {/if}
-          
-          {#if successMessage}
-            <div class="success-message">
-              {successMessage}
-            </div>
-          {/if}
         </form>
         
         <!-- Success View -->
