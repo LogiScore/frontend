@@ -91,13 +91,6 @@
                 {:else}
                   <span class="amount">${plan.price}</span>
                   <span class="period">/{plan.billingCycle}</span>
-                  {#if plan.annualPrice}
-                    <div class="annual-price">
-                      <span class="annual-amount">${plan.annualPrice}</span>
-                      <span class="annual-period">/year</span>
-                      <span class="annual-savings">Save ${(plan.price * 12) - plan.annualPrice}/year</span>
-                    </div>
-                  {/if}
                 {/if}
               </div>
               <p class="plan-description">{plan.description}</p>
@@ -140,12 +133,12 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and company reviews</li>
+                  <li>✓ Browse forwarders and aggregated company level reviews</li>
                   <li>✓ Submit reviews (registered users only)</li>
                   <li>✓ Anonymous review submissions</li>
-                  <li>✓ Visual star ratings only</li>
-                  <li>✓ Basic company profiles</li>
-                  <li>✓ Email support</li>
+                  <li>✓ Visual star ratings only (no numerical values)</li>
+                  <li>✓ Company name in details section (not next to logo)</li>
+                  <li>✓ Stars displayed next to company logo</li>
                 </ul>
               </div>
               
@@ -154,41 +147,71 @@
               </div>
             </div>
             
-            <!-- Subscription Plan -->
-            <div class="plan-card featured">
-              <div class="plan-badge">Most Popular</div>
+            <!-- Subscription Monthly Plan -->
+            <div class="plan-card">
               <div class="plan-header">
-                <h3>Subscription</h3>
+                <h3>Subscription Monthly</h3>
                 <div class="price">
                   <span class="amount">$38</span>
                   <span class="period">/month</span>
-                  <div class="annual-price">
-                    <span class="annual-amount">$418</span>
-                    <span class="annual-period">/year</span>
-                    <span class="annual-savings">Save $38/year</span>
-                  </div>
                 </div>
                 <p class="plan-description">Full access to detailed reviews and analytics</p>
               </div>
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Everything in Free</li>
-                  <li>✓ Full numerical score display</li>
-                  <li>✓ Company/country/branch level reviews</li>
-                  <li>✓ Category-based reviews</li>
+                  <li>✓ Single user subscription</li>
+                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
                   <li>✓ Search reviews by company/country/branch</li>
-                  <li>✓ Email notifications for new reviews</li>
-                  <li>✓ Score drop alerts</li>
-                  <li>✓ Trend analysis (12-24 months)</li>
-                  <li>✓ Compare multiple forwarders</li>
-                  <li>✓ Export reports</li>
-                  <li>✓ Priority support</li>
+                  <li>✓ Receive email notifications when new reviews are posted about specific forwarders</li>
+                  <li>✓ Get notified if a forwarder's score drops by X% or below a threshold</li>
+                  <li>✓ Access trends of forwarder scores over time (past 12-24 months, category-by-category)</li>
+                  <li>✓ Compare multiple forwarders side-by-side by score, category, country, or branch</li>
+                  <li>✓ Full numerical score display (e.g., 4.2/5.0) with score circle</li>
+                  <li>✓ Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
+                  <li>✓ Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
+                  <li>✓ Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
+                  <li>✓ Review count and global rank information</li>
                 </ul>
               </div>
               
               <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Trial</button>
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Monthly Trial</button>
+              </div>
+            </div>
+            
+            <!-- Subscription Annual Plan -->
+            <div class="plan-card featured">
+              <div class="plan-badge">Most Popular</div>
+              <div class="plan-header">
+                <h3>Subscription Annual</h3>
+                <div class="price">
+                  <span class="amount">$418</span>
+                  <span class="period">/year</span>
+                </div>
+                <p class="plan-description">Full access to detailed reviews and analytics (annual billing)</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Single user subscription</li>
+                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>✓ Search reviews by company/country/branch</li>
+                  <li>✓ Receive email notifications when new reviews are posted about specific forwarders</li>
+                  <li>✓ Get notified if a forwarder's score drops by X% or below a threshold</li>
+                  <li>✓ Access trends of forwarder scores over time (past 12-24 months, category-by-category)</li>
+                  <li>✓ Compare multiple forwarders side-by-side by score, category, country, or branch</li>
+                  <li>✓ Full numerical score display (e.g., 4.2/5.0) with score circle</li>
+                  <li>✓ Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
+                  <li>✓ Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
+                  <li>✓ Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
+                  <li>✓ Review count and global rank information</li>
+                  <li>✓ Save $38/year compared to monthly billing</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Annual Trial</button>
               </div>
             </div>
           </div>
@@ -210,9 +233,9 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Browse forwarders and company reviews</li>
-                  <li>✓ Visual star ratings only</li>
-                  <li>✓ Basic company profiles</li>
+                  <li>✓ Browse forwarders and aggregated company level reviews</li>
+                  <li>✓ Visual star ratings only (no numerical values)</li>
+                  <li>✓ Same visual experience as shipper free tier</li>
                 </ul>
               </div>
               
@@ -221,36 +244,48 @@
               </div>
             </div>
             
-            <!-- Subscription Plan -->
+            <!-- Subscription Monthly Plan -->
             <div class="plan-card">
               <div class="plan-header">
-                <h3>Subscription</h3>
+                <h3>Subscription Monthly</h3>
                 <div class="price">
                   <span class="amount">$76</span>
                   <span class="period">/month</span>
-                  <div class="annual-price">
-                    <span class="annual-amount">$836</span>
-                    <span class="annual-period">/year</span>
-                    <span class="annual-savings">Save $76/year</span>
-                  </div>
                 </div>
                 <p class="plan-description">Enhanced visibility and review management</p>
               </div>
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Everything in Free</li>
-                  <li>✓ Full numerical score display</li>
-                  <li>✓ Company/country/branch level reviews</li>
-                  <li>✓ Category-based reviews</li>
-                  <li>✓ Analytics dashboard</li>
-                  <li>✓ Trend analysis (12-24 months)</li>
-                  <li>✓ Review notifications</li>
+                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
                 </ul>
               </div>
               
               <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Trial</button>
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Monthly Trial</button>
+              </div>
+            </div>
+            
+            <!-- Subscription Annual Plan -->
+            <div class="plan-card">
+              <div class="plan-header">
+                <h3>Subscription Annual</h3>
+                <div class="price">
+                  <span class="amount">$836</span>
+                  <span class="period">/year</span>
+                </div>
+                <p class="plan-description">Enhanced visibility and review management (annual billing)</p>
+              </div>
+              
+              <div class="plan-features">
+                <ul>
+                  <li>✓ Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
+                  <li>✓ Save $76/year compared to monthly billing</li>
+                </ul>
+              </div>
+              
+              <div class="plan-actions">
+                <button class="btn-primary" on:click={openSubscriptionModal}>Start Annual Trial</button>
               </div>
             </div>
             
@@ -268,16 +303,16 @@
               
               <div class="plan-features">
                 <ul>
-                  <li>✓ Everything in Subscription</li>
-                  <li>✓ Up to 3 concurrent users</li>
+                  <li>✓ Up to three concurrent users</li>
                   <li>✓ Manage forwarder profile description</li>
-                  <li>✓ Branded ads on company page</li>
-                  <li>✓ View aggregated scores by region/country</li>
+                  <li>✓ Freight Forwarder Branded ads on their page</li>
+                  <li>✓ View aggregated scores by region and country</li>
                   <li>✓ Comment on reviews</li>
-                  <li>✓ Shipper contact via LogiScore</li>
+                  <li>✓ Receive email notification when a new review is posted</li>
+                  <li>✓ Shipper able to contact Freight Forwarder via LogiScore</li>
                   <li>✓ Best in category per country badge</li>
-                  <li>✓ Advanced analytics</li>
-                  <li>✓ Dedicated account manager</li>
+                  <li>✓ Analytics</li>
+                  <li>✓ Access trend of scores over time (past 12-24 months, category-by-category)</li>
                 </ul>
               </div>
               
@@ -523,27 +558,7 @@
     color: #666;
   }
 
-  .annual-price {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 10px;
-  }
 
-  .annual-amount {
-    font-weight: 600;
-    color: #333;
-  }
-
-  .annual-period {
-    font-weight: 600;
-    color: #666;
-  }
-
-  .annual-savings {
-    font-weight: 600;
-    color: #28a745;
-    margin-left: 10px;
-  }
 
   .plan-description {
     color: #666;

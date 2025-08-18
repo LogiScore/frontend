@@ -8,7 +8,7 @@ export interface Plan {
 	features: string[];
 	popular?: boolean;
 	billingCycle: string;
-	annualPrice?: number;
+	planType: 'monthly' | 'annual';
 }
 
 export interface UserPlans {
@@ -23,88 +23,121 @@ const userPlans: Plan[] = [
 		price: 0,
 		description: 'Basic access to freight forwarder reviews',
 		features: [
-			'Browse forwarders and company reviews',
+			'Browse forwarders and aggregated company level reviews',
 			'Submit reviews (registered users only)',
 			'Anonymous review submissions',
-			'Visual star ratings only',
-			'Basic company profiles',
-			'Email support'
+			'Visual star ratings only (no numerical values)',
+			'Company name in details section (not next to logo)',
+			'Stars displayed next to company logo'
 		],
-		billingCycle: 'month'
+		billingCycle: 'month',
+		planType: 'monthly'
 	},
 	{
 		id: 2,
-		name: 'Subscription',
+		name: 'Subscription Monthly',
 		price: 38,
-		annualPrice: 418,
 		description: 'Full access to detailed reviews and analytics',
 		features: [
-			'Everything in Free',
-			'Full numerical score display',
-			'Company/country/branch level reviews',
-			'Category-based reviews',
+			'Single user subscription',
+			'Browse forwarders and view aggregated company/country/branch level reviews and by category',
 			'Search reviews by company/country/branch',
-			'Email notifications for new reviews',
-			'Score drop alerts',
-			'Trend analysis (12-24 months)',
-			'Compare multiple forwarders',
-			'Export reports',
-			'Priority support'
+			'Receive email notifications when new reviews are posted about specific forwarders',
+			'Get notified if a forwarder\'s score drops by X% or below a threshold',
+			'Access trends of forwarder scores over time (past 12-24 months, category-by-category)',
+			'Compare multiple forwarders side-by-side by score, category, country, or branch',
+			'Full numerical score display (e.g., 4.2/5.0) with score circle',
+			'Individual category scores (e.g., "Customer Service: 4.5/5.0")',
+			'Location-specific scores (e.g., "London Branch: 4.5/5.0")',
+			'Country-aggregated scores (e.g., "UK: 4.3/5.0")',
+			'Review count and global rank information'
+		],
+		billingCycle: 'month',
+		planType: 'monthly'
+	},
+	{
+		id: 3,
+		name: 'Subscription Annual',
+		price: 418,
+		description: 'Full access to detailed reviews and analytics (annual billing)',
+		features: [
+			'Single user subscription',
+			'Browse forwarders and view aggregated company/country/branch level reviews and by category',
+			'Search reviews by company/country/branch',
+			'Receive email notifications when new reviews are posted about specific forwarders',
+			'Get notified if a forwarder\'s score drops by X% or below a threshold',
+			'Access trends of forwarder scores over time (past 12-24 months, category-by-category)',
+			'Compare multiple forwarders side-by-side by score, category, country, or branch',
+			'Full numerical score display (e.g., 4.2/5.0) with score circle',
+			'Individual category scores (e.g., "Customer Service: 4.5/5.0")',
+			'Location-specific scores (e.g., "London Branch: 4.5/5.0")',
+			'Country-aggregated scores (e.g., "UK: 4.3/5.0")',
+			'Review count and global rank information',
+			'Save $38/year compared to monthly billing'
 		],
 		popular: true,
-		billingCycle: 'month'
+		billingCycle: 'year',
+		planType: 'annual'
 	}
 ];
 
 const forwarderPlans: Plan[] = [
 	{
-		id: 3,
+		id: 4,
 		name: 'Free',
 		price: 0,
 		description: 'Basic listing for freight forwarders',
 		features: [
-			'Browse forwarders and company reviews',
-			'Visual star ratings only',
-			'Basic company profiles'
+			'Browse forwarders and aggregated company level reviews',
+			'Visual star ratings only (no numerical values)',
+			'Same visual experience as shipper free tier'
 		],
-		billingCycle: 'month'
-	},
-	{
-		id: 4,
-		name: 'Subscription',
-		price: 76,
-		annualPrice: 836,
-		description: 'Enhanced visibility and review management',
-		features: [
-			'Everything in Free',
-			'Full numerical score display',
-			'Company/country/branch level reviews',
-			'Category-based reviews',
-			'Analytics dashboard',
-			'Trend analysis (12-24 months)',
-			'Review notifications'
-		],
-		billingCycle: 'month'
+		billingCycle: 'month',
+		planType: 'monthly'
 	},
 	{
 		id: 5,
+		name: 'Subscription Monthly',
+		price: 76,
+		description: 'Enhanced visibility and review management',
+		features: [
+			'Browse forwarders and view aggregated company/country/branch level reviews and by category'
+		],
+		billingCycle: 'month',
+		planType: 'monthly'
+	},
+	{
+		id: 6,
+		name: 'Subscription Annual',
+		price: 836,
+		description: 'Enhanced visibility and review management (annual billing)',
+		features: [
+			'Browse forwarders and view aggregated company/country/branch level reviews and by category',
+			'Save $76/year compared to monthly billing'
+		],
+		billingCycle: 'year',
+		planType: 'annual'
+	},
+	{
+		id: 7,
 		name: 'Subscription Plus',
 		price: 3450,
 		description: 'Maximum visibility and control for businesses',
 		features: [
-			'Everything in Subscription',
-			'Up to 3 concurrent users',
+			'Up to three concurrent users',
 			'Manage forwarder profile description',
-			'Branded ads on company page',
-			'View aggregated scores by region/country',
+			'Freight Forwarder Branded ads on their page',
+			'View aggregated scores by region and country',
 			'Comment on reviews',
-			'Shipper contact via LogiScore',
+			'Receive email notification when a new review is posted',
+			'Shipper able to contact Freight Forwarder via LogiScore',
 			'Best in category per country badge',
-			'Advanced analytics',
-			'Dedicated account manager'
+			'Analytics',
+			'Access trend of scores over time (past 12-24 months, category-by-category)'
 		],
 		popular: true,
-		billingCycle: 'year'
+		billingCycle: 'year',
+		planType: 'annual'
 	}
 ];
 
