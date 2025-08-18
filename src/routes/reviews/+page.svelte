@@ -123,35 +123,29 @@
     }
   }
 
-  // Convert location ID to proper UUID format deterministically
-  // This ensures the same location always gets the same UUID
+  // Convert location ID to proper UUID format by padding with zeros
+  // This ensures every location gets a valid UUID based on its actual ID
   function convertLocationIdToUUID(locationId: string): string {
     // If it's already a UUID, return it
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(locationId)) {
       return locationId;
     }
     
-    // Create a deterministic hash from the location ID
-    let hash = 0;
-    for (let i = 0; i < locationId.length; i++) {
-      const char = locationId.charCodeAt(i);
-      hash = ((hash << 5) - hash + char) & 0xffffffff;
-    }
+    // Convert location ID to a simple UUID by padding with zeros
+    // Example: 'de-munchen' becomes 'de-munche-0000-0000-000000000000'
+    const cleanId = locationId.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
     
-    // Convert hash to UUID v4 format deterministically
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      if (c === 'x') {
-        // Use hash for x positions (deterministic)
-        const r = (hash + Math.abs(hash >> 16)) % 16;
-        hash = (hash * 9301 + 49297) % 233280; // Simple PRNG
-        return r.toString(16);
-      } else {
-        // Use hash for y positions (deterministic)
-        const r = (hash + Math.abs(hash >> 8)) % 16;
-        hash = (hash * 9301 + 49297) % 233280; // Simple PRNG
-        return (r & 0x3 | 0x8).toString(16); // Ensure version 4
-      }
-    });
+    // Pad to create UUID format: 8-4-4-4-12 characters
+    const paddedId = cleanId.padEnd(32, '0');
+    
+    // Format as UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    const uuid = [
+      paddedId.slice(0, 8),
+      paddedId.slice(8, 12),
+      paddedId.slice(12, 16),
+      paddedId.slice(16, 20),
+      paddedId.slice(20, 32)
+    ].join('-');
     
     console.log(`Converted location ID "${locationId}" to UUID: ${uuid}`);
     return uuid;
