@@ -135,7 +135,6 @@
                 </div>
                 <div class="score-details">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
-                  <div class="review-count">{freightForwarder.review_count || 0} reviews</div>
                   {#if freightForwarder.global_rank}
                     <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
                   {/if}
@@ -144,9 +143,6 @@
                 <!-- Free users see only stars -->
                 <div class="stars-only">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
-                  {#if freightForwarder.review_count}
-                    <div class="review-count">{freightForwarder.review_count} reviews</div>
-                  {/if}
                 </div>
               {/if}
             </div>
@@ -161,7 +157,6 @@
                 </div>
                 <div class="score-details">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
-                  <div class="review-count">{freightForwarder.review_count || 0} reviews</div>
                   {#if freightForwarder.global_rank}
                     <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
                   {/if}
@@ -170,9 +165,6 @@
                 <!-- Free users see only stars -->
                 <div class="stars-only">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
-                  {#if freightForwarder.review_count}
-                    <div class="review-count">{freightForwarder.review_count} reviews</div>
-                  {/if}
                 </div>
               {/if}
             </div>
@@ -181,14 +173,12 @@
             <div class="aggregate-score">
               <div class="stars-only">
                 <div class="stars">{'★'.repeat(freightForwarder.weighted_review_count)}</div>
-                <div class="review-count">{freightForwarder.weighted_review_count} stars</div>
               </div>
             </div>
           {:else if freightForwarder.review_count && freightForwarder.review_count > 0}
             <!-- Show review count when weighted_review_count is not available -->
             <div class="aggregate-score">
               <div class="stars-only">
-                <div class="review-count">{freightForwarder.review_count} reviews</div>
                 <div class="rating-note">Rating being calculated</div>
               </div>
             </div>
@@ -206,18 +196,7 @@
 
 
 
-      <!-- Debug Section (temporary) -->
-      <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
-        <h3>Debug Info (Temporary)</h3>
-        <p><strong>Average Rating:</strong> {freightForwarder.average_rating || 'undefined'}</p>
-        <p><strong>Legacy Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
-        <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
-        <p><strong>Weighted Review Count:</strong> {freightForwarder.weighted_review_count || 'undefined'}</p>
-        <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
-        <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
-        <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
-        <p><strong>Raw Data:</strong> {JSON.stringify(freightForwarder, null, 2).substring(0, 500)}...</p>
-      </section>
+
 
       <!-- Company Details Section -->
       <section class="company-details">
@@ -333,7 +312,7 @@
                             <span class="score-max">/5.0</span>
                           </div>
                           <div class="score-details">
-                            <div class="review-count">{location.review_count} reviews</div>
+
                           </div>
                         </div>
                         {#if location.category_scores && location.category_scores.length > 0}
@@ -370,7 +349,7 @@
                           <h3>🇺🇳 {country.country}</h3>
                           <div class="country-stats">
                             <span class="location-count">📍 {country.location_count} locations</span>
-                            <span class="review-count">📝 {country.review_count} reviews</span>
+
                           </div>
                         </div>
                         <div class="country-score">
@@ -624,11 +603,6 @@
   @keyframes calculating-pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.3; }
-  }
-
-  .review-count {
-    color: #666;
-    font-size: 0.9rem;
   }
 
   .global-rank {

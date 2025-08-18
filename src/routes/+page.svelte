@@ -131,17 +131,13 @@
                   {#if company.average_rating}
                     <div class="rating">
                       <span class="stars">{'★'.repeat(Math.round(company.average_rating))}</span>
-                      <span class="rating-text">{company.average_rating.toFixed(1)}</span>
                     </div>
                   {:else if company.rating}
                     <div class="rating">
                       <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
-                      <span class="rating-text">{company.rating.toFixed(1)}</span>
                     </div>
                   {/if}
-                  {#if company.review_count}
-                    <p class="review-count">{company.review_count} reviews</p>
-                  {/if}
+
                 </div>
               </div>
             </a>
@@ -341,11 +337,10 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 2rem;
+    padding: 1.5rem;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     transition: box-shadow 0.3s ease;
-    min-height: 35px;
     justify-content: center;
   }
 
@@ -408,24 +403,18 @@
   .rating {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
   }
 
   .stars {
     color: #ffc107;
   }
 
-  .rating-text {
-    font-weight: 600;
-    color: #333;
-  }
 
-  .review-count {
-    color: #666;
-    font-size: 0.9rem;
-    margin: 0;
-  }
+
+
 
   /* CTA Section */
   .cta {
