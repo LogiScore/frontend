@@ -42,9 +42,8 @@ const userPlans: Plan[] = [
 			'Search reviews by company/country/branch',
 			'Compare multiple forwarders side-by-side by score, category, country, or branch',
 			'Full numerical score display (e.g., 4.2/5.0) with score circle',
-			'Individual category scores (e.g., "Customer Service: 4.5/5.0")',
-			'Location-specific scores (e.g., "London Branch: 4.5/5.0")',
-			'Country-aggregated scores (e.g., "UK: 4.3/5.0")'
+			'Individual category scores',
+			'Location-specific scores'
 		],
 		billingCycle: 'month',
 		planType: 'monthly'

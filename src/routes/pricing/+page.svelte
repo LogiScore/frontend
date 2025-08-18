@@ -163,9 +163,8 @@
                   <li>Search reviews by company/country/branch</li>
                   <li>Compare multiple forwarders side-by-side by score, category, country, or branch</li>
                   <li>Full numerical score display (e.g., 4.2/5.0) with score circle</li>
-                  <li>Individual category scores (e.g., "Customer Service: 4.5/5.0")</li>
-                  <li>Location-specific scores (e.g., "London Branch: 4.5/5.0")</li>
-                  <li>Country-aggregated scores (e.g., "UK: 4.3/5.0")</li>
+                  <li>Individual category scores</li>
+                  <li>Location-specific scores</li>
                 </ul>
               </div>
               
