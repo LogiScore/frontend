@@ -15,6 +15,7 @@
   $: freightForwarderId = $page.params?.id;
   $: user = get(auth).user as any;
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic';
+  $: isLoggedIn = !!user;
   
   // Helper function to get current store value
   function get<T>(store: any): T {
@@ -305,11 +306,18 @@
           </div>
         </section>
       {:else}
-        <!-- For non-subscribed users, show only aggregate score and subscription prompt -->
+        <!-- For non-subscribed or non-logged-in users, show subscription prompt -->
         <div class="subscription-prompt">
           <h3>🔒 Unlock Detailed Analytics</h3>
           <p>Upgrade to Pro or Enterprise to view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
-          <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+          {#if isLoggedIn}
+            <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+          {:else}
+            <div class="auth-actions">
+              <a href="/auth" class="btn btn-primary">Sign In</a>
+              <a href="/pricing" class="btn btn-outline">View Pricing Plans</a>
+            </div>
+          {/if}
         </div>
       {/if}
 
@@ -783,6 +791,17 @@
     margin-bottom: 1.5rem;
     opacity: 0.9;
     line-height: 1.6;
+  }
+
+  .auth-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .auth-actions .btn {
+    min-width: 120px;
   }
 
   /* Responsive Design */
