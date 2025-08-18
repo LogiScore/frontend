@@ -13,16 +13,9 @@
   let activeTab: 'overview' | 'locations' | 'countries' = 'overview';
   
   $: freightForwarderId = $page.params?.id;
-  $: user = get(auth).user as any;
+  $: user = $auth?.user;
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic';
   $: isLoggedIn = !!user;
-  
-  // Helper function to get current store value
-  function get<T>(store: any): T {
-    let value: T;
-    store.subscribe((v: T) => value = v)();
-    return value!;
-  }
   
   onMount(async () => {
     if (!freightForwarderId) {
@@ -38,7 +31,7 @@
       freightForwarder = details;
       
       // If user is subscribed, fetch location and country scores
-      if (isSubscribed && user?.token) {
+      if (isSubscribed && $auth?.token) {
         await loadDetailedScores();
       }
     } catch (err: any) {
@@ -49,13 +42,13 @@
   });
   
   async function loadDetailedScores() {
-    if (!freightForwarderId || !user?.token) return;
+    if (!freightForwarderId || !$auth?.token) return;
     
     try {
       isLoadingScores = true;
       const [locationData, countryData] = await Promise.all([
-        apiClient.getFreightForwarderLocationScores(freightForwarderId, user.token),
-        apiClient.getFreightForwarderCountryScores(freightForwarderId, user.token)
+        apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token),
+        apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token)
       ]);
       
       locationScores = locationData;
@@ -71,7 +64,7 @@
     activeTab = tab;
     
     // Load scores if switching to a tab that needs them and they haven't been loaded yet
-    if ((tab === 'locations' || tab === 'countries') && isSubscribed && user?.token && 
+    if ((tab === 'locations' || tab === 'countries') && isSubscribed && $auth?.token && 
         ((tab === 'locations' && locationScores.length === 0) || 
          (tab === 'countries' && countryScores.length === 0))) {
       loadDetailedScores();
@@ -101,8 +94,8 @@
           {/if}
         </div>
         <div class="company-info">
-          <!-- Aggregate Score Display - Stars only for free users -->
-          {#if freightForwarder.rating}
+          <!-- Aggregate Score Display -->
+          {#if freightForwarder.rating && freightForwarder.rating > 0}
             <div class="aggregate-score">
               {#if isSubscribed}
                 <!-- Subscription users see full score -->
@@ -112,7 +105,7 @@
                 </div>
                 <div class="score-details">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
-                  <div class="review-count">{freightForwarder.review_count} reviews</div>
+                  <div class="review-count">{freightForwarder.review_count || 0} reviews</div>
                   {#if freightForwarder.global_rank}
                     <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
                   {/if}
@@ -121,6 +114,9 @@
                 <!-- Free users see only stars -->
                 <div class="stars-only">
                   <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
+                  {#if freightForwarder.review_count}
+                    <div class="review-count">{freightForwarder.review_count} reviews</div>
+                  {/if}
                 </div>
               {/if}
             </div>
@@ -130,6 +126,13 @@
               <div class="stars-only">
                 <div class="review-count">{freightForwarder.review_count} reviews</div>
                 <div class="no-rating-note">Rating being calculated</div>
+              </div>
+            </div>
+          {:else}
+            <!-- No reviews or rating available -->
+            <div class="aggregate-score">
+              <div class="stars-only">
+                <div class="no-reviews">No reviews yet</div>
               </div>
             </div>
           {/if}
@@ -450,6 +453,12 @@
   }
 
   .no-rating-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .no-reviews {
     font-size: 0.9rem;
     color: #666;
     font-style: italic;
