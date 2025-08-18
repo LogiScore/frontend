@@ -337,7 +337,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 1.5rem;
+    padding: 0.5rem;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     transition: box-shadow 0.3s ease;
@@ -355,7 +355,7 @@
   }
 
   .company-logo {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
