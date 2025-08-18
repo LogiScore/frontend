@@ -101,7 +101,6 @@
           {/if}
         </div>
         <div class="company-info">
-          <h1 class="company-name">{freightForwarder.name}</h1>
         </div>
       </section>
 
