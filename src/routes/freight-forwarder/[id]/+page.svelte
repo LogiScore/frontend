@@ -101,6 +101,30 @@
           {/if}
         </div>
         <div class="company-info">
+          <!-- Aggregate Score Display - Stars only for free users -->
+          {#if freightForwarder.rating}
+            <div class="aggregate-score">
+              {#if isSubscribed}
+                <!-- Subscription users see full score -->
+                <div class="score-circle">
+                  <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
+                  <span class="score-max">/5.0</span>
+                </div>
+                <div class="score-details">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
+                  <div class="review-count">{freightForwarder.review_count} reviews</div>
+                  {#if freightForwarder.global_rank}
+                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
+                  {/if}
+                </div>
+              {:else}
+                <!-- Free users see only stars -->
+                <div class="stars-only">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
+                </div>
+              {/if}
+            </div>
+          {/if}
         </div>
       </section>
 
@@ -293,7 +317,7 @@
         <!-- For non-subscribed or non-logged-in users, show subscription prompt -->
         <div class="subscription-prompt">
           <h3>🔒 Unlock Detailed Analytics</h3>
-          <p>Upgrade to Pro or Enterprise to view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
+          <p>Upgrade to our subscription plan ($38/month) to view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
           {#if isLoggedIn}
             <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
           {:else}
@@ -391,6 +415,17 @@
   .score-circle.no-rating .score-max {
     font-size: 0.8rem;
     opacity: 0.9;
+  }
+
+  .stars-only {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stars-only .stars {
+    font-size: 2rem;
+    color: #ffc107;
   }
 
   .score-number {
