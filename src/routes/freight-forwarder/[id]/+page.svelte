@@ -305,36 +305,12 @@
           </div>
         </section>
       {:else}
-        <!-- For non-subscribed users, show basic category scores -->
-        <section class="review-scores">
-          <h2>Review Category Scores</h2>
-          {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
-            <div class="scores-grid">
-              {#each freightForwarder.category_scores as score}
-                <div class="score-item">
-                  <h3>{score.category_name}</h3>
-                  <div class="score-display">
-                    <span class="score-value">{score.average_score.toFixed(1)}</span>
-                    <span class="score-max">/ 5.0</span>
-                  </div>
-                  <div class="score-bar">
-                    <div class="score-fill" style="width: {(score.average_score / 5) * 100}%"></div>
-                  </div>
-                  <p class="score-count">{score.review_count} reviews</p>
-                </div>
-              {/each}
-            </div>
-          {:else}
-            <p class="no-scores">No category scores available yet.</p>
-          {/if}
-          
-          <!-- Subscription prompt for non-subscribed users -->
-          <div class="subscription-prompt">
-            <h3>🔒 Unlock Detailed Analytics</h3>
-            <p>Upgrade to Pro or Enterprise to view location and country-specific scores, advanced analytics, and more detailed insights.</p>
-            <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
-          </div>
-        </section>
+        <!-- For non-subscribed users, show only aggregate score and subscription prompt -->
+        <div class="subscription-prompt">
+          <h3>🔒 Unlock Detailed Analytics</h3>
+          <p>Upgrade to Pro or Enterprise to view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
+          <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+        </div>
       {/if}
 
 
