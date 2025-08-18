@@ -180,18 +180,16 @@
 
 
       <!-- Debug Section (temporary) -->
-      {#if import.meta.env.DEV}
-        <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
-          <h3>Debug Info (Development Only)</h3>
-          <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
-          <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
-          <p><strong>Weighted Review Count:</strong> {freightForwarder.weighted_review_count || 'undefined'}</p>
-          <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
-          <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
-          <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
-          <p><strong>Raw Data:</strong> {JSON.stringify(freightForwarder, null, 2).substring(0, 500)}...</p>
-        </section>
-      {/if}
+      <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
+        <h3>Debug Info (Temporary)</h3>
+        <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
+        <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
+        <p><strong>Weighted Review Count:</strong> {freightForwarder.weighted_review_count || 'undefined'}</p>
+        <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>
+        <p><strong>User Logged In:</strong> {isLoggedIn ? 'Yes' : 'No'}</p>
+        <p><strong>User Subscribed:</strong> {isSubscribed ? 'Yes' : 'No'}</p>
+        <p><strong>Raw Data:</strong> {JSON.stringify(freightForwarder, null, 2).substring(0, 500)}...</p>
+      </section>
 
       <!-- Company Details Section -->
       <section class="company-details">
