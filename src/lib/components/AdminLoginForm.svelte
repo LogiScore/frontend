@@ -222,7 +222,7 @@
   }
   
   .form-group input {
-    width: 100%;
+    width: 370px;
     padding: 0.75rem;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
