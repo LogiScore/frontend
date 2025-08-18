@@ -181,12 +181,6 @@
       </div>
     {/if}
   </form>
-  
-  <div class="demo-info">
-    <h4>Admin Access Required</h4>
-    <p>This dashboard is restricted to users with <code>user_type = 'admin'</code>.</p>
-    <small>Contact your system administrator if you need access.</small>
-  </div>
 </div>
 
 <style>
@@ -347,38 +341,5 @@
     color: #9ca3af;
     cursor: not-allowed;
     text-decoration: none;
-  }
-  
-  .demo-info {
-    margin-top: 2rem;
-    padding: 1rem;
-    background: #f3f4f6;
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .demo-info h4 {
-    color: #374151;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .demo-info p {
-    color: #6b7280;
-    margin: 0.25rem 0;
-    font-size: 0.85rem;
-  }
-  
-  .demo-info small {
-    color: #9ca3af;
-    font-size: 0.75rem;
-  }
-  
-  .demo-info code {
-    background: #e5e7eb;
-    color: #374151;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 0.8rem;
   }
 </style>

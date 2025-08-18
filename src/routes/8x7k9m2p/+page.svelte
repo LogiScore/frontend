@@ -301,25 +301,12 @@
 <section class="admin-dashboard">
   <div class="admin-banner">
     <div class="container">
-      <div class="admin-header">
-        <h1>🔐 Admin Dashboard</h1>
-        <p>Manage reviews, disputes, users, and company data</p>
-        <div class="admin-user-info">
-          <span class="admin-badge">Administrator</span>
-          <span class="user-email">{authState.user?.email || 'Loading...'}</span>
+      <!-- Admin Login Form -->
+      {#if !authState.token || !authState.user}
+        <div class="admin-login-section">
+          <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
         </div>
-        <!-- Admin Login Form -->
-        {#if !authState.token || !authState.user}
-          <div class="admin-login-section">
-            <div class="admin-notice">
-              <p>🔐 <strong>Admin Access Required</strong></p>
-              <p>This dashboard is restricted to users with <code>user_type = 'admin'</code>.</p>
-              <p>Please use your admin email to receive a verification code.</p>
-            </div>
-            <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
-          </div>
-        {/if}
-      </div>
+      {/if}
     </div>
   </div>
 
@@ -732,44 +719,7 @@
     box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
   }
 
-  .admin-header {
-    text-align: center;
-    margin-bottom: 0;
-  }
 
-  .admin-header h1 {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    font-weight: 700;
-  }
-
-  .admin-header p {
-    color: #e0e0e0;
-    font-size: 1.2rem;
-    margin-bottom: 0;
-  }
-
-  .admin-user-info {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #e0e0e0;
-  }
-
-  .admin-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    color: white;
-    margin-right: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .user-email {
-    font-weight: 500;
-  }
 
 
 
@@ -777,30 +727,6 @@
     margin-top: 2rem;
     display: flex;
     justify-content: center;
-  }
-
-  .admin-notice {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    border: 1px solid #ffeeba;
-  }
-
-  .admin-notice strong {
-    color: #856404;
-  }
-
-  .admin-notice code {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 0.9rem;
   }
 
   /* Tab Navigation */
@@ -1253,9 +1179,7 @@
       display: none;
     }
 
-    .admin-header h1 {
-      font-size: 2rem;
-    }
+
 
     .tab-navigation {
       flex-direction: column;
