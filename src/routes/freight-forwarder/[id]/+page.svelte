@@ -29,6 +29,7 @@
       console.log('Fetching freight forwarder details for ID:', freightForwarderId);
       
       // Fetch freight forwarder details with timeout
+      // Note: Data is fetched fresh each time to ensure up-to-date ratings
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Request timeout')), 10000)
       );
@@ -124,7 +125,33 @@
         </div>
         <div class="company-info">
           <!-- Aggregate Score Display -->
-          {#if freightForwarder.rating && freightForwarder.rating > 0}
+          {#if freightForwarder.average_rating && freightForwarder.average_rating > 0}
+            <div class="aggregate-score">
+              {#if isSubscribed}
+                <!-- Subscription users see full score -->
+                <div class="score-circle">
+                  <span class="score-number">{freightForwarder.average_rating.toFixed(1)}</span>
+                  <span class="score-max">/5.0</span>
+                </div>
+                <div class="score-details">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
+                  <div class="review-count">{freightForwarder.review_count || 0} reviews</div>
+                  {#if freightForwarder.global_rank}
+                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
+                  {/if}
+                </div>
+              {:else}
+                <!-- Free users see only stars -->
+                <div class="stars-only">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
+                  {#if freightForwarder.review_count}
+                    <div class="review-count">{freightForwarder.review_count} reviews</div>
+                  {/if}
+                </div>
+              {/if}
+            </div>
+          {:else if freightForwarder.rating && freightForwarder.rating > 0}
+            <!-- Fallback to legacy rating field if average_rating is not available -->
             <div class="aggregate-score">
               {#if isSubscribed}
                 <!-- Subscription users see full score -->
@@ -182,7 +209,8 @@
       <!-- Debug Section (temporary) -->
       <section class="debug-section" style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
         <h3>Debug Info (Temporary)</h3>
-        <p><strong>Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
+        <p><strong>Average Rating:</strong> {freightForwarder.average_rating || 'undefined'}</p>
+        <p><strong>Legacy Rating:</strong> {freightForwarder.rating || 'undefined'}</p>
         <p><strong>Review Count:</strong> {freightForwarder.review_count || 'undefined'}</p>
         <p><strong>Weighted Review Count:</strong> {freightForwarder.weighted_review_count || 'undefined'}</p>
         <p><strong>Category Scores:</strong> {freightForwarder.category_scores ? freightForwarder.category_scores.length : 'undefined'}</p>

@@ -11,6 +11,7 @@ export interface FreightForwarder {
   global_rank?: number | null;
   is_active?: boolean | null;
   rating?: number | null;
+  average_rating?: number | null; // Calculated average rating from all reviews
   review_count?: number | null;
   weighted_review_count?: number | null;
   created_at?: string | null;
@@ -207,7 +208,14 @@ class ApiClient {
       const queryString = params.toString();
       const endpoint = `/api/freight-forwarders/${queryString ? '?' + queryString : ''}`;
       
-      return await this.request<FreightForwarder[]>(endpoint);
+      // Add cache-busting headers to ensure fresh rating data
+      return await this.request<FreightForwarder[]>(endpoint, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
     } catch (error: any) {
       console.error('Failed to fetch freight forwarders:', error);
       throw error;
@@ -216,7 +224,14 @@ class ApiClient {
 
   async getFreightForwarder(id: string): Promise<any> {
     try {
-      return await this.request<any>(`/api/freight-forwarders/${id}`);
+      // Add cache-busting headers to ensure fresh rating data
+      return await this.request<any>(`/api/freight-forwarders/${id}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
     } catch (error: any) {
       console.error('Failed to fetch freight forwarder details:', error);
       throw error;
@@ -1131,6 +1146,51 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: sendAdminVerificationCode =====
+  // Send verification code to admin's email
+  async sendAdminVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
+    try {
+      const response = await this.request<{ message: string; expires_in?: number }>('/api/users/admin/send-verification-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      
+      // Provide default expiration time if backend doesn't return it
+      console.log('Admin API Response:', response);
+      const result = {
+        message: response.message,
+        expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
+      };
+      console.log('Processed admin result:', result);
+      return result;
+    } catch (error: any) {
+      console.error('Failed to send admin verification code:', error);
+      throw error;
+    }
+  }
+
+  // ===== METHOD: verifyAdminCode =====
+  // Verify admin code and get JWT token
+  async verifyAdminCode(email: string, code: string): Promise<{ 
+    access_token: string; 
+    token_type: string; 
+    user: User 
+  }> {
+    try {
+      return await this.request<{ 
+        access_token: string; 
+        token_type: string; 
+        user: User 
+      }>('/api/users/admin/verify-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      });
+    } catch (error: any) {
+      console.error('Failed to verify admin code:', error);
+      throw error;
+    }
+  }
+
   // ===== METHOD: completeSignup =====
   async completeSignup(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
@@ -1225,9 +1285,14 @@ class ApiClient {
   }
 
   // ===== METHOD: adminSignin =====
-  // Admin authentication method - now redirects to email verification
-  async adminSignin(username: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
-    throw new Error('Please use email verification instead. Enter your email to receive a verification code.');
+  // Admin authentication method - uses email verification
+  async adminSignin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
+    // For admin login, we'll use the same email verification flow
+    // but with admin-specific validation on the backend
+    return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/admin/signin', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
   }
 
   // ===== METHOD: changePassword =====

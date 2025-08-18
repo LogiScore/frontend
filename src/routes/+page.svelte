@@ -28,6 +28,7 @@
   onMount(async () => {
     try {
       // Load up to 18 freight forwarders with random selection
+      // Note: Data is fetched fresh each time to ensure up-to-date ratings
       const companies = await apiClient.getFreightForwarders(18, true);
       featuredCompanies = companies;
       
@@ -127,7 +128,12 @@
                   {#if company.headquarters_country}
                     <p class="company-headquarters">📍 {company.headquarters_country}</p>
                   {/if}
-                  {#if company.rating}
+                  {#if company.average_rating}
+                    <div class="rating">
+                      <span class="stars">{'★'.repeat(Math.round(company.average_rating))}</span>
+                      <span class="rating-text">{company.average_rating.toFixed(1)}</span>
+                    </div>
+                  {:else if company.rating}
                     <div class="rating">
                       <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
                       <span class="rating-text">{company.rating.toFixed(1)}</span>
