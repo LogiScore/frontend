@@ -1284,17 +1284,6 @@ class ApiClient {
     throw new Error('Please use email verification instead. Enter your email to receive a verification code.');
   }
 
-  // ===== METHOD: adminSignin =====
-  // Admin authentication method - uses email verification
-  async adminSignin(email: string, password: string): Promise<{ user: User; access_token: string; token_type: string }> {
-    // For admin login, we'll use the same email verification flow
-    // but with admin-specific validation on the backend
-    return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/admin/signin', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-  }
-
   // ===== METHOD: changePassword =====
   async changePassword(currentPassword: string, newPassword: string, token: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/users/change-password', {

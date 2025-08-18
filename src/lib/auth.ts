@@ -236,39 +236,6 @@ export const authMethods = {
     }
   },
 
-  // Admin login method - uses username and password
-  adminLogin: async (credentials: { username: string; password: string }) => {
-    auth.update(state => ({ ...state, isLoading: true, error: null }));
-    
-    try {
-      const response = await apiClient.adminSignin(credentials.username, credentials.password);
-      // Save token and user to localStorage
-      saveToken(response.access_token);
-      saveUser(response.user);
-      auth.update(state => ({
-        ...state,
-        user: response.user,
-        token: response.access_token,
-        isLoading: false,
-        error: null
-      }));
-      
-      // Start inactivity tracking after successful login
-      setTimeout(() => {
-        authMethods.startInactivityTracking();
-      }, 100);
-      
-      return { success: true };
-    } catch (error: any) {
-      auth.update(state => ({ 
-        ...state, 
-        isLoading: false, 
-        error: error.message || 'Admin login failed' 
-      }));
-      return { success: false, error: error.message };
-    }
-  },
-
   logout: () => {
     // Clear inactivity tracking before logout
     clearInactivityTracking();

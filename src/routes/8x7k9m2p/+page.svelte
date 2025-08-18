@@ -19,16 +19,17 @@
     // Check if user is authenticated and has admin access
     if (state.user && state.token) {
       console.log('Admin page: User authenticated:', state.user);
-      // Check if user has admin privileges (you can customize this logic)
-      if (state.user.user_type === 'admin' || state.user.username === 'admin') {
+      // Check if user has admin privileges
+      if (state.user.user_type === 'admin') {
         console.log('Admin page: User has admin access');
       } else {
-        console.log('Admin page: User does not have admin access');
-        // Don't redirect - just log the issue
+        console.log('Admin page: User does not have admin access - redirecting');
+        // Redirect non-admin users to home page
+        window.location.href = '/';
       }
     } else if (!state.token) {
       console.log('Admin page: No token');
-      // Don't redirect - just log the issue
+      // User not logged in - stay on page to show login form
     }
   });
 
@@ -310,6 +311,11 @@
         <!-- Admin Login Form -->
         {#if !authState.token || !authState.user}
           <div class="admin-login-section">
+            <div class="admin-notice">
+              <p>🔐 <strong>Admin Access Required</strong></p>
+              <p>This dashboard is restricted to users with <code>user_type = 'admin'</code>.</p>
+              <p>Please use your admin email to receive a verification code.</p>
+            </div>
             <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
           </div>
         {/if}
@@ -771,6 +777,30 @@
     margin-top: 2rem;
     display: flex;
     justify-content: center;
+  }
+
+  .admin-notice {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border: 1px solid #ffeeba;
+  }
+
+  .admin-notice strong {
+    color: #856404;
+  }
+
+  .admin-notice code {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9rem;
   }
 
   /* Tab Navigation */

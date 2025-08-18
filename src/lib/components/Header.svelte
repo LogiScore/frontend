@@ -180,6 +180,19 @@
                   </svg>
                   Change Password
                 </button>
+                {#if authState.user.user_type === 'admin'}
+                  <div class="dropdown-divider"></div>
+                  <a href="/8x7k9m2p" class="dropdown-item admin-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 12l2 2 4-4"/>
+                      <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"/>
+                      <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"/>
+                      <path d="M12 3c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z"/>
+                      <path d="M12 21c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z"/>
+                    </svg>
+                    Admin Dashboard
+                  </a>
+                {/if}
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item logout" on:click={handleLogout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -461,6 +474,22 @@
     height: 1px;
     background: #e5e7eb;
     margin: 0.5rem 0;
+  }
+
+  .dropdown-item.admin-link {
+    color: #3b82f6;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .dropdown-item.admin-link:hover {
+    background: #e0f2fe;
+    color: #1d4ed8;
   }
 
   /* Buttons */

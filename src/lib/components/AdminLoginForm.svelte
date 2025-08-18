@@ -4,14 +4,17 @@
   
   const dispatch = createEventDispatcher();
   
-  let username = '';
-  let password = '';
+  let email = '';
+  let verificationCode = '';
   let isLoading = false;
   let error = '';
+  let showCodeInput = false;
+  let countdown = 0;
+  let countdownInterval: number | null = null;
   
-  async function handleAdminLogin() {
-    if (!username || !password) {
-      error = 'Please enter both username and password';
+  async function handleRequestCode() {
+    if (!email) {
+      error = 'Please enter your admin email address';
       return;
     }
     
@@ -19,13 +22,15 @@
     error = '';
     
     try {
-      const result = await authMethods.adminLogin({ username, password });
+      // Use the regular verification code flow
+      const result = await authMethods.requestCode(email);
       
       if (result.success) {
-        console.log('Admin login successful');
-        dispatch('loginSuccess');
+        showCodeInput = true;
+        startCountdown(result.expires_in || 300); // Default to 5 minutes
+        console.log('Verification code sent successfully');
       } else {
-        error = result.error || 'Admin login failed';
+        error = result.error || 'Failed to send verification code';
       }
     } catch (err: any) {
       error = err.message || 'An unexpected error occurred';
@@ -34,68 +39,177 @@
     }
   }
   
-  function handleKeyPress(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      handleAdminLogin();
+  async function handleVerifyCode() {
+    if (!verificationCode) {
+      error = 'Please enter the verification code';
+      return;
+    }
+    
+    isLoading = true;
+    error = '';
+    
+    try {
+      // Use the regular signin with code flow
+      const result = await authMethods.signinWithCode(email, verificationCode);
+      
+      if (result.success) {
+        // Check if user has admin privileges by checking the auth store
+        // The user should already be logged in at this point
+        console.log('Admin login successful');
+        dispatch('loginSuccess');
+      } else {
+        error = result.error || 'Verification failed';
+      }
+    } catch (err: any) {
+      error = err.message || 'An unexpected error occurred';
+    } finally {
+      isLoading = false;
     }
   }
+  
+  function startCountdown(seconds: number) {
+    countdown = seconds;
+    countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        if (countdownInterval) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+        }
+      }
+    }, 1000);
+  }
+  
+  function handleKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      if (showCodeInput) {
+        handleVerifyCode();
+      } else {
+        handleRequestCode();
+      }
+    }
+  }
+  
+  function resetForm() {
+    email = '';
+    verificationCode = '';
+    showCodeInput = false;
+    error = '';
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    countdown = 0;
+  }
+  
+  // Cleanup on component destroy
+  import { onDestroy } from 'svelte';
+  onDestroy(() => {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+    }
+  });
 </script>
 
 <div class="admin-login-form">
   <div class="form-header">
     <h2>🔐 Admin Authentication</h2>
-    <p>Enter your administrator credentials to access the dashboard</p>
+    <p>Enter your admin email to receive a verification code</p>
   </div>
   
-  <form on:submit|preventDefault={handleAdminLogin}>
-    <div class="form-group">
-      <label for="admin-username">Username</label>
-      <input
-        type="text"
-        id="admin-username"
-        bind:value={username}
-        placeholder="Enter admin username"
-        on:keypress={handleKeyPress}
-        required
-        autocomplete="username"
-      />
-    </div>
-    
-    <div class="form-group">
-      <label for="admin-password">Password</label>
-      <input
-        type="password"
-        id="admin-password"
-        bind:value={password}
-        placeholder="Enter admin password"
-        on:keypress={handleKeyPress}
-        required
-        autocomplete="current-password"
-      />
-    </div>
-    
-    {#if error}
-      <div class="error-message">
-        <span class="error-icon">❌</span>
-        {error}
+  {#if !showCodeInput}
+    <!-- Email Input Step -->
+    <form on:submit|preventDefault={handleRequestCode}>
+      <div class="form-group">
+        <label for="admin-email">Admin Email</label>
+        <input
+          type="email"
+          id="admin-email"
+          bind:value={email}
+          placeholder="Enter your admin email address"
+          on:keypress={handleKeyPress}
+          required
+          autocomplete="email"
+        />
       </div>
-    {/if}
-    
-    <button type="submit" class="btn-admin-login" disabled={isLoading}>
-      {#if isLoading}
-        <span class="loading-spinner"></span>
-        Authenticating...
-      {:else}
-        🔐 Sign In as Administrator
+      
+      {#if error}
+        <div class="error-message">
+          <span class="error-icon">❌</span>
+          {error}
+        </div>
       {/if}
-    </button>
-  </form>
+      
+      <button type="submit" class="btn-admin-login" disabled={isLoading}>
+        {#if isLoading}
+          <span class="loading-spinner"></span>
+          Sending Code...
+        {:else}
+          📧 Send Verification Code
+        {/if}
+      </button>
+    </form>
+  {:else}
+    <!-- Verification Code Step -->
+    <form on:submit|preventDefault={handleVerifyCode}>
+      <div class="form-group">
+        <label for="verification-code">Verification Code</label>
+        <input
+          type="text"
+          id="verification-code"
+          bind:value={verificationCode}
+          placeholder="Enter the 6-digit code"
+          on:keypress={handleKeyPress}
+          required
+          autocomplete="one-time-code"
+          maxlength="6"
+          pattern="[0-9]{6}"
+        />
+        <div class="help-text">
+          Code expires in {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
+        </div>
+      </div>
+      
+      {#if error}
+        <div class="error-message">
+          <span class="error-icon">❌</span>
+          {error}
+        </div>
+      {/if}
+      
+      <div class="button-group">
+        <button type="submit" class="btn-admin-login" disabled={isLoading}>
+          {#if isLoading}
+            <span class="loading-spinner"></span>
+            Verifying...
+          {:else}
+            ✅ Verify & Sign In
+          {/if}
+        </button>
+        
+        <button type="button" class="btn-secondary" on:click={resetForm}>
+          🔄 Start Over
+        </button>
+      </div>
+    </form>
+    
+    <div class="resend-section">
+      <p>Didn't receive the code?</p>
+      <button 
+        type="button" 
+        class="btn-resend" 
+        on:click={handleRequestCode}
+        disabled={countdown > 0}
+      >
+        {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+      </button>
+    </div>
+  {/if}
   
-  <div class="demo-credentials">
-    <h4>Demo Admin Account</h4>
-    <p><strong>Username:</strong> admin</p>
-    <p><strong>Password:</strong> admin123</p>
-    <small>Use these credentials for testing purposes</small>
+  <div class="demo-info">
+    <h4>Admin Access Required</h4>
+    <p>This dashboard is restricted to authorized administrators only.</p>
+    <small>Contact your system administrator if you need access.</small>
   </div>
 </div>
 
