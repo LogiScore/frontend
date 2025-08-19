@@ -3,6 +3,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import InactivityPrompt from '$lib/components/InactivityPrompt.svelte';
+	import CookieConsent from '$lib/components/CookieConsent.svelte';
 	import { page } from '$app/stores';
 	
 	// Force cache buster to be included in build
@@ -19,6 +20,8 @@
 <Footer />
 
 <InactivityPrompt />
+
+<CookieConsent />
 
 <style>
 	:global(html, body) {
