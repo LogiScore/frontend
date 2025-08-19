@@ -1,6 +1,8 @@
 <script lang="ts">
   import { auth, authMethods } from '$lib/auth';
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import AuthModal from '$lib/components/AuthModal.svelte';
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import ProfileModal from '$lib/components/ProfileModal.svelte';
   import ChangePasswordModal from '$lib/components/ChangePasswordModal.svelte';
@@ -16,9 +18,14 @@
   };
   
   let showUserDropdown = false;
+  let showAuthModal = false;
   let showSubscriptionModal = false;
   let showProfileModal = false;
   let showChangePasswordModal = false;
+  let authModalMode: 'signin' | 'signup' = 'signin';
+  
+  // Check if current page is admin page
+  $: isAdminPage = $page?.url?.pathname === '/8x7k9m2p';
   
   // Subscribe to auth store
   auth.subscribe(state => {
@@ -51,6 +58,20 @@
     if (!target.closest('.user-dropdown')) {
       showUserDropdown = false;
     }
+  }
+
+  function openSignInModal() {
+    authModalMode = 'signin';
+    showAuthModal = true;
+  }
+
+  function openSignUpModal() {
+    authModalMode = 'signup';
+    showAuthModal = true;
+  }
+
+  function closeAuthModal() {
+    showAuthModal = false;
   }
   
   function openSubscriptionModal() {
@@ -188,7 +209,11 @@
             </div>
           </div>
         {:else}
-          <!-- Login buttons removed - admin access only via /8x7k9m2p -->
+          <!-- Show login buttons only on non-admin pages -->
+          {#if !isAdminPage}
+            <button class="btn-secondary" on:click={openSignInModal}>Sign In</button>
+            <button class="btn-primary" on:click={openSignUpModal}>Sign Up</button>
+          {/if}
         {/if}
       </div>
     </nav>
@@ -196,6 +221,14 @@
 </header>
 
 <!-- Modals -->
+{#if showAuthModal}
+  <AuthModal 
+    isOpen={showAuthModal}
+    mode={authModalMode} 
+    on:close={closeAuthModal}
+  />
+{/if}
+
 {#if showSubscriptionModal}
   <SubscriptionModal 
     isOpen={showSubscriptionModal}
