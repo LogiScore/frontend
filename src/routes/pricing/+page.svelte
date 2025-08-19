@@ -347,9 +347,11 @@
 
   .plans-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 30px;
     justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   .annual-plus-row {
@@ -361,6 +363,19 @@
   .annual-plus-card {
     max-width: 400px;
     text-align: center;
+  }
+
+  /* Responsive design for plans */
+  @media (max-width: 1024px) {
+    .plans-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .plans-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* Sign-in Prompt */
