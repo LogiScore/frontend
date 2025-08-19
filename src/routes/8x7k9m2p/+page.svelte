@@ -75,6 +75,7 @@
   let users: any[] = [];
   let recentActivity: any[] = [];
   let analyticsData: any = null;
+  let analyticsError: string | null = null;
 
   // Search and filter states
   let userSearch = '';
@@ -181,9 +182,12 @@
     if (!authState.token) return;
     
     try {
+      analyticsError = null;
       analyticsData = await apiClient.getAdminAnalytics(authState.token);
     } catch (error) {
       console.error('Failed to load analytics:', error);
+      analyticsError = (error as any).message || 'Failed to load analytics data';
+      analyticsData = null;
     }
   }
 
@@ -736,6 +740,13 @@
                   {/each}
                 </div>
               </div>
+            </div>
+          {:else if analyticsError}
+            <div class="analytics-error">
+              <div class="error-icon">⚠️</div>
+              <h3>Analytics Data Unavailable</h3>
+              <p>{analyticsError}</p>
+              <button class="btn-retry" on:click={loadAnalytics}>🔄 Retry</button>
             </div>
           {:else}
             <div class="loading-placeholder">Loading analytics data...</div>
@@ -1440,6 +1451,52 @@
     color: #666;
     font-size: 1.2rem;
     animation: pulse 2s infinite;
+  }
+
+  .analytics-error {
+    height: 200px;
+    background: #fff5f5;
+    border: 2px dashed #f56565;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #c53030;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .error-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  .analytics-error h3 {
+    margin: 0 0 10px 0;
+    color: #c53030;
+  }
+
+  .analytics-error p {
+    margin: 0 0 15px 0;
+    color: #742a2a;
+    font-size: 0.9rem;
+  }
+
+  .btn-retry {
+    background: #3182ce;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-retry:hover {
+    background: #2c5aa0;
+    transform: translateY(-1px);
   }
 
   /* Responsive Design */
