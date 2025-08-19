@@ -19,7 +19,7 @@ export interface UserPlans {
 const userPlans: Plan[] = [
 	{
 		id: 1,
-		name: 'Free',
+		name: '',
 		price: 0,
 		description: 'Basic access to freight forwarder reviews',
 		features: [
@@ -68,7 +68,7 @@ const userPlans: Plan[] = [
 const forwarderPlans: Plan[] = [
 	{
 		id: 4,
-		name: 'Free',
+		name: '',
 		price: 0,
 		description: 'Basic listing for freight forwarders',
 		features: [
@@ -95,7 +95,7 @@ const forwarderPlans: Plan[] = [
 		price: 836,
 		description: 'Enhanced visibility and review management (annual billing)',
 		features: [
-			'Browse forwarders and view aggregated company/country/branch level reviews and by category',
+			'Browse forwarders and view aggregated company, country and branch level reviews and by category',
 			'Save $76/year compared to monthly billing'
 		],
 		billingCycle: 'year',
@@ -103,7 +103,7 @@ const forwarderPlans: Plan[] = [
 	},
 	{
 		id: 7,
-		name: 'Subscription Plus',
+		name: 'Subscription Annual Plus',
 		price: 3450,
 		description: 'Maximum visibility and control for businesses',
 		features: [
