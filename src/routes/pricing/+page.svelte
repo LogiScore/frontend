@@ -122,14 +122,7 @@
             {/each}
           </div>
         {:else}
-          <!-- Sign-in prompt for non-logged-in users -->
-          <div class="signin-prompt">
-            <div class="signin-content">
-              <h2>Sign In to Subscribe</h2>
-              <p>Please sign in or create an account to view personalized subscription plans and start your subscription.</p>
-              <button class="btn-primary" on:click={redirectToSignIn}>Sign In / Sign Up</button>
-            </div>
-          </div>
+
 
           <!-- Default plans for non-logged-in users (view only) -->
           <div class="plans-grid">
@@ -163,13 +156,7 @@
                       </ul>
                     </div>
                     
-                    <div class="plan-actions">
-                      {#if plan.price === 0}
-                        <button class="btn-secondary" on:click={redirectToSignIn}>Sign In to Get Started</button>
-                      {:else}
-                        <button class="btn-primary" on:click={redirectToSignIn}>Sign In to Subscribe</button>
-                      {/if}
-                    </div>
+
                   </div>
                 {/each}
               </div>
@@ -203,14 +190,6 @@
                       <li>✓ {feature}</li>
                     {/each}
                   </ul>
-                </div>
-                
-                <div class="plan-actions">
-                  {#if plan.price === 0}
-                    <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
-                  {:else}
-                    <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
-                  {/if}
                 </div>
               </div>
             {/each}
@@ -264,19 +243,7 @@
   </div>
 </section>
 
-<!-- CTA Section -->
-<section class="cta">
-  <div class="container">
-    <div class="cta-content">
-      <h2>Ready to Get Started?</h2>
-      <p>Join thousands of businesses making informed logistics decisions.</p>
-      <div class="cta-buttons">
-        <a href="/search" class="btn-primary">Start Free Trial</a>
-        <a href="/contact" class="btn-secondary">Contact Sales</a>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 
 
