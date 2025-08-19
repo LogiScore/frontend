@@ -18,6 +18,7 @@
       <div class="footer-section">
         <h3>Platform</h3>
         <ul>
+          <li><a href="/guidelines">Community Guidelines</a></li>
           <li><a href="/search">Search Companies</a></li>
           <li><a href="/reviews">Browse Reviews</a></li>
           <li><a href="/faq">FAQ</a></li>
@@ -29,7 +30,6 @@
         <ul>
           <li><a href="/help">Help Center</a></li>
           <li><a href="/contact">Contact Support</a></li>
-          <li><a href="/guidelines">Community Guidelines</a></li>
         </ul>
       </div>
       
@@ -40,6 +40,8 @@
           <li><a href="/terms">Terms of Service</a></li>
           <li><a href="/legal">Legal FAQ</a></li>
           <li><a href="/cookies">Cookie Policy</a></li>
+          <li><a href="/notice-takedown">Notice & Takedown Policy</a></li>
+          <li><a href="/transparency-report">Transparency Report</a></li>
         </ul>
       </div>
     </div>
