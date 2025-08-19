@@ -13,6 +13,7 @@
 
   // Form data
   let formData = {
+    username: '',
     full_name: '',
     email: '',
     company_name: '',
@@ -33,6 +34,7 @@
     if (state.user) {
       // Initialize form data with current user data
       formData = {
+        username: state.user.username || '',
         full_name: state.user.full_name || state.user.username || '',
         email: state.user.email || '',
         company_name: state.user.company_name || '',
@@ -52,7 +54,7 @@
   }
 
   async function handleSubmit() {
-    if (!authState.user) {
+    if (!authState.user || !authState.token) {
       error = 'You must be logged in to update your profile';
       return;
     }
@@ -62,9 +64,12 @@
     success = '';
 
     try {
-      // TODO: Implement profile update API call
-      // For now, just simulate the update
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the profile update API
+      const response = await apiClient.updateUserProfile(authState.token, {
+        username: formData.username,
+        full_name: formData.full_name,
+        company_name: formData.company_name
+      });
       
       success = 'Profile updated successfully!';
       
@@ -102,14 +107,21 @@
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="username">Username</label>
             <input 
-              type="email" 
-              id="email"
-              bind:value={formData.email}
-              placeholder="Enter your email"
+              type="text" 
+              id="username"
+              bind:value={formData.username}
+              placeholder="Enter your username"
               required
             />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <div class="readonly-field" id="email">
+              {formData.email}
+            </div>
           </div>
 
           <div class="form-group">
@@ -124,10 +136,9 @@
 
           <div class="form-group">
             <label for="user_type">User Type</label>
-            <select id="user_type" bind:value={formData.user_type}>
-              <option value="shipper">Shipper</option>
-              <option value="forwarder">Freight Forwarder</option>
-            </select>
+            <div class="readonly-field" id="user_type">
+              {formData.user_type === 'shipper' ? 'Shipper' : 'Freight Forwarder'}
+            </div>
           </div>
 
           {#if error}
@@ -225,6 +236,18 @@
   .form-group select:focus {
     outline: none;
     border-color: #667eea;
+  }
+
+  .readonly-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    user-select: none;
   }
 
   .error-message {

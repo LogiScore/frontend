@@ -1878,6 +1878,29 @@ class ApiClient {
       throw new Error(`Failed to send contact form: ${error.message}`);
     }
   }
+
+  // ===== METHOD: updateUserProfile =====
+  // Update user profile information (username, full_name, company_name)
+  // Note: user_type cannot be changed via this endpoint for security
+  async updateUserProfile(token: string, profileData: {
+    username?: string;
+    full_name?: string;
+    company_name?: string;
+  }): Promise<any> {
+    try {
+      return await this.request('/api/users/profile', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+      });
+    } catch (error) {
+      console.error('Failed to update user profile:', error);
+      throw new Error('Failed to update profile. Please try again later.');
+    }
+  }
 }
 
 // Export singleton instance
