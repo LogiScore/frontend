@@ -135,8 +135,10 @@
         // Generate username from full name
         const username = generateUsername(fullName);
 
-        // For signup, complete the signup process with the verification code
-        const result = await apiClient.completeSignup(email, verificationCode, fullName, companyName, userType);
+        console.log('🔐 Calling verifyCode endpoint with:', { email, code: verificationCode, name: fullName, company: companyName, userType });
+
+        // For signup, verify the code and complete user authentication
+        const result = await apiClient.verifyCode(email, verificationCode, fullName, companyName, userType);
         if (result.user && result.access_token) {
           // Update auth store
           auth.update(state => ({
