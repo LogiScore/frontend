@@ -46,6 +46,10 @@
     }
     openSubscriptionModal();
   }
+
+  function redirectToSignIn() {
+    window.location.href = '/';
+  }
 </script>
 
 <svelte:head>
@@ -107,50 +111,7 @@
               </ul>
             </div>
             
-            <div class="plan-actions">
-              {#if plan.price === 0}
-                <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
-              {:else}
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
-              {/if}
-            </div>
-          </div>
-        {/each}
-      </div>
-    {:else}
-      <!-- Default plans for non-logged-in users -->
-      <div class="plans-grid">
-        <!-- Shipper Plans -->
-        <div class="plan-type-section">
-          <h2 class="section-title">Shipper Plans</h2>
-          <div class="plans-row">
-            {#each allPlans.userPlans as plan}
-              <div class="plan-card" class:featured={plan.popular}>
-                {#if plan.popular}
-                  <div class="plan-badge">Most Popular</div>
-                {/if}
-                <div class="plan-header">
-                  <h3>{plan.name}</h3>
-                  <div class="price">
-                    {#if plan.price === 0}
-                      <span class="amount">Free</span>
-                    {:else}
-                      <span class="amount">${plan.price}</span>
-                      <span class="period">/{plan.billingCycle}</span>
-                    {/if}
-                  </div>
-                  <p class="plan-description">{plan.description}</p>
-                </div>
-                
-                <div class="plan-features">
-                  <ul>
-                    {#each plan.features as feature}
-                      <li>✓ {feature}</li>
-                    {/each}
-                  </ul>
-                </div>
-                
-                <div class="plan-actions">
+                            <div class="plan-actions">
                   {#if plan.price === 0}
                     <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
                   {:else}
@@ -160,7 +121,59 @@
               </div>
             {/each}
           </div>
-        </div>
+        {:else}
+          <!-- Sign-in prompt for non-logged-in users -->
+          <div class="signin-prompt">
+            <div class="signin-content">
+              <h2>Sign In to Subscribe</h2>
+              <p>Please sign in or create an account to view personalized subscription plans and start your subscription.</p>
+              <button class="btn-primary" on:click={redirectToSignIn}>Sign In / Sign Up</button>
+            </div>
+          </div>
+
+          <!-- Default plans for non-logged-in users (view only) -->
+          <div class="plans-grid">
+            <!-- Shipper Plans -->
+            <div class="plan-type-section">
+              <h2 class="section-title">Shipper Plans</h2>
+              <div class="plans-row">
+                {#each allPlans.userPlans as plan}
+                  <div class="plan-card" class:featured={plan.popular}>
+                    {#if plan.popular}
+                      <div class="plan-badge">Most Popular</div>
+                    {/if}
+                    <div class="plan-header">
+                      <h3>{plan.name}</h3>
+                      <div class="price">
+                        {#if plan.price === 0}
+                          <span class="amount">Free</span>
+                        {:else}
+                          <span class="amount">${plan.price}</span>
+                          <span class="period">/{plan.billingCycle}</span>
+                        {/if}
+                      </div>
+                      <p class="plan-description">{plan.description}</p>
+                    </div>
+                    
+                    <div class="plan-features">
+                      <ul>
+                        {#each plan.features as feature}
+                          <li>✓ {feature}</li>
+                        {/each}
+                      </ul>
+                    </div>
+                    
+                    <div class="plan-actions">
+                      {#if plan.price === 0}
+                        <button class="btn-secondary" on:click={redirectToSignIn}>Sign In to Get Started</button>
+                      {:else}
+                        <button class="btn-primary" on:click={redirectToSignIn}>Sign In to Subscribe</button>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
 
         <!-- Freight Forwarder Plans -->
         <div class="plan-type-section">
@@ -378,6 +391,37 @@
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 30px;
     justify-content: center;
+  }
+
+  /* Sign-in Prompt */
+  .signin-prompt {
+    background: #f8f9fa;
+    padding: 80px 0;
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .signin-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .signin-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .signin-content p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    color: #666;
+  }
+
+  .signin-content .btn-primary {
+    padding: 15px 30px;
+    font-size: 1.1rem;
   }
 
   .plan-card {
