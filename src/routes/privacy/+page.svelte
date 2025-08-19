@@ -52,13 +52,22 @@
     </section>
 
     <section class="policy-section">
-      <h2>4. Sharing of Information</h2>
+      <h2>4. Information Sharing / Disclosure</h2>
       <p>We do not sell or rent your data. Information may be shared:</p>
       <ul>
         <li>With <strong>service providers</strong> (hosting, payment via Stripe, email delivery) under strict data protection agreements.</li>
         <li>In response to <strong>legal requests</strong> (court orders, regulatory authorities).</li>
         <li>As part of <strong>aggregated, anonymized reporting</strong> (e.g., score averages), which cannot identify individual shippers.</li>
       </ul>
+      
+      <h3>Reviewer Anonymity</h3>
+      <p>LogiScore allows shippers to submit reviews anonymously. Forwarders and other third parties will not see the reviewer's identity. LogiScore verifies that all reviews come from genuine shippers, but the identity of individual reviewers remains strictly confidential.</p>
+      
+      <h3>Disclosure of Identities</h3>
+      <p>LogiScore will never voluntarily disclose a reviewer's identity to a forwarder or third party. Reviewer information may only be disclosed if LogiScore is legally required to do so under a valid court order or applicable law from a court of competent jurisdiction.</p>
+      
+      <h3>Limitation of Liability</h3>
+      <p>By submitting a review, you acknowledge that while LogiScore takes all reasonable steps to preserve anonymity, absolute confidentiality cannot be guaranteed if compelled by law.</p>
     </section>
 
     <section class="policy-section">
@@ -177,6 +186,12 @@
     color: #333;
     margin-bottom: 15px;
     font-size: 1.4rem;
+  }
+
+  .policy-section h3 {
+    color: #444;
+    margin: 20px 0 10px 0;
+    font-size: 1.1rem;
   }
 
   .policy-section ul {
