@@ -138,20 +138,6 @@
           <p>Get help via email within 24 hours</p>
           <a href="mailto:support@logiscore.com" class="btn-secondary">Send Email</a>
         </div>
-        
-        <div class="support-option">
-          <div class="option-icon">💬</div>
-          <h3>Live Chat</h3>
-          <p>Chat with our support team in real-time</p>
-          <button class="btn-secondary">Start Chat</button>
-        </div>
-        
-        <div class="support-option">
-          <div class="option-icon">📞</div>
-          <h3>Phone Support</h3>
-          <p>Call us for immediate assistance</p>
-          <a href="tel:+1-555-0123" class="btn-secondary">Call Now</a>
-        </div>
       </div>
     </div>
   </div>
