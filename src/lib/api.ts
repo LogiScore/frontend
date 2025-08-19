@@ -1105,30 +1105,41 @@ class ApiClient {
   // Step 1: Send verification code to user's email
   async sendVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
+      console.log('🔍 API sendVerificationCode called for email:', email);
+      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
       // Validate email before making the request
       const emailValidation = validateBusinessEmail(email);
       if (!emailValidation.isValid) {
+        console.error('❌ Email validation failed:', emailValidation.reason);
         throw new Error(emailValidation.reason || 'Invalid email address');
       }
+      
+      console.log('✅ Email validation passed, making API request to /api/users/request-code');
       
       const response = await this.request<{ message: string; expires_in?: number }>('/api/users/request-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
       
+      console.log('📧 Raw API response:', response);
+      
       // Provide default expiration time if backend doesn't return it
-      console.log('API Response:', response);
       const result = {
         message: response.message,
         expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
       };
-      console.log('Processed result:', result);
+      console.log('✅ Processed API result:', result);
       return result;
     } catch (error: any) {
-      console.error('Failed to send verification code:', error);
+      console.error('💥 API sendVerificationCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       throw error;
     }
   }

@@ -62,20 +62,27 @@
       return;
     }
 
+    console.log('🔍 Starting email verification process for:', email);
     isLoading = true;
     errorMessage = '';
 
     try {
+      console.log('📧 Calling authMethods.requestCode...');
       const result = await authMethods.requestCode(email);
+      console.log('📧 Result from requestCode:', result);
+      
       if (result.success) {
         successMessage = `Verification code sent! Check your email. Code expires in ${result.expires_in} minutes.`;
         codeRequested = true;
         codeSent = true;
+        console.log('✅ Verification code sent successfully');
       } else {
         errorMessage = result.error || 'Failed to send verification code';
+        console.error('❌ Failed to send verification code:', result.error);
       }
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
+      console.error('💥 Exception during verification code request:', error);
     } finally {
       isLoading = false;
     }

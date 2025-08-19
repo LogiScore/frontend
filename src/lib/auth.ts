@@ -646,17 +646,23 @@ export const authMethods = {
   // Request verification code to be sent to email
   async requestCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
     try {
-      console.log('Requesting verification code...');
+      console.log('🔍 AuthMethods.requestCode called for email:', email);
       
       const response = await apiClient.sendVerificationCode(email);
+      console.log('📧 API response received:', response);
       
-      console.log('Verification code sent successfully');
+      console.log('✅ Verification code sent successfully');
       return { 
         success: true, 
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-      console.error('Failed to request verification code:', error);
+      console.error('💥 AuthMethods.requestCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       return { 
         success: false, 
