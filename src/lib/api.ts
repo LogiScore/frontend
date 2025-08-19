@@ -1901,6 +1901,29 @@ class ApiClient {
       throw new Error('Failed to update profile. Please try again later.');
     }
   }
+
+  // ===== METHOD: adminUpdateUser =====
+  // Admin-only function to update user information including user_type
+  async adminUpdateUser(token: string, userId: string, userData: {
+    full_name?: string;
+    email?: string;
+    user_type?: string;
+    company_name?: string;
+  }): Promise<any> {
+    try {
+      return await this.request(`/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(userData)
+      });
+    } catch (error) {
+      console.error('Failed to update user via admin endpoint:', error);
+      throw new Error('Failed to update user. Please try again later.');
+    }
+  }
 }
 
 // Export singleton instance

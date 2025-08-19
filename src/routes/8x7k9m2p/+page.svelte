@@ -50,12 +50,19 @@
   let isLoading = false;
   let showAddCompanyModal = false;
   let showSubscriptionModal = false;
+  let showEditUserModal = false;
   let selectedUserId: string | null = null;
   let subscriptionData = {
     tier: 'free',
     comment: '',
     duration: '1',
     isPaid: false
+  };
+  let editUserData = {
+    full_name: '',
+    email: '',
+    user_type: 'shipper',
+    company_name: ''
   };
 
   // Dashboard data
@@ -295,6 +302,23 @@
     subscriptionData = { tier: 'free', comment: '', duration: '1', isPaid: false };
   }
 
+  function openEditUserModal(user: any) {
+    selectedUserId = user.id;
+    editUserData = {
+      full_name: user.full_name || user.username || '',
+      email: user.email || '',
+      user_type: user.user_type || 'shipper',
+      company_name: user.company_name || ''
+    };
+    showEditUserModal = true;
+  }
+
+  function closeEditUserModal() {
+    showEditUserModal = false;
+    selectedUserId = null;
+    editUserData = { full_name: '', email: '', user_type: 'shipper', company_name: '' };
+  }
+
   async function updateUserSubscription() {
     if (!authState.token || !selectedUserId) return;
     
@@ -310,6 +334,24 @@
       closeSubscriptionModal();
     } catch (error) {
       console.error('Failed to update subscription:', error);
+    }
+  }
+
+  async function updateUserProfile() {
+    if (!authState.token || !selectedUserId) return;
+    
+    try {
+      await apiClient.adminUpdateUser(authState.token, selectedUserId, {
+        full_name: editUserData.full_name,
+        email: editUserData.email,
+        user_type: editUserData.user_type,
+        company_name: editUserData.company_name
+      });
+      
+      await loadUsers(); // Reload users
+      closeEditUserModal();
+    } catch (error) {
+      console.error('Failed to update user profile:', error);
     }
   }
 
@@ -628,8 +670,13 @@
         <div class="users-content">
           <h2>User Management</h2>
           <div class="users-filters">
-            <input type="text" placeholder="Search users..." class="search-input" />
-            <select class="filter-select">
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              class="search-input" 
+              bind:value={userSearch}
+            />
+            <select class="filter-select" bind:value={userTypeFilter}>
               <option value="">All Roles</option>
               <option value="shipper">Shippers</option>
               <option value="forwarder">Forwarders</option>
@@ -644,6 +691,7 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Company Name</th>
                   <th>Subscription</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -656,10 +704,11 @@
                     <td>{user.full_name || user.username || 'N/A'}</td>
                     <td>{user.email}</td>
                     <td>{user.user_type}</td>
+                    <td>{user.company_name || 'N/A'}</td>
                     <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
                     <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>
-                      <button class="btn-secondary">Edit</button>
+                      <button class="btn-secondary" on:click={() => openEditUserModal(user)}>Edit</button>
                       <button class="btn-secondary">Suspend</button>
                       <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
                     </td>
@@ -804,6 +853,66 @@
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeSubscriptionModal}>Cancel</button>
         <button class="btn-primary" on:click={updateUserSubscription}>Update Subscription</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Edit User Modal -->
+{#if showEditUserModal}
+  <div class="modal-overlay" on:click={closeEditUserModal}>
+    <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>Edit User Profile</h2>
+        <button class="close-btn" on:click={closeEditUserModal}>&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="edit-full-name">Full Name:</label>
+          <input 
+            type="text" 
+            id="edit-full-name" 
+            bind:value={editUserData.full_name}
+            placeholder="Enter full name"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-email">Email Address:</label>
+          <input 
+            type="email" 
+            id="edit-email" 
+            bind:value={editUserData.email}
+            placeholder="Enter email address"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-user-type">User Type:</label>
+          <select id="edit-user-type" bind:value={editUserData.user_type}>
+            <option value="shipper">Shipper</option>
+            <option value="forwarder">Freight Forwarder</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-company-name">Company Name:</label>
+          <input 
+            type="text" 
+            id="edit-company-name" 
+            bind:value={editUserData.company_name}
+            placeholder="Enter company name (optional)"
+          />
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" on:click={closeEditUserModal}>Cancel</button>
+        <button class="btn-primary" on:click={updateUserProfile}>Update Profile</button>
       </div>
     </div>
   </div>
