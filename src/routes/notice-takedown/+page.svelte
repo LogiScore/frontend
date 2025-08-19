@@ -118,16 +118,6 @@
         <li>Categories of violations.</li>
       </ul>
     </section>
-
-    <section class="policy-section highlight">
-      <h2>✅ What This Policy Provides</h2>
-      <ul>
-        <li>A <strong>clear workflow</strong> (forwarder knows how to complain).</li>
-        <li>A <strong>neutral stance</strong> (you don't decide "truth," you check against guidelines).</li>
-        <li>A <strong>paper trail</strong> (to show courts/regulators you act responsibly).</li>
-        <li><strong>Transparency reporting</strong> (industry best practice, boosts credibility).</li>
-      </ul>
-    </section>
   </div>
 
   <div class="footer-actions">

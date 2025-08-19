@@ -131,13 +131,8 @@
       <h2>Still Need Help?</h2>
       <p>Our support team is here to help you with any questions or issues.</p>
       
-      <div class="support-options">
-        <div class="support-option">
-          <div class="option-icon">📧</div>
-          <h3>Email Support</h3>
-          <p>Get help via email within 24 hours</p>
-          <a href="mailto:support@logiscore.com" class="btn-secondary">Send Email</a>
-        </div>
+      <div class="contact-link">
+        <a href="/contact" class="btn-primary">Contact Support</a>
       </div>
     </div>
   </div>
@@ -367,36 +362,24 @@
     margin-bottom: 50px;
   }
 
-  .support-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
+  .contact-link {
+    display: inline-block;
   }
 
-  .support-option {
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  .btn-primary {
+    background: #667eea;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: background 0.3s;
   }
 
-  .option-icon {
-    font-size: 3rem;
-    margin-bottom: 20px;
+  .btn-primary:hover {
+    background: #5a6fd8;
   }
-
-  .support-option h3 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color: #333;
-  }
-
-  .support-option p {
-    color: #666;
-    margin-bottom: 25px;
-    line-height: 1.6;
-  }
-
 
 
   /* Responsive Design */
@@ -422,8 +405,8 @@
       grid-template-columns: 1fr;
     }
 
-    .support-options {
-      grid-template-columns: 1fr;
+    .contact-link {
+      width: 100%;
     }
 
 
