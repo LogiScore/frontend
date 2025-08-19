@@ -100,6 +100,10 @@
       };
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
+      // Show user-friendly error message
+      if ((error as any).message) {
+        alert(`Dashboard Error: ${(error as any).message}`);
+      }
     } finally {
       isLoading = false;
     }

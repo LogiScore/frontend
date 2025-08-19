@@ -38,7 +38,8 @@
       codeRequested = true;
       codeSent = true;
     } catch (error: any) {
-      errorMessage = error.message || 'Failed to send verification code';
+      console.error('Failed to request admin verification code:', error);
+      errorMessage = error.message || 'Failed to send verification code. Please check your email and try again.';
     } finally {
       isLoading = false;
     }
@@ -90,7 +91,8 @@
         errorMessage = 'Invalid verification code or response';
       }
     } catch (error: any) {
-      errorMessage = error.message || 'Verification failed';
+      console.error('Admin verification failed:', error);
+      errorMessage = error.message || 'Verification failed. Please check your code and try again.';
     } finally {
       isLoading = false;
     }

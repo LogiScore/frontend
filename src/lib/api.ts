@@ -1183,13 +1183,7 @@ class ApiClient {
       return result;
     } catch (error: any) {
       console.error('Failed to send admin verification code:', error);
-      
-      // Provide fallback for demo purposes
-      console.log('Using fallback admin verification code request');
-      return {
-        message: 'Verification code sent successfully',
-        expires_in: 10
-      };
+      throw new Error('Failed to send verification code. Please try again later.');
     }
   }
 
@@ -1211,24 +1205,7 @@ class ApiClient {
       });
     } catch (error: any) {
       console.error('Failed to verify admin code:', error);
-      
-      // Provide fallback admin user data for demo purposes
-      console.log('Using fallback admin verification');
-      return {
-        user: {
-          id: 'admin-user',
-          username: 'Admin User',
-          full_name: 'Administrator',
-          email: email,
-          user_type: 'admin',
-          subscription_tier: 'enterprise',
-          is_verified: true,
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        access_token: 'admin-demo-token',
-        token_type: 'bearer'
-      };
+      throw new Error('Failed to verify admin code. Please check your code and try again.');
     }
   }
 
@@ -1488,7 +1465,7 @@ class ApiClient {
   }
 
   // ===== METHOD: getDashboardStats =====
-  // Admin methods (for the admin dashboard)
+  // Admin methods (for the 8x7k9m2p dashboard)
   async getDashboardStats(token: string) {
     try {
       return await this.request('/admin/dashboard', {
@@ -1496,15 +1473,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get dashboard stats:', error);
-      // Return mock data for demo
-      return {
-        total_users: 1250,
-        total_companies: 45,
-        total_reviews: 3420,
-        pending_disputes: 12,
-        pending_reviews: 8,
-        total_revenue: 15420
-      };
+      throw new Error('Failed to load dashboard statistics. Please try again later.');
     }
   }
 
@@ -1520,27 +1489,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get users:', error);
-      // Return mock data for demo
-      return [
-        {
-          id: '1',
-          username: 'john_doe',
-          full_name: 'John Doe',
-          email: 'john@example.com',
-          user_type: 'shipper',
-          subscription_tier: 'premium',
-          is_active: true
-        },
-        {
-          id: '2',
-          username: 'jane_smith',
-          full_name: 'Jane Smith',
-          email: 'jane@example.com',
-          user_type: 'forwarder',
-          subscription_tier: 'enterprise',
-          is_active: true
-        }
-      ];
+      throw new Error('Failed to load users. Please try again later.');
     }
   }
 
@@ -1555,17 +1504,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get reviews:', error);
-      // Return mock data for demo
-      return [
-        {
-          id: '1',
-          freight_forwarder_name: 'DHL Supply Chain',
-          branch_name: 'Main Office',
-          reviewer_name: 'John Doe',
-          status: 'pending',
-          created_at: '2025-01-10T10:00:00Z'
-        }
-      ];
+      throw new Error('Failed to load reviews. Please try again later.');
     }
   }
 
@@ -1580,16 +1519,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get disputes:', error);
-      // Return mock data for demo
-      return [
-        {
-          id: '1',
-          freight_forwarder_name: 'Kuehne + Nagel',
-          issue: 'Incorrect rating calculation',
-          status: 'open',
-          created_at: '2025-01-10T09:00:00Z'
-        }
-      ];
+      throw new Error('Failed to load disputes. Please try again later.');
     }
   }
 
@@ -1604,17 +1534,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get companies:', error);
-      // Return mock data for demo
-      return [
-        {
-          id: '1',
-          name: 'DHL Supply Chain',
-          logo_url: null,
-          branches_count: 5,
-          reviews_count: 156,
-          status: 'active'
-        }
-      ];
+      throw new Error('Failed to load companies. Please try again later.');
     }
   }
 
@@ -1699,33 +1619,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get recent activity:', error);
-      // Return mock data for demo
-      return [
-        {
-          id: '1',
-          type: 'review',
-          message: 'New review submitted for DHL Supply Chain',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          company_name: 'DHL Supply Chain',
-          user_name: 'John Doe'
-        },
-        {
-          id: '2',
-          type: 'dispute',
-          message: 'Dispute opened for Kuehne + Nagel review',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          company_name: 'Kuehne + Nagel',
-          user_name: 'Jane Smith'
-        },
-        {
-          id: '3',
-          type: 'company',
-          message: 'New company registered: C.H. Robinson',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          company_name: 'C.H. Robinson',
-          user_name: 'Admin'
-        }
-      ];
+      throw new Error('Failed to load recent activity. Please try again later.');
     }
   }
 
@@ -1737,26 +1631,7 @@ class ApiClient {
       });
     } catch (error) {
       console.error('Failed to get analytics:', error);
-      // Return mock data for demo
-      return {
-        review_growth: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          data: [65, 78, 90, 85, 95, 120]
-        },
-        user_engagement: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          data: [1200, 1350, 1420, 1380, 1500, 1680]
-        },
-        revenue_metrics: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          data: [2500, 3200, 3800, 3500, 4200, 4800]
-        },
-        top_companies: [
-          { name: 'DHL Supply Chain', reviews: 156, rating: 4.2 },
-          { name: 'Kuehne + Nagel', reviews: 142, rating: 4.1 },
-          { name: 'C.H. Robinson', reviews: 98, rating: 3.9 }
-        ]
-      };
+      throw new Error('Failed to load analytics data. Please try again later.');
     }
   }
 
