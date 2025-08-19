@@ -151,7 +151,7 @@
                     <div class="plan-features">
                       <ul>
                         {#each plan.features as feature}
-                          <li>✓ {feature}</li>
+                          <li>{feature}</li>
                         {/each}
                       </ul>
                     </div>
@@ -187,7 +187,7 @@
                 <div class="plan-features">
                   <ul>
                     {#each plan.features as feature}
-                      <li>✓ {feature}</li>
+                      <li>{feature}</li>
                     {/each}
                   </ul>
                 </div>
