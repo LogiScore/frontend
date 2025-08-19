@@ -165,8 +165,10 @@
         <!-- Freight Forwarder Plans -->
         <div class="plan-type-section">
           <h2 class="section-title">Freight Forwarder Plans</h2>
+          
+          <!-- Basic Plans Row: Free, Monthly, Annual -->
           <div class="plans-row">
-            {#each allPlans.forwarderPlans as plan}
+            {#each allPlans.forwarderPlans.filter(plan => plan.name !== 'Subscription Annual Plus') as plan}
               <div class="plan-card" class:featured={plan.popular}>
                 {#if plan.popular}
                   <div class="plan-badge">Most Popular</div>
@@ -180,6 +182,33 @@
                       <span class="amount">${plan.price}</span>
                       <span class="period">/{plan.billingCycle}</span>
                     {/if}
+                  </div>
+                  <p class="plan-description">{plan.description}</p>
+                </div>
+                
+                <div class="plan-features">
+                  <ul>
+                    {#each plan.features as feature}
+                      <li>{feature}</li>
+                    {/each}
+                  </ul>
+                </div>
+              </div>
+            {/each}
+          </div>
+          
+          <!-- Annual Plus Plan Row: Centered below -->
+          <div class="annual-plus-row">
+            {#each allPlans.forwarderPlans.filter(plan => plan.name === 'Subscription Annual Plus') as plan}
+              <div class="plan-card annual-plus-card" class:featured={plan.popular}>
+                {#if plan.popular}
+                  <div class="plan-badge">Most Popular</div>
+                {/if}
+                <div class="plan-header">
+                  <h3>{plan.name}</h3>
+                  <div class="price">
+                    <span class="amount">${plan.price}</span>
+                    <span class="period">/{plan.billingCycle}</span>
                   </div>
                   <p class="plan-description">{plan.description}</p>
                 </div>
@@ -321,6 +350,17 @@
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 30px;
     justify-content: center;
+  }
+
+  .annual-plus-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  .annual-plus-card {
+    max-width: 400px;
+    text-align: center;
   }
 
   /* Sign-in Prompt */
