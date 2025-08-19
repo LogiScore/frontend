@@ -73,6 +73,8 @@
   let disputes: any[] = [];
   let companies: any[] = [];
   let users: any[] = [];
+  let recentActivity: any[] = [];
+  let analyticsData: any = null;
 
   // Search and filter states
   let userSearch = '';
@@ -159,9 +161,32 @@
     }
   }
 
+  // Load recent activity
+  async function loadRecentActivity() {
+    if (!authState.token) return;
+    
+    try {
+      recentActivity = await apiClient.getRecentActivity(authState.token);
+    } catch (error) {
+      console.error('Failed to load recent activity:', error);
+    }
+  }
+
+  // Load analytics data
+  async function loadAnalytics() {
+    if (!authState.token) return;
+    
+    try {
+      analyticsData = await apiClient.getAdminAnalytics(authState.token);
+    } catch (error) {
+      console.error('Failed to load analytics:', error);
+    }
+  }
+
   // Load data when tab changes
   $: if (activeTab === 'dashboard' && authState.token) {
     loadDashboardStats();
+    loadRecentActivity();
   }
 
   $: if (activeTab === 'users' && authState.token) {
@@ -178,6 +203,10 @@
 
   $: if (activeTab === 'companies' && authState.token) {
     loadCompanies();
+  }
+
+  $: if (activeTab === 'analytics' && authState.token) {
+    loadAnalytics();
   }
 
   // Watch for search changes
@@ -208,6 +237,24 @@
     description: '',
     headquarters_country: ''
   };
+
+  // Utility function to format time ago
+  function formatTimeAgo(timestamp: string): string {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffMs = now.getTime() - time.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 60) {
+      return `${diffMins} minutes ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hours ago`;
+    } else {
+      return `${diffDays} days ago`;
+    }
+  }
 
 
 
@@ -342,48 +389,62 @@
       <!-- Dashboard Tab -->
       {#if activeTab === 'dashboard'}
         <div class="dashboard-content">
+          <div class="dashboard-header">
+            <h2>Dashboard Overview</h2>
+            <button class="btn-refresh" on:click={() => { loadDashboardStats(); loadRecentActivity(); }}>
+              🔄 Refresh Data
+            </button>
+          </div>
           <div class="stats-grid">
-            <div class="stat-card">
-              <h3>Total Users</h3>
-              <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
-            </div>
-            <div class="stat-card">
-              <h3>Total Companies</h3>
-              <div class="stat-number">{dashboardStats.totalCompanies}</div>
-            </div>
-            <div class="stat-card">
-              <h3>Total Reviews</h3>
-              <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
-            </div>
-            <div class="stat-card">
-              <h3>Pending Disputes</h3>
-              <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
-            </div>
-            <div class="stat-card">
-              <h3>Pending Reviews</h3>
-              <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
-            </div>
-            <div class="stat-card">
-              <h3>Monthly Revenue</h3>
-              <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
-            </div>
+            {#if isLoading}
+              {#each Array(6) as _, i}
+                <div class="stat-card loading">
+                  <div class="stat-skeleton"></div>
+                </div>
+              {/each}
+            {:else}
+              <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
+              </div>
+              <div class="stat-card">
+                <h3>Total Companies</h3>
+                <div class="stat-number">{dashboardStats.totalCompanies}</div>
+              </div>
+              <div class="stat-card">
+                <h3>Total Reviews</h3>
+                <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
+              </div>
+              <div class="stat-card">
+                <h3>Pending Disputes</h3>
+                <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
+              </div>
+              <div class="stat-card">
+                <h3>Pending Reviews</h3>
+                <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
+              </div>
+              <div class="stat-card">
+                <h3>Monthly Revenue</h3>
+                <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
+              </div>
+            {/if}
           </div>
 
           <div class="recent-activity">
             <h2>Recent Activity</h2>
             <div class="activity-list">
-              <div class="activity-item">
-                <span class="activity-time">2 hours ago</span>
-                <span class="activity-text">New review submitted for DHL Supply Chain</span>
-              </div>
-              <div class="activity-item">
-                <span class="activity-time">4 hours ago</span>
-                <span class="activity-text">Dispute opened for Kuehne + Nagel review</span>
-              </div>
-              <div class="activity-item">
-                <span class="activity-time">1 day ago</span>
-                <span class="activity-text">New company registered: C.H. Robinson</span>
-              </div>
+              {#if recentActivity.length > 0}
+                {#each recentActivity as activity}
+                  <div class="activity-item">
+                    <span class="activity-time">{formatTimeAgo(activity.timestamp)}</span>
+                    <span class="activity-text">{activity.message}</span>
+                  </div>
+                {/each}
+              {:else}
+                <div class="activity-item">
+                  <span class="activity-text">No recent activity</span>
+                </div>
+              {/if}
             </div>
           </div>
         </div>
@@ -606,24 +667,75 @@
       {#if activeTab === 'analytics'}
         <div class="analytics-content">
           <h2>Platform Analytics</h2>
-          <div class="analytics-grid">
-            <div class="analytics-card">
-              <h3>Review Growth</h3>
-              <div class="chart-placeholder">📈 Chart: Monthly review submissions</div>
+          {#if analyticsData}
+            <div class="analytics-grid">
+              <div class="analytics-card">
+                <h3>Review Growth</h3>
+                <div class="chart-data">
+                  <div class="chart-labels">
+                    {#each analyticsData.review_growth.labels as label}
+                      <span class="chart-label">{label}</span>
+                    {/each}
+                  </div>
+                  <div class="chart-values">
+                    {#each analyticsData.review_growth.data as value}
+                      <div class="chart-bar" style="height: {value / 2}px;">
+                        <span class="chart-value">{value}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <h3>User Engagement</h3>
+                <div class="chart-data">
+                  <div class="chart-labels">
+                    {#each analyticsData.user_engagement.labels as label}
+                      <span class="chart-label">{label}</span>
+                    {/each}
+                  </div>
+                  <div class="chart-values">
+                    {#each analyticsData.user_engagement.data as value}
+                      <div class="chart-bar" style="height: {value / 20}px;">
+                        <span class="chart-value">{value.toLocaleString()}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <h3>Revenue Metrics</h3>
+                <div class="chart-data">
+                  <div class="chart-labels">
+                    {#each analyticsData.revenue_metrics.labels as label}
+                      <span class="chart-label">{label}</span>
+                    {/each}
+                  </div>
+                  <div class="chart-values">
+                    {#each analyticsData.revenue_metrics.data as value}
+                      <div class="chart-bar" style="height: {value / 50}px;">
+                        <span class="chart-value">${value.toLocaleString()}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <h3>Top Companies</h3>
+                <div class="top-companies-list">
+                  {#each analyticsData.top_companies as company}
+                    <div class="company-stat">
+                      <span class="company-name">{company.name}</span>
+                      <span class="company-reviews">{company.reviews} reviews</span>
+                      <span class="company-rating">⭐ {company.rating}</span>
+                    </div>
+                  {/each}
+                </div>
+              </div>
             </div>
-            <div class="analytics-card">
-              <h3>User Engagement</h3>
-              <div class="chart-placeholder">📊 Chart: Active users over time</div>
-            </div>
-            <div class="analytics-card">
-              <h3>Revenue Metrics</h3>
-              <div class="chart-placeholder">💰 Chart: Subscription revenue</div>
-            </div>
-            <div class="analytics-card">
-              <h3>Top Companies</h3>
-              <div class="chart-placeholder">🏆 Chart: Most reviewed companies</div>
-            </div>
-          </div>
+          {:else}
+            <div class="loading-placeholder">Loading analytics data...</div>
+          {/if}
         </div>
       {/if}
     {/if}
@@ -778,6 +890,38 @@
   }
 
   /* Dashboard Stats */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-header h2 {
+    margin: 0;
+    color: #333;
+  }
+
+  .btn-refresh {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-refresh:hover {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  }
+
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -798,6 +942,28 @@
   .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  .stat-card.loading {
+    pointer-events: none;
+  }
+
+  .stat-skeleton {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   .stat-card h3 {
@@ -1171,6 +1337,105 @@
     justify-content: center;
     color: #666;
     font-size: 1.2rem;
+  }
+
+  .chart-data {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .chart-label {
+    font-size: 0.8rem;
+    color: #666;
+    flex: 1;
+    text-align: center;
+  }
+
+  .chart-values {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    height: 120px;
+    gap: 5px;
+  }
+
+  .chart-bar {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 4px 4px 0 0;
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .chart-bar:hover {
+    transform: scaleY(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .chart-value {
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    position: absolute;
+    top: -25px;
+    white-space: nowrap;
+  }
+
+  .top-companies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .company-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+  }
+
+  .company-name {
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+  }
+
+  .company-reviews {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0 15px;
+  }
+
+  .company-rating {
+    color: #f57c00;
+    font-weight: 600;
+  }
+
+  .loading-placeholder {
+    height: 200px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
   }
 
   /* Responsive Design */

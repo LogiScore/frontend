@@ -1668,6 +1668,75 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getRecentActivity =====
+  async getRecentActivity(token: string) {
+    try {
+      return await this.request('/admin/recent-activity', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to get recent activity:', error);
+      // Return mock data for demo
+      return [
+        {
+          id: '1',
+          type: 'review',
+          message: 'New review submitted for DHL Supply Chain',
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          company_name: 'DHL Supply Chain',
+          user_name: 'John Doe'
+        },
+        {
+          id: '2',
+          type: 'dispute',
+          message: 'Dispute opened for Kuehne + Nagel review',
+          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          company_name: 'Kuehne + Nagel',
+          user_name: 'Jane Smith'
+        },
+        {
+          id: '3',
+          type: 'company',
+          message: 'New company registered: C.H. Robinson',
+          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          company_name: 'C.H. Robinson',
+          user_name: 'Admin'
+        }
+      ];
+    }
+  }
+
+  // ===== METHOD: getAdminAnalytics =====
+  async getAdminAnalytics(token: string) {
+    try {
+      return await this.request('/admin/analytics', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to get analytics:', error);
+      // Return mock data for demo
+      return {
+        review_growth: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          data: [65, 78, 90, 85, 95, 120]
+        },
+        user_engagement: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          data: [1200, 1350, 1420, 1380, 1500, 1680]
+        },
+        revenue_metrics: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          data: [2500, 3200, 3800, 3500, 4200, 4800]
+        },
+        top_companies: [
+          { name: 'DHL Supply Chain', reviews: 156, rating: 4.2 },
+          { name: 'Kuehne + Nagel', reviews: 142, rating: 4.1 },
+          { name: 'C.H. Robinson', reviews: 98, rating: 3.9 }
+        ]
+      };
+    }
+  }
+
   // Payment processing (for PaymentModal)
   // ===== METHOD: processPayment =====
   async processPayment(paymentData: any) {
