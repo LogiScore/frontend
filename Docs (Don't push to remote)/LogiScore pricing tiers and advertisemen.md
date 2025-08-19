@@ -39,9 +39,10 @@ Browse forwarders and aggregated company level reviews
 **Subscription (US$76/m or US$836/a)
 Browse forwarders and view aggregated company/country/branch level reviews and by category.
 
-**Subscription plus (US$2,250/a)
+**Subscription plus (US$3,450/a)
 Up to three concurrent users
 Manage forwarder profile description
+Freight Forwarder Branded ads on their page
 View aggregated scores by region and country
 Comment on reviews
 Receive email notification when a new review is posted
@@ -49,12 +50,6 @@ Shipper able to contact Freight Forwarder via LogiScore
 Best in category per country badge
 Analytics
 Access trend of scores over time (e.g., past 12–24 months, category-by-category)
-
-**Advertisements
-Appear at the top of search results by shipper US$100/month
-Homepage top banner US$500/month
-Country search top banner US$250/month  
-Location search top banner US$250/month
 
 ---
 
