@@ -137,70 +137,26 @@
             Debug: isSubscribed={isSubscribed}, user={!!user}, subscription={user?.subscription_tier}
           </div>
           
-          <!-- Aggregate Score Display -->
+          <!-- Stars only display next to logo -->
           {#if freightForwarder.average_rating && freightForwarder.average_rating > 0}
-            <div class="aggregate-score">
-              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
-                <!-- Subscription users see full score -->
-                <div class="score-circle">
-                  <span class="score-number">{freightForwarder.average_rating.toFixed(1)}</span>
-                  <span class="score-max">/5.0</span>
-                </div>
-                <div class="score-details">
-                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
-                  {#if freightForwarder.global_rank}
-                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
-                  {/if}
-                </div>
-              {:else}
-                <!-- Free users see only stars -->
-                <div class="stars-only">
-                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
-                </div>
-              {/if}
+            <div class="stars-only">
+              <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
             </div>
           {:else if freightForwarder.rating && freightForwarder.rating > 0}
-            <!-- Fallback to legacy rating field if average_rating is not available -->
-            <div class="aggregate-score">
-              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
-                <!-- Subscription users see full score -->
-                <div class="score-circle">
-                  <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
-                  <span class="score-max">/5.0</span>
-                </div>
-                <div class="score-details">
-                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
-                  {#if freightForwarder.global_rank}
-                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
-                  {/if}
-                </div>
-              {:else}
-                <!-- Free users see only stars -->
-                <div class="stars-only">
-                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
-                </div>
-              {/if}
+            <div class="stars-only">
+              <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
             </div>
           {:else if freightForwarder.weighted_review_count && freightForwarder.weighted_review_count > 0 && freightForwarder.weighted_review_count <= 5}
-            <!-- Show stars based on weighted_review_count when it represents the rating (1-5 stars) -->
-            <div class="aggregate-score">
-              <div class="stars-only">
-                <div class="stars">{'★'.repeat(freightForwarder.weighted_review_count)}</div>
-              </div>
+            <div class="stars-only">
+              <div class="stars">{'★'.repeat(freightForwarder.weighted_review_count)}</div>
             </div>
           {:else if freightForwarder.review_count && freightForwarder.review_count > 0}
-            <!-- Show review count when weighted_review_count is not available -->
-            <div class="aggregate-score">
-              <div class="stars-only">
-                <div class="rating-note">Rating being calculated</div>
-              </div>
+            <div class="stars-only">
+              <div class="rating-note">Rating being calculated</div>
             </div>
           {:else}
-            <!-- No reviews or rating available -->
-            <div class="aggregate-score">
-              <div class="stars-only">
-                <div class="no-reviews">No reviews yet</div>
-              </div>
+            <div class="stars-only">
+              <div class="no-reviews">No reviews yet</div>
             </div>
           {/if}
         </div>
@@ -421,7 +377,51 @@
         </div>
       {/if}
 
-
+      <!-- Detailed Rating Information (for subscribed users) -->
+      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
+        <section class="detailed-rating">
+          <h2>Detailed Rating Information</h2>
+          {#if freightForwarder.average_rating && freightForwarder.average_rating > 0}
+            <div class="rating-details">
+              <div class="rating-summary">
+                <div class="score-circle">
+                  <span class="score-number">{freightForwarder.average_rating.toFixed(1)}</span>
+                  <span class="score-max">/5.0</span>
+                </div>
+                <div class="rating-info">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.average_rating))}</div>
+                  {#if freightForwarder.global_rank}
+                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
+                  {/if}
+                  {#if freightForwarder.review_count}
+                    <div class="review-count">Based on {freightForwarder.review_count} reviews</div>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          {:else if freightForwarder.rating && freightForwarder.rating > 0}
+            <div class="rating-details">
+              <div class="rating-summary">
+                <div class="score-circle">
+                  <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
+                  <span class="score-max">/5.0</span>
+                </div>
+                <div class="rating-info">
+                  <div class="stars">{'★'.repeat(Math.round(freightForwarder.rating))}</div>
+                  {#if freightForwarder.global_rank}
+                    <div class="global-rank">Global Rank: #{freightForwarder.global_rank}</div>
+                  {/if}
+                  {#if freightForwarder.review_count}
+                    <div class="review-count">Based on {freightForwarder.review_count} reviews</div>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          {:else}
+            <p class="no-rating">No detailed rating information available.</p>
+          {/if}
+        </section>
+      {/if}
 
       <!-- Submit Review Button -->
       <div class="review-section">
@@ -1001,6 +1001,63 @@
 
   .auth-actions .btn {
     min-width: 120px;
+  }
+
+  /* Detailed Rating Section */
+  .detailed-rating {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .detailed-rating h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .rating-details {
+    display: flex;
+    justify-content: center;
+  }
+
+  .rating-summary {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .rating-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .rating-info .stars {
+    font-size: 1.5rem;
+    color: #ffc107;
+  }
+
+  .rating-info .global-rank {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .rating-info .review-count {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .no-rating {
+    text-align: center;
+    color: #666;
+    font-style: italic;
   }
 
   /* Responsive Design */
