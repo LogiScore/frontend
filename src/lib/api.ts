@@ -1468,11 +1468,20 @@ class ApiClient {
   // Admin methods (for the 8x7k9m2p dashboard)
   async getDashboardStats(token: string) {
     try {
+      console.log('Calling admin dashboard with token:', token ? `${token.substring(0, 20)}...` : 'none');
       return await this.request('/admin/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
       console.error('Failed to get dashboard stats:', error);
+      
+      // Check if it's an authentication error
+      if ((error as any).message?.includes('401') || (error as any).message?.includes('Could not validate credentials')) {
+        console.error('Authentication failed - token validation issue');
+        console.error('Token being used:', token);
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
       throw new Error('Failed to load dashboard statistics. Please try again later.');
     }
   }
@@ -1614,6 +1623,7 @@ class ApiClient {
   // ===== METHOD: getRecentActivity =====
   async getRecentActivity(token: string) {
     try {
+      console.log('Calling admin recent activity with token:', token ? `${token.substring(0, 20)}...` : 'none');
       return await this.request('/admin/recent-activity', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
