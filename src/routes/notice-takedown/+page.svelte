@@ -48,7 +48,7 @@
       <h2>3. How to Submit a Notice</h2>
       <p>To request removal of a review, the complainant must:</p>
       <ol>
-        <li>Send an email to <strong><a href="mailto:disputes@logiscore.net">disputes@logiscore.net</a></strong> with subject line: <em>Notice & Takedown Request</em>.</li>
+        <li>Contact us via the <strong><a href="/contact">Contact</a></strong> page with subject line: <em>Notice & Takedown Request</em>.</li>
         <li>Provide the following information:
           <ul>
             <li>Identification of the specific review (forwarder name, branch, date).</li>
@@ -81,7 +81,7 @@
       <h2>5. Reviewer Notification</h2>
       <ul>
         <li>If a review is removed or edited, the <strong>reviewer is notified</strong> with the reason.</li>
-        <li>Reviewers may appeal within <strong>7 business days</strong> by emailing <strong><a href="mailto:appeals@logiscore.net">appeals@logiscore.net</a></strong>.</li>
+        <li>Reviewers may appeal within <strong>7 business days</strong> via our <strong><a href="/contact">Contact</a></strong> page.</li>
       </ul>
     </section>
 
