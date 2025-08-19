@@ -132,10 +132,15 @@
           {/if}
         </div>
         <div class="company-info">
+          <!-- Debug info (remove after testing) -->
+          <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 12px; color: #666;">
+            Debug: isSubscribed={isSubscribed}, user={!!user}, subscription={user?.subscription_tier}
+          </div>
+          
           <!-- Aggregate Score Display -->
           {#if freightForwarder.average_rating && freightForwarder.average_rating > 0}
             <div class="aggregate-score">
-              {#if isSubscribed}
+              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
                 <!-- Subscription users see full score -->
                 <div class="score-circle">
                   <span class="score-number">{freightForwarder.average_rating.toFixed(1)}</span>
@@ -157,7 +162,7 @@
           {:else if freightForwarder.rating && freightForwarder.rating > 0}
             <!-- Fallback to legacy rating field if average_rating is not available -->
             <div class="aggregate-score">
-              {#if isSubscribed}
+              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
                 <!-- Subscription users see full score -->
                 <div class="score-circle">
                   <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
@@ -207,6 +212,18 @@
 
       <!-- Company Details Section -->
       <section class="company-details">
+        <!-- Debug section (remove after testing) -->
+        <div style="background: #e8f4fd; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #bee5eb;">
+          <h3 style="margin: 0 0 10px 0; color: #0c5460;">🔍 Debug Information</h3>
+          <p style="margin: 5px 0; font-family: monospace; font-size: 14px;">
+            User logged in: <strong>{isLoggedIn}</strong><br>
+            User object: <strong>{user ? 'Yes' : 'No'}</strong><br>
+            Subscription tier: <strong>{user?.subscription_tier || 'None'}</strong><br>
+            Is subscribed: <strong>{isSubscribed}</strong><br>
+            Auth token: <strong>{$auth?.token ? 'Yes' : 'No'}</strong>
+          </p>
+        </div>
+        
         <h2>Company Information</h2>
         <div class="details-grid">
           <div class="detail-item">
