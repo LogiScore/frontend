@@ -13,6 +13,8 @@
   let verificationCode = '';
   let confirmPassword = '';
   let fullName = '';
+  let companyName = '';
+  let userType = 'shipper'; // Default to shipper
   let isLoading = false;
   let errorMessage = '';
   let successMessage = '';
@@ -30,10 +32,21 @@
     verificationCode = '';
     confirmPassword = '';
     fullName = '';
+    companyName = '';
+    userType = 'shipper';
     errorMessage = '';
     successMessage = '';
     codeRequested = false;
     codeSent = false;
+  }
+
+  // Generate username from full name
+  function generateUsername(fullName: string): string {
+    if (!fullName) return '';
+    return fullName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .substring(0, 20);
   }
 
   async function requestCode() {
@@ -107,8 +120,16 @@
           return;
         }
 
+        if (!companyName) {
+          errorMessage = 'Please enter your company name';
+          return;
+        }
+
+        // Generate username from full name
+        const username = generateUsername(fullName);
+
         // For signup, complete the signup process with the verification code
-        const result = await apiClient.completeSignup(email, verificationCode, fullName);
+        const result = await apiClient.completeSignup(email, verificationCode, fullName, companyName, userType);
         if (result.user && result.access_token) {
           // Update auth store
           auth.update(state => ({
@@ -169,6 +190,34 @@
               disabled={isLoading}
               placeholder="Enter your full name"
             />
+          </div>
+
+          <div class="form-group">
+            <label for="companyName">Company Name</label>
+            <input
+              type="text"
+              id="companyName"
+              bind:value={companyName}
+              required
+              disabled={isLoading}
+              placeholder="Enter your company name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="userType">I am a:</label>
+            <select
+              id="userType"
+              bind:value={userType}
+              required
+              disabled={isLoading}
+            >
+              <option value="shipper">Shipper/Importer/Exporter/BCO</option>
+              <option value="freight_forwarder">Freight Forwarder</option>
+            </select>
+            <small class="help-text">
+              This determines your pricing tier and available features
+            </small>
           </div>
         {/if}
         
@@ -277,7 +326,7 @@
     background: white;
     border-radius: 8px;
     padding: 2rem;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -346,6 +395,27 @@
   }
 
   .form-group input:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+  }
+
+  .form-group select {
+    width: 380px;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  .form-group select:disabled {
     background: #f8f9fa;
     cursor: not-allowed;
   }
