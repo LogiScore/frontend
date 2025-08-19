@@ -85,33 +85,37 @@
     {#if authState.user}
       <!-- Personalized plans for logged-in user -->
       <div class="plans-grid">
-        {#each userPlans as plan}
-          <div class="plan-card" class:featured={plan.popular}>
-            {#if plan.popular}
-              <div class="plan-badge">Most Popular</div>
-            {/if}
-            <div class="plan-header">
-              <h3>{plan.name}</h3>
-              <div class="price">
-                {#if plan.price === 0}
-                  <span class="amount">Free</span>
-                {:else}
-                  <span class="amount">${plan.price}</span>
-                  <span class="period">/{plan.billingCycle}</span>
+        <!-- Shipper Plans -->
+        <div class="plan-type-section">
+          <h2 class="section-title">Shipper Plans</h2>
+          <div class="plans-row">
+            {#each userPlans as plan}
+              <div class="plan-card" class:featured={plan.popular}>
+                {#if plan.popular}
+                  <div class="plan-badge">Most Popular</div>
                 {/if}
-              </div>
-              <p class="plan-description">{plan.description}</p>
-            </div>
-            
-            <div class="plan-features">
-              <ul>
-                {#each plan.features as feature}
-                  <li>✓ {feature}</li>
-                {/each}
-              </ul>
-            </div>
-            
-                            <div class="plan-actions">
+                <div class="plan-header">
+                  <h3>{plan.name}</h3>
+                  <div class="price">
+                    {#if plan.price === 0}
+                      <span class="amount">Free</span>
+                    {:else}
+                      <span class="amount">${plan.price}</span>
+                      <span class="period">/{plan.billingCycle}</span>
+                    {/if}
+                  </div>
+                  <p class="plan-description">{plan.description}</p>
+                </div>
+                
+                <div class="plan-features">
+                  <ul>
+                    {#each plan.features as feature}
+                      <li>✓ {feature}</li>
+                    {/each}
+                  </ul>
+                </div>
+                
+                <div class="plan-actions">
                   {#if plan.price === 0}
                     <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
                   {:else}
@@ -121,7 +125,9 @@
               </div>
             {/each}
           </div>
-        {:else}
+        </div>
+      </div>
+    {:else}
 
 
           <!-- Default plans for non-logged-in users (view only) -->
