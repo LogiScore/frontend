@@ -14,7 +14,7 @@
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
-  $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic';
+  $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
   
   // Debug logging
@@ -86,7 +86,7 @@
   
   function switchTab(tab: 'overview' | 'locations' | 'countries') {
     // Only allow tab switching for subscribed users
-    if (!isSubscribed || !user || !user.subscription_tier || user.subscription_tier === 'Basic') {
+    if (!isSubscribed || !user || !user.subscription_tier || user.subscription_tier === 'Basic' || user.subscription_tier === 'free') {
       return;
     }
     
@@ -140,7 +140,7 @@
           <!-- Aggregate Score Display -->
           {#if freightForwarder.average_rating && freightForwarder.average_rating > 0}
             <div class="aggregate-score">
-              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
+              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
                 <!-- Subscription users see full score -->
                 <div class="score-circle">
                   <span class="score-number">{freightForwarder.average_rating.toFixed(1)}</span>
@@ -162,7 +162,7 @@
           {:else if freightForwarder.rating && freightForwarder.rating > 0}
             <!-- Fallback to legacy rating field if average_rating is not available -->
             <div class="aggregate-score">
-              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
+              {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
                 <!-- Subscription users see full score -->
                 <div class="score-circle">
                   <span class="score-number">{freightForwarder.rating.toFixed(1)}</span>
@@ -262,7 +262,7 @@
       </section>
 
       <!-- Tabbed Navigation for Detailed Scores -->
-      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
+      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
         <section class="scores-tabs">
           <div class="tab-navigation">
             <button 
