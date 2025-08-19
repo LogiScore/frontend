@@ -17,7 +17,9 @@
 
 <slot />
 
-<Footer />
+{#if !isAdminPage}
+  <Footer />
+{/if}
 
 <InactivityPrompt />
 
