@@ -204,44 +204,7 @@
 
 
 
-<!-- FAQ Section -->
-<section class="faq">
-  <div class="container">
-    <h2>Frequently Asked Questions</h2>
-    
-    <div class="faq-grid">
-      <div class="faq-item">
-        <h3>Can I cancel anytime?</h3>
-        <p>Yes, you can cancel your subscription at any time. No long-term contracts or cancellation fees.</p>
-      </div>
-      
-      <div class="faq-item">
-        <h3>Is there a free trial?</h3>
-        <p>Yes, we offer a 14-day free trial for all paid plans. No credit card required to start.</p>
-      </div>
-      
-      <div class="faq-item">
-        <h3>What payment methods do you accept?</h3>
-        <p>We accept all major credit cards, PayPal, and bank transfers for enterprise plans.</p>
-      </div>
-      
-      <div class="faq-item">
-        <h3>Do you offer discounts?</h3>
-        <p>Yes, we offer discounts for annual subscriptions and enterprise customers. Contact us for details.</p>
-      </div>
-      
-      <div class="faq-item">
-        <h3>Can I upgrade or downgrade?</h3>
-        <p>Yes, you can change your plan at any time. Changes take effect immediately.</p>
-      </div>
-      
-      <div class="faq-item">
-        <h3>What's included in support?</h3>
-        <p>Free plan includes email support. Pro and Enterprise plans include priority support and dedicated assistance.</p>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 
 
