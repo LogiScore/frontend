@@ -1772,6 +1772,44 @@ class ApiClient {
       return [];
     }
   }
+
+  // ===== METHOD: sendContactFormEmail =====
+  // Send contact form email via SendGrid with routing and acknowledgment
+  async sendContactFormEmail(contactData: {
+    name: string;
+    email: string;
+    contactReason: string;
+    subject: string;
+    message: string;
+  }): Promise<{ message: string; email_sent: boolean; acknowledgment_sent: boolean }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/email/contact-form`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: contactData.name,
+          email: contactData.email,
+          contact_reason: contactData.contactReason,
+          subject: contactData.subject,
+          message: contactData.message
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Contact form email API error:', response.status, errorText);
+        throw new Error(`Failed to send contact form: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error('Contact form email sending failed:', error);
+      throw new Error(`Failed to send contact form: ${error.message}`);
+    }
+  }
 }
 
 // Export singleton instance

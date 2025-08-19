@@ -1,7 +1,10 @@
 <script>
+  import { apiClient } from '$lib/api';
+  
   let formData = {
     name: '',
     email: '',
+    contactReason: '',
     subject: '',
     message: ''
   };
@@ -9,18 +12,29 @@
   let isSubmitting = false;
   let submitSuccess = false;
   let submitError = null;
+  let emailDetails = null;
+
+  const contactReasons = [
+    { value: '', label: 'Select a reason...' },
+    { value: 'feedback', label: 'Tell us how well we are doing' },
+    { value: 'support', label: 'Require technical support' },
+    { value: 'billing', label: 'Billing, subscription and ads related' },
+    { value: 'reviews', label: 'Queries about reviews' },
+    { value: 'privacy', label: 'Data protection and privacy concerns' },
+    { value: 'general', label: 'General inquiry' }
+  ];
 
   async function handleSubmit() {
     isSubmitting = true;
     submitError = null;
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await apiClient.sendContactFormEmail(formData);
       submitSuccess = true;
-      formData = { name: '', email: '', subject: '', message: '' };
+      emailDetails = result;
+      formData = { name: '', email: '', contactReason: '', subject: '', message: '' };
     } catch (error) {
-      submitError = 'Failed to send message. Please try again.';
+      submitError = error.message || 'Failed to send message. Please try again.';
     } finally {
       isSubmitting = false;
     }
@@ -49,11 +63,6 @@
           
           <div class="contact-methods">
             <div class="contact-method">
-              <h3>Email</h3>
-              <p>support@logiscore.com</p>
-            </div>
-            
-            <div class="contact-method">
               <h3>Business Hours</h3>
               <p>Monday - Friday: 9:00 AM - 6:00 PM EST</p>
             </div>
@@ -70,8 +79,19 @@
           
           {#if submitSuccess}
             <div class="success-message">
-              <h3>Message Sent!</h3>
+              <h3>Message Sent Successfully!</h3>
               <p>Thank you for contacting us. We'll get back to you soon.</p>
+              
+              {#if emailDetails}
+                <div class="email-details">
+                  <p><strong>Email Status:</strong></p>
+                  <ul>
+                    <li>✓ Message routed to appropriate team</li>
+                    <li>✓ Acknowledgment sent to your email</li>
+                  </ul>
+                  <p class="response-time">We typically respond within 24 hours during business hours.</p>
+                </div>
+              {/if}
             </div>
           {:else}
             <form on:submit|preventDefault={handleSubmit}>
@@ -95,6 +115,20 @@
                   required
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div class="form-group">
+                <label for="contactReason">Why are you contacting us today? *</label>
+                <select 
+                  id="contactReason" 
+                  bind:value={formData.contactReason} 
+                  required
+                  disabled={isSubmitting}
+                >
+                  {#each contactReasons as reason}
+                    <option value={reason.value}>{reason.label}</option>
+                  {/each}
+                </select>
               </div>
 
               <div class="form-group">
@@ -216,7 +250,8 @@
   }
 
   .form-group input,
-  .form-group textarea {
+  .form-group textarea,
+  .form-group select {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ddd;
@@ -226,13 +261,15 @@
   }
 
   .form-group input:focus,
-  .form-group textarea:focus {
+  .form-group textarea:focus,
+  .form-group select:focus {
     outline: none;
     border-color: #667eea;
   }
 
   .form-group input:disabled,
-  .form-group textarea:disabled {
+  .form-group textarea:disabled,
+  .form-group select:disabled {
     background: #f5f5f5;
     cursor: not-allowed;
   }
@@ -276,6 +313,45 @@
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 1rem;
+  }
+
+  .email-details {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+
+  .email-details p {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .email-details ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .email-details li {
+    margin-bottom: 0.25rem;
+    color: #333;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .email-details li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .response-time {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+    font-style: italic;
   }
 
   @media (max-width: 768px) {
