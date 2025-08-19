@@ -5,7 +5,9 @@
 
   const dispatch = createEventDispatcher();
 
-  let email = '';
+  // Admin email is pre-configured
+  const ADMIN_EMAIL = 'admin@logiscore.net';
+  
   let verificationCode = '';
   let isLoading = false;
   let errorMessage = '';
@@ -14,7 +16,6 @@
   let codeSent = false;
 
   function resetForm() {
-    email = '';
     verificationCode = '';
     errorMessage = '';
     successMessage = '';
@@ -23,18 +24,13 @@
   }
 
   async function requestCode() {
-    if (!email) {
-      errorMessage = 'Please enter your admin email address';
-      return;
-    }
-
     isLoading = true;
     errorMessage = '';
 
     try {
-      // Use admin-specific verification code request
-      const response = await apiClient.sendAdminVerificationCode(email);
-      successMessage = `Verification code sent! Check your email. Code expires in ${response.expires_in} minutes.`;
+      // Use admin-specific verification code request with pre-filled email
+      const response = await apiClient.sendAdminVerificationCode(ADMIN_EMAIL);
+      successMessage = `Verification code sent to ${ADMIN_EMAIL}! Check your email. Code expires in ${response.expires_in} minutes.`;
       codeRequested = true;
       codeSent = true;
     } catch (error: any) {
@@ -60,8 +56,8 @@
     errorMessage = '';
 
     try {
-      // Use admin-specific verification
-      const response = await apiClient.verifyAdminCode(email, verificationCode);
+      // Use admin-specific verification with pre-filled email
+      const response = await apiClient.verifyAdminCode(ADMIN_EMAIL, verificationCode);
       
       if (response.user && response.access_token) {
         // Check if user has admin privileges
@@ -113,23 +109,17 @@
 <div class="admin-login-form">
   <div class="form-header">
     <h2>🔐 Admin Authentication</h2>
-    <p>Enter your admin email to receive a verification code</p>
+    <p>Verification code will be sent to {ADMIN_EMAIL}</p>
   </div>
   
   <form on:submit|preventDefault={handleSubmit}>
     {#if !codeSent}
-      <!-- Email Input Step -->
+      <!-- Send Code Step -->
       <div class="form-group">
-        <label for="admin-email">Admin Email</label>
-        <input
-          type="email"
-          id="admin-email"
-          bind:value={email}
-          placeholder="Enter your admin email address"
-          on:keypress={handleKeyPress}
-          required
-          autocomplete="email"
-        />
+        <p class="admin-email-display">
+          <strong>Admin Email:</strong> {ADMIN_EMAIL}
+        </p>
+        <p class="help-text">Click the button below to receive a verification code</p>
       </div>
       
       <button type="submit" class="btn-admin-login" disabled={isLoading}>
@@ -154,7 +144,7 @@
             verificationCode = target.value.replace(/[^0-9]/g, '');
           }}
         />
-        <small class="help-text">Enter the 6-digit code sent to your email</small>
+        <small class="help-text">Enter the 6-digit code sent to {ADMIN_EMAIL}</small>
       </div>
 
       {#if successMessage}
@@ -220,15 +210,14 @@
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #374151;
     font-weight: 600;
-    font-size: 0.9rem;
+    color: #374151;
   }
   
   .form-group input {
-    width: 370px;
-    padding: 0.75rem;
-    border: 2px solid #e5e7eb;
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid #d1d5db;
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.2s ease;
@@ -240,10 +229,21 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
   
+  .admin-email-display {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #374151;
+  }
+  
   .help-text {
-    font-size: 0.8rem;
     color: #6b7280;
+    font-size: 0.875rem;
     margin-top: 0.5rem;
+    text-align: center;
   }
   
   .success-message {

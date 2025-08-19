@@ -1,13 +1,11 @@
 <script lang="ts">
   import { auth, authMethods } from '$lib/auth';
   import { onMount } from 'svelte';
-  import AuthModal from '$lib/components/AuthModal.svelte';
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import ProfileModal from '$lib/components/ProfileModal.svelte';
   import ChangePasswordModal from '$lib/components/ChangePasswordModal.svelte';
   
   // Props
-  export let hideSignUp = false;
   export let hideNavigation = false;
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -18,11 +16,9 @@
   };
   
   let showUserDropdown = false;
-  let showAuthModal = false;
   let showSubscriptionModal = false;
   let showProfileModal = false;
   let showChangePasswordModal = false;
-  let authModalMode: 'signin' | 'signup' = 'signin';
   
   // Subscribe to auth store
   auth.subscribe(state => {
@@ -57,16 +53,6 @@
     }
   }
   
-  function openSignInModal() {
-    authModalMode = 'signin';
-    showAuthModal = true;
-  }
-  
-  function openSignUpModal() {
-    authModalMode = 'signup';
-    showAuthModal = true;
-  }
-  
   function openSubscriptionModal() {
     console.log('Opening subscription modal');
     showSubscriptionModal = true;
@@ -80,10 +66,6 @@
   function openChangePasswordModal() {
     console.log('Opening change password modal');
     showChangePasswordModal = true;
-  }
-  
-  function closeAuthModal() {
-    showAuthModal = false;
   }
   
   function closeSubscriptionModal() {
@@ -206,11 +188,7 @@
             </div>
           </div>
         {:else}
-          <button class="btn-secondary" on:click={openSignInModal}>Sign In</button>
-          <!-- Hide Sign Up button on admin pages for security -->
-          {#if !hideSignUp}
-            <button class="btn-primary" on:click={openSignUpModal}>Sign Up</button>
-          {/if}
+          <!-- Login buttons removed - admin access only via /8x7k9m2p -->
         {/if}
       </div>
     </nav>
@@ -218,14 +196,6 @@
 </header>
 
 <!-- Modals -->
-{#if showAuthModal}
-  <AuthModal 
-    isOpen={showAuthModal}
-    mode={authModalMode} 
-    on:close={closeAuthModal}
-  />
-{/if}
-
 {#if showSubscriptionModal}
   <SubscriptionModal 
     isOpen={showSubscriptionModal}
