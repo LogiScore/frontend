@@ -33,12 +33,22 @@
             <li>Anonymous submissions are allowed, but verified reviews carry full weight for accuracy</li>
             <li>A structured dispute process ensures balance and fairness</li>
           </ul>
+          
+          <div class="important-notice">
+            <p><strong>Important:</strong> All reviews represent the <strong>opinions and experiences of individual shippers</strong>. LogiScore does not verify the accuracy of each opinion and does not endorse any specific freight forwarder.</p>
+          </div>
         </div>
 
         <div class="about-section">
           <h2>Why It Matters</h2>
-          <p>In an industry where service quality can vary widely, LogiScore provides <strong>objective, comparable insights</strong> into freight forwarder performance. Shippers benefit from better decision-making, while forwarders are encouraged to raise their standards.</p>
-          <p>We understand that some forwarders may feel uncomfortable with this level of transparency. However, our hope is that LogiScore will serve as a constructive tool, helping forwarders identify areas for improvement, raise their level of service, and build stronger, long-term trust with shippers.</p>
+          <p>In an industry where service quality can vary widely, LogiScore provides <strong>objective, comparable insights</strong> into freight forwarder performance.</p>
+          
+          <p>For shippers, this means greater confidence when selecting a logistics partner. With increased transparency, shippers may be more inclined to switch to a forwarder with stronger performance, creating a market where service quality truly matters.</p>
+          
+          <p>For forwarders, LogiScore offers more than accountability. It is also an <strong>opportunity to showcase excellence</strong>. High-performing forwarders can use their scores as proof of service quality, strengthening credibility with prospects and giving sales teams a competitive edge in customer negotiations.</p>
+          
+          <p>We understand that some forwarders may feel uncomfortable with this level of transparency. However, our hope is that LogiScore will serve as a <strong>constructive tool</strong>, helping forwarders identify areas for improvement, raise their level of service, and build stronger, long-term trust with shippers.</p>
+          
           <p>Our goal is to <strong>elevate the logistics industry</strong> by making service performance as transparent as rates and transit times.</p>
         </div>
 
@@ -193,6 +203,16 @@
     margin: 0;
     color: #333;
     font-style: italic;
+  }
+
+  .important-notice {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    font-weight: bold;
   }
 
   @media (max-width: 768px) {
