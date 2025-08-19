@@ -98,6 +98,7 @@ const forwarderPlans: Plan[] = [
 			'Browse forwarders and view aggregated company, country and branch level reviews and by category',
 			'Save $76/year compared to monthly billing'
 		],
+		popular: true,
 		billingCycle: 'year',
 		planType: 'annual'
 	},
@@ -118,7 +119,6 @@ const forwarderPlans: Plan[] = [
 			'Analytics',
 			'Access trend of scores over time (past 12-24 months, category-by-category)'
 		],
-		popular: true,
 		billingCycle: 'year',
 		planType: 'annual'
 	}
