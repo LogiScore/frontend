@@ -43,7 +43,7 @@
       <h2>3. User Responsibilities</h2>
       <p>When using LogiScore, you agree to:</p>
       <ul>
-        <li>Submit ratings only if based on <strong>genuine service experiences</strong> within the past 24 months.</li>
+        <li>Submit ratings only if based on <strong>genuine service experiences</strong> within the past 6 months.</li>
         <li>Provide accurate forwarder/branch details.</li>
         <li>Follow our <a href="/guidelines">Review Guidelines</a>.</li>
       </ul>
@@ -53,6 +53,16 @@
         <li>Create multiple accounts to manipulate scores.</li>
         <li>Attempt to remove, suppress, or manipulate ratings outside the <a href="/notice-takedown">Notice & Takedown Policy</a>.</li>
       </ul>
+      
+      <h3>Reviewer Anonymity & Disclosure</h3>
+      <h4>Reviewer Anonymity</h4>
+      <p>LogiScore allows shippers to submit reviews anonymously. Forwarders and other third parties will not see the reviewer's identity. LogiScore verifies that all reviews come from genuine shippers, but the identity of individual reviewers remains strictly confidential.</p>
+      
+      <h4>Disclosure of Identities</h4>
+      <p>LogiScore will never voluntarily disclose a reviewer's identity to a forwarder or third party. Reviewer information may only be disclosed if LogiScore is legally required to do so under a valid court order or applicable law from a court of competent jurisdiction.</p>
+      
+      <h4>Limitation of Liability</h4>
+      <p>By submitting a review, you acknowledge that while LogiScore takes all reasonable steps to preserve anonymity, absolute confidentiality cannot be guaranteed if compelled by law.</p>
     </section>
 
     <section class="tos-section">
@@ -167,6 +177,18 @@
     color: #333;
     margin-bottom: 15px;
     font-size: 1.4rem;
+  }
+
+  .tos-section h3 {
+    color: #444;
+    margin: 25px 0 15px 0;
+    font-size: 1.2rem;
+  }
+
+  .tos-section h4 {
+    color: #555;
+    margin: 20px 0 10px 0;
+    font-size: 1.1rem;
   }
 
   .tos-section ul {
