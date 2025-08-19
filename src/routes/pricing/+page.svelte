@@ -346,12 +346,19 @@
   }
 
   .plans-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    justify-content: center;
-    max-width: 1200px;
-    margin: 0 auto;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 30px !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  .plans-row > * {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
   .annual-plus-row {
@@ -368,13 +375,20 @@
   /* Responsive design for plans */
   @media (max-width: 1024px) {
     .plans-row {
-      grid-template-columns: repeat(2, 1fr);
+      flex-wrap: wrap !important;
+    }
+    .plans-row > * {
+      flex: 1 1 calc(50% - 15px) !important;
+      min-width: 300px !important;
     }
   }
 
   @media (max-width: 768px) {
     .plans-row {
-      grid-template-columns: 1fr;
+      flex-direction: column !important;
+    }
+    .plans-row > * {
+      flex: 1 1 100% !important;
     }
   }
 
