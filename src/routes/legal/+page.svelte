@@ -93,12 +93,7 @@
     </section>
 
     <section class="faq-section">
-      <h2>10. How can shippers or forwarders contact LogiScore about legal issues?</h2>
-      <div class="contact-info">
-        <p><strong>Disputes:</strong> <a href="mailto:disputes@logiscore.net">disputes@logiscore.net</a></p>
-        <p><strong>Appeals:</strong> <a href="mailto:appeals@logiscore.net">appeals@logiscore.net</a></p>
-        <p><strong>Legal inquiries:</strong> <a href="mailto:legal@logiscore.net">legal@logiscore.net</a></p>
-      </div>
+      <h2>10. Use our <strong><a href="/contact">Contact</a></strong> page for general legal-related inquiries.</h2>
     </section>
   </div>
 
