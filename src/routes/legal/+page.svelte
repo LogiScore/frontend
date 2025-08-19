@@ -105,6 +105,7 @@
   <div class="footer-actions">
     <a href="/guidelines" class="btn btn-secondary">Community Guidelines</a>
     <a href="/privacy" class="btn btn-secondary">Privacy Policy</a>
+    <a href="/notice-takedown" class="btn btn-secondary">Notice & Takedown</a>
     <a href="/contact" class="btn btn-primary">Contact Support</a>
   </div>
 </div>
