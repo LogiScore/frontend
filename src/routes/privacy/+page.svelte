@@ -99,7 +99,7 @@
         <li>Withdraw consent to data use (subject to impact on your ability to use the platform).</li>
         <li>File a complaint with a data protection authority.</li>
       </ul>
-      <p>Requests can be sent to <strong><a href="mailto:privacy@logiscore.net">privacy@logiscore.net</a></strong>.</p>
+      <p>Requests can be sent via our <strong><a href="/contact">contact</a></strong> page.</p>
     </section>
 
     <section class="policy-section">
@@ -128,14 +128,7 @@
 
     <section class="policy-section">
       <h2>12. Contact Us</h2>
-      <div class="contact-info">
-        <p><strong>For general privacy-related inquiries:</strong></p>
-        <p>📧 <a href="mailto:privacy@logiscore.net">privacy@logiscore.net</a></p>
-        <p>📧 <a href="mailto:legal@logiscore.net">legal@logiscore.net</a></p>
-        
-        <p><strong>For Data Protection Officer inquiries:</strong></p>
-        <p>📧 <a href="mailto:dpo@logiscore.net">dpo@logiscore.net</a></p>
-      </div>
+      <p>Use our <strong><a href="/contact">Contact</a></strong> page for general privacy-related inquiries.</p>
     </section>
   </div>
 
