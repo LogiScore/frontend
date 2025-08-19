@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { apiClient } from '$lib/api';
   import { auth } from '$lib/auth';
+  import { initializeStripe, createPaymentMethod, getPaymentErrorMessage, stripeElementsOptions } from '$lib/stripe';
+  import { loadStripe } from '@stripe/stripe-js';
 
   export let isOpen: boolean = false;
   export let selectedPlan: any = null;
@@ -11,10 +13,31 @@
   let isLoading = false;
   let error = '';
   let success = '';
-  let cardNumber = '';
-  let expiryDate = '';
-  let cvv = '';
-  let cardholderName = '';
+  let cardElement: any = null;
+  let elements: any = null;
+  let stripe: any = null;
+  let cardContainer: HTMLElement;
+
+  onMount(async () => {
+    // Initialize Stripe
+    try {
+      stripe = await initializeStripe();
+      elements = stripe.elements(stripeElementsOptions);
+      
+      // Create card element
+      cardElement = elements.create('card', {
+        style: stripeElementsOptions.style
+      });
+      
+      // Mount card element
+      if (cardContainer) {
+        cardElement.mount(cardContainer);
+      }
+    } catch (err) {
+      console.error('Failed to initialize Stripe:', err);
+      error = 'Failed to initialize payment system. Please refresh and try again.';
+    }
+  });
 
   function closeModal() {
     dispatch('close');
@@ -26,8 +49,8 @@
       return;
     }
 
-    if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
-      error = 'Please fill in all payment fields';
+    if (!cardElement) {
+      error = 'Payment form not loaded. Please refresh and try again.';
       return;
     }
 
@@ -36,30 +59,44 @@
     success = '';
 
     try {
-      // In a real implementation, this would create a Stripe payment intent
-      // For demo mode, we'll simulate the payment process
-      const result = await apiClient.processPayment({
-        plan_id: selectedPlan.id,
-        plan_name: selectedPlan.name,
-        amount: selectedPlan.price,
-        currency: 'USD',
-        payment_method: 'card',
-        card_number: cardNumber.replace(/\s/g, ''),
-        expiry_date: expiryDate,
-        cvv: cvv,
-        cardholder_name: cardholderName
-      }) as { message: string };
-
-      success = result.message || 'Payment processed successfully!';
-      
-      // Update user subscription
+      // Get current user
       const currentAuth = $auth;
+      if (!currentAuth.user || !currentAuth.token) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create payment method
+      const { paymentMethod, error: paymentError } = await createPaymentMethod(
+        cardElement,
+        {
+          name: currentAuth.user.full_name || currentAuth.user.username,
+          email: currentAuth.user.email
+        }
+      );
+
+      if (paymentError) {
+        throw new Error(getPaymentErrorMessage(paymentError));
+      }
+
+      // Create subscription with payment method
+      const result = await apiClient.createSubscription(
+        selectedPlan.id,
+        selectedPlan.name,
+        currentAuth.user.user_type,
+        currentAuth.token,
+        paymentMethod.id,
+        0 // No trial days for paid plans
+      );
+
+      success = result.message || 'Subscription created successfully!';
+      
+      // Update user subscription in auth store
       if (currentAuth.user) {
         const updatedUser = {
           ...currentAuth.user,
-          subscription_tier: selectedPlan.name.toLowerCase().replace(' ', '_')
+          subscription_tier: result.tier || selectedPlan.name.toLowerCase().replace(' ', '_')
         };
-        // Update the store
+        
         auth.update(state => ({
           ...state,
           user: updatedUser
@@ -72,36 +109,17 @@
       }, 2000);
     } catch (err: any) {
       error = err.message || 'Payment failed. Please try again.';
+      console.error('Payment error:', err);
     } finally {
       isLoading = false;
     }
   }
 
-  function formatCardNumber(value: string) {
-    // Remove all non-digits
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    // Add spaces every 4 digits
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
+  // Cleanup on component destroy
+  function cleanup() {
+    if (cardElement) {
+      cardElement.destroy();
     }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  }
-
-  function formatExpiryDate(value: string) {
-    // Remove all non-digits
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    // Add slash after 2 digits
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
   }
 </script>
 
@@ -119,66 +137,21 @@
             <h3>Order Summary</h3>
             <div class="plan-details">
               <div class="plan-name">{selectedPlan.name}</div>
-              <div class="plan-price">${selectedPlan.price}/month</div>
+              <div class="plan-price">${selectedPlan.price}/{selectedPlan.billingCycle}</div>
               <div class="plan-description">{selectedPlan.description}</div>
             </div>
           </div>
 
           <form on:submit|preventDefault={handlePayment} class="payment-form">
             <div class="form-group">
-              <label for="cardholder-name">Cardholder Name</label>
-              <input 
-                type="text" 
-                id="cardholder-name"
-                bind:value={cardholderName}
-                required
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="card-number">Card Number</label>
-              <input 
-                type="text" 
-                id="card-number"
-                bind:value={cardNumber}
-                on:input={(e) => cardNumber = formatCardNumber((e.target as HTMLInputElement).value)}
-                required
-                placeholder="1234 5678 9012 3456"
-                maxlength="19"
-              />
-            </div>
-
-            <div class="card-details">
-              <div class="form-group">
-                <label for="expiry-date">Expiry Date</label>
-                <input 
-                  type="text" 
-                  id="expiry-date"
-                  bind:value={expiryDate}
-                  on:input={(e) => expiryDate = formatExpiryDate((e.target as HTMLInputElement).value)}
-                  required
-                  placeholder="MM/YY"
-                  maxlength="5"
-                />
+              <label for="card-element">Card Information</label>
+              <div id="card-element" bind:this={cardContainer} class="stripe-card-element"></div>
+              <div class="card-help">
+                <p>🔒 Your payment information is secure and encrypted by Stripe</p>
+                <p class="test-cards">
+                  <strong>Test Cards:</strong> 4242 4242 4242 4242 (success), 4000 0000 0000 0002 (decline)
+                </p>
               </div>
-
-              <div class="form-group">
-                <label for="cvv">CVV</label>
-                <input 
-                  type="text" 
-                  id="cvv"
-                  bind:value={cvv}
-                  required
-                  placeholder="123"
-                  maxlength="4"
-                  pattern="[0-9]{3,4}"
-                />
-              </div>
-            </div>
-
-            <div class="security-note">
-              <p>🔒 Your payment information is secure and encrypted</p>
             </div>
           </form>
         {:else}
@@ -202,7 +175,7 @@
             Cancel
           </button>
           <button class="btn-primary" on:click={handlePayment} disabled={isLoading}>
-            {isLoading ? 'Processing...' : `Pay $${selectedPlan.price}`}
+            {isLoading ? 'Processing...' : `Subscribe for $${selectedPlan.price}`}
           </button>
         </div>
       {/if}
@@ -217,7 +190,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -235,18 +208,17 @@
   }
 
   .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
   }
 
   .modal-header h2 {
     margin: 0;
+    color: #333;
     font-size: 1.5rem;
-    font-weight: 600;
-    color: #111827;
   }
 
   .close-btn {
@@ -254,181 +226,183 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #6b7280;
+    color: #666;
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
   }
 
   .close-btn:hover {
-    color: #374151;
+    background-color: #f5f5f5;
   }
 
   .modal-body {
-    padding: 24px;
+    padding: 20px;
   }
 
   .plan-summary {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: #f9fafb;
+    background: #f8f9fa;
+    padding: 15px;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
   }
 
   .plan-summary h3 {
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
+    color: #333;
     font-size: 1.1rem;
-    font-weight: 600;
-    color: #111827;
   }
 
   .plan-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
   }
 
   .plan-name {
     font-weight: 600;
-    color: #111827;
+    color: #2c3e50;
   }
 
   .plan-price {
     font-size: 1.2rem;
-    font-weight: 700;
-    color: #059669;
+    color: #27ae60;
+    font-weight: 600;
   }
 
   .plan-description {
-    color: #6b7280;
+    color: #666;
     font-size: 0.9rem;
   }
 
   .payment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    margin-bottom: 20px;
   }
 
   .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    margin-bottom: 20px;
   }
 
   .form-group label {
+    display: block;
+    margin-bottom: 8px;
     font-weight: 500;
-    color: #374151;
-    font-size: 0.9rem;
+    color: #333;
   }
 
-  .form-group input {
-    padding: 12px;
-    border: 1px solid #d1d5db;
+  .stripe-card-element {
+    border: 1px solid #ddd;
     border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
-  .card-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .security-note {
-    margin-top: 16px;
     padding: 12px;
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: 6px;
-    text-align: center;
+    background: white;
+    min-height: 40px;
   }
 
-  .security-note p {
-    margin: 0;
-    color: #0369a1;
-    font-size: 0.9rem;
+  .card-help {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .card-help p {
+    margin: 5px 0;
+  }
+
+  .test-cards {
+    background: #fff3cd;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ffeaa7;
+    margin-top: 10px;
   }
 
   .error-message {
-    margin-top: 16px;
+    background: #f8d7da;
+    color: #721c24;
     padding: 12px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
     border-radius: 6px;
-    color: #dc2626;
+    margin: 15px 0;
+    border: 1px solid #f5c6cb;
   }
 
   .success-message {
-    margin-top: 16px;
+    background: #d4edda;
+    color: #155724;
     padding: 12px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
     border-radius: 6px;
-    color: #059669;
+    margin: 15px 0;
+    border: 1px solid #c3e6cb;
+  }
+
+  .modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #007bff;
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+  }
+
+  .btn-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #545b62;
+  }
+
+  .btn-secondary:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
   }
 
   .no-plan {
     text-align: center;
     padding: 40px 20px;
-    color: #6b7280;
+    color: #666;
   }
 
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .btn-primary, .btn-secondary {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    font-size: 0.9rem;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #e5e7eb;
-  }
-
-  .btn-secondary:disabled {
-    background: #f3f4f6;
-    color: #9ca3af;
-    cursor: not-allowed;
+  @media (max-width: 600px) {
+    .modal-content {
+      width: 95%;
+      margin: 10px;
+    }
+    
+    .modal-footer {
+      flex-direction: column;
+    }
+    
+    .btn-primary, .btn-secondary {
+      width: 100%;
+    }
   }
 </style> 

@@ -1416,14 +1416,16 @@ class ApiClient {
   }
 
   // ===== METHOD: createSubscription =====
-  // Subscriptions
+  // Subscriptions - Updated for new backend
   async createSubscription(
     planId: string,
     planName: string,
     userType: string,
-    token: string
-  ): Promise<{ subscription_id: string; message: string }> {
-    return this.request<{ subscription_id: string; message: string }>('/api/subscriptions/create', {
+    token: string,
+    paymentMethodId?: string,
+    trialDays: number = 0
+  ): Promise<{ subscription_id: string; message: string; tier: string; status: string }> {
+    return this.request<{ subscription_id: string; message: string; tier: string; status: string }>('/api/subscriptions/create', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -1431,12 +1433,14 @@ class ApiClient {
       body: JSON.stringify({
         plan_id: planId,
         plan_name: planName,
-        user_type: userType
-              }),
-      });
-    }
+        user_type: userType,
+        payment_method_id: paymentMethodId,
+        trial_days: trialDays
+      }),
+    });
+  }
 
-    // ===== METHOD: getSubscriptionPlans =====
+  // ===== METHOD: getSubscriptionPlans =====
   async getSubscriptionPlans(token: string): Promise<{ plans: any[] }> {
     return this.request<{ plans: any[] }>('/api/subscriptions/plans', {
       headers: {
@@ -1447,17 +1451,78 @@ class ApiClient {
 
   // ===== METHOD: getCurrentSubscription =====
   async getCurrentSubscription(token: string): Promise<{
-    subscription_tier: string;
-    user_type: string;
-    created_at: string;
-    updated_at: string;
+    id: string;
+    user_id: string;
+    tier: string;
+    status: 'active' | 'past_due' | 'canceled' | 'expired' | 'trial';
+    start_date: string;
+    end_date: string;
+    auto_renew: boolean;
+    stripe_subscription_id?: string;
+    days_remaining?: number;
+    last_billing_date?: string;
+    next_billing_date?: string;
   }> {
     return this.request<{
-      subscription_tier: string;
-      user_type: string;
-      created_at: string;
-      updated_at: string;
+      id: string;
+      user_id: string;
+      tier: string;
+      status: 'active' | 'past_due' | 'canceled' | 'expired' | 'trial';
+      start_date: string;
+      end_date: string;
+      auto_renew: boolean;
+      stripe_subscription_id?: string;
+      days_remaining?: number;
+      last_billing_date?: string;
+      next_billing_date?: string;
     }>('/api/subscriptions/current', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // ===== NEW METHOD: cancelSubscription =====
+  async cancelSubscription(token: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/api/subscriptions/cancel', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // ===== NEW METHOD: reactivateSubscription =====
+  async reactivateSubscription(token: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/api/subscriptions/reactivate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // ===== NEW METHOD: upgradeSubscription =====
+  async upgradeSubscription(
+    token: string, 
+    newPlanId: string, 
+    newPlanName: string
+  ): Promise<{ message: string; subscription_id: string }> {
+    return this.request<{ message: string; subscription_id: string }>('/api/subscriptions/upgrade', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        plan_id: newPlanId,
+        plan_name: newPlanName
+      }),
+    });
+  }
+
+  // ===== NEW METHOD: getBillingPortal =====
+  async getBillingPortal(token: string): Promise<{ url: string }> {
+    return this.request<{ url: string }>('/api/subscriptions/billing-portal', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
