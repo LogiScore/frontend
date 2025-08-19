@@ -229,6 +229,7 @@
 {#if showSubscriptionModal}
   <SubscriptionModal 
     isOpen={showSubscriptionModal}
+    userType={authState.user?.user_type || 'shipper'}
     on:close={closeSubscriptionModal}
   />
 {/if}

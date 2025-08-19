@@ -1,7 +1,7 @@
 <script lang="ts">
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import { auth } from '$lib/auth';
-  import { getPlansForUserType } from '$lib/subscription-plans';
+  import { getPlansForUserType, getAllPlans } from '$lib/subscription-plans';
 
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -18,6 +18,9 @@
   // Get plans based on user type
   $: userPlans = authState.user ? getPlansForUserType(authState.user.user_type) : [];
   $: userType = authState.user?.user_type || 'shipper';
+
+  // Get all plans for non-logged-in users
+  $: allPlans = getAllPlans();
 
   // Subscription modal state
   let showSubscriptionModal = false;
@@ -121,90 +124,41 @@
         <div class="plan-type-section">
           <h2 class="section-title">Shipper Plans</h2>
           <div class="plans-row">
-            <!-- Free Plan -->
-            <div class="plan-card">
-              <div class="plan-header">
-                <h3>Free</h3>
-                <div class="price">
-                  <span class="amount">$0</span>
+            {#each allPlans.userPlans as plan}
+              <div class="plan-card" class:featured={plan.popular}>
+                {#if plan.popular}
+                  <div class="plan-badge">Most Popular</div>
+                {/if}
+                <div class="plan-header">
+                  <h3>{plan.name}</h3>
+                  <div class="price">
+                    {#if plan.price === 0}
+                      <span class="amount">Free</span>
+                    {:else}
+                      <span class="amount">${plan.price}</span>
+                      <span class="period">/{plan.billingCycle}</span>
+                    {/if}
+                  </div>
+                  <p class="plan-description">{plan.description}</p>
                 </div>
-                <p class="plan-description">Basic access to freight forwarder reviews</p>
-              </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Browse forwarders and aggregated company level reviews</li>
-                  <li>Submit reviews (registered users only)</li>
-                  <li>Anonymous review submissions</li>
-                  <li>Visual star ratings</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
-              </div>
-            </div>
-            
-            <!-- Subscription Monthly Plan -->
-            <div class="plan-card">
-              <div class="plan-header">
-                <h3>Subscription Monthly</h3>
-                <div class="price">
-                  <span class="amount">$38</span>
-                  <span class="period">/month</span>
+                
+                <div class="plan-features">
+                  <ul>
+                    {#each plan.features as feature}
+                      <li>✓ {feature}</li>
+                    {/each}
+                  </ul>
                 </div>
-                <p class="plan-description">Full access to detailed reviews and analytics</p>
-              </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Single user subscription</li>
-                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>Search reviews by company/country/branch</li>
-                  <li>Compare multiple forwarders side-by-side by score, category, country, or branch</li>
-                  <li>Full numerical score display (e.g., 4.2/5.0) with score circle</li>
-                  <li>Individual category scores</li>
-                  <li>Location-specific scores</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Monthly Trial</button>
-              </div>
-            </div>
-            
-            <!-- Subscription Annual Plan -->
-            <div class="plan-card featured">
-              <div class="plan-badge">Most Popular</div>
-              <div class="plan-header">
-                <h3>Subscription Annual</h3>
-                <div class="price">
-                  <span class="amount">$418</span>
-                  <span class="period">/year</span>
+                
+                <div class="plan-actions">
+                  {#if plan.price === 0}
+                    <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+                  {:else}
+                    <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
+                  {/if}
                 </div>
-                <p class="plan-description">Full access to detailed reviews and analytics (annual billing)</p>
               </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Single user subscription</li>
-                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>Search reviews by company/country/branch</li>
-                  <li>Receive email notifications when new reviews are posted about specific forwarders</li>
-                  <li>Get notified if a forwarder's score drops by X% or below a threshold</li>
-                  <li>Access trends of forwarder scores over time</li>
-                  <li>Compare multiple forwarders side-by-side by score, category, country, or branch</li>
-                  <li>Full numerical score</li>
-                  <li>Individual category scores</li>
-                  <li>Location-specific scores</li>
-                  <li>Save $38/year compared to monthly billing</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Annual Trial</button>
-              </div>
-            </div>
+            {/each}
           </div>
         </div>
 
@@ -212,105 +166,41 @@
         <div class="plan-type-section">
           <h2 class="section-title">Freight Forwarder Plans</h2>
           <div class="plans-row">
-            <!-- Free Plan -->
-            <div class="plan-card">
-              <div class="plan-header">
-                <h3>Free</h3>
-                <div class="price">
-                  <span class="amount">Free</span>
+            {#each allPlans.forwarderPlans as plan}
+              <div class="plan-card" class:featured={plan.popular}>
+                {#if plan.popular}
+                  <div class="plan-badge">Most Popular</div>
+                {/if}
+                <div class="plan-header">
+                  <h3>{plan.name}</h3>
+                  <div class="price">
+                    {#if plan.price === 0}
+                      <span class="amount">Free</span>
+                    {:else}
+                      <span class="amount">${plan.price}</span>
+                      <span class="period">/{plan.billingCycle}</span>
+                    {/if}
+                  </div>
+                  <p class="plan-description">{plan.description}</p>
                 </div>
-                <p class="plan-description">Basic listing for freight forwarders</p>
-              </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Browse forwarders and aggregated company level reviews</li>
-                  <li>Visual star ratings</li>
-                  <li>Same visual experience as shipper free tier</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
-              </div>
-            </div>
-            
-            <!-- Subscription Monthly Plan -->
-            <div class="plan-card">
-              <div class="plan-header">
-                <h3>Subscription Monthly</h3>
-                <div class="price">
-                  <span class="amount">$76</span>
-                  <span class="period">/month</span>
+                
+                <div class="plan-features">
+                  <ul>
+                    {#each plan.features as feature}
+                      <li>✓ {feature}</li>
+                    {/each}
+                  </ul>
                 </div>
-                <p class="plan-description">Enhanced visibility and review management</p>
-              </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Monthly Trial</button>
-              </div>
-            </div>
-            
-            <!-- Subscription Annual Plan -->
-            <div class="plan-card">
-              <div class="plan-header">
-                <h3>Subscription Annual</h3>
-                <div class="price">
-                  <span class="amount">$836</span>
-                  <span class="period">/year</span>
+                
+                <div class="plan-actions">
+                  {#if plan.price === 0}
+                    <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+                  {:else}
+                    <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
+                  {/if}
                 </div>
-                <p class="plan-description">Enhanced visibility and review management (annual billing)</p>
               </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Browse forwarders and view aggregated company/country/branch level reviews and by category</li>
-                  <li>Save $76/year compared to monthly billing</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Annual Trial</button>
-              </div>
-            </div>
-            
-            <!-- Subscription Plus Plan -->
-            <div class="plan-card featured">
-              <div class="plan-badge">Most Popular</div>
-              <div class="plan-header">
-                <h3>Subscription Plus</h3>
-                <div class="price">
-                  <span class="amount">$3,450</span>
-                  <span class="period">/year</span>
-                </div>
-                <p class="plan-description">Maximum visibility and control for businesses</p>
-              </div>
-              
-              <div class="plan-features">
-                <ul>
-                  <li>Up to three concurrent users</li>
-                  <li>Manage forwarder profile description</li>
-                  <li>Freight Forwarder Branded ads on their page</li>
-                  <li>View aggregated scores by region and country</li>
-                  <li>Comment on reviews</li>
-                  <li>Receive email notification when a new review is posted</li>
-                  <li>Shipper able to contact Freight Forwarder via LogiScore</li>
-                  <li>Best in category per country badge</li>
-                  <li>Analytics</li>
-                  <li>Access trend of scores over time (past 12-24 months, category-by-category)</li>
-                </ul>
-              </div>
-              
-              <div class="plan-actions">
-                <button class="btn-primary" on:click={openSubscriptionModal}>Start Subscription Plus Trial</button>
-              </div>
-            </div>
+            {/each}
           </div>
         </div>
       </div>
@@ -746,5 +636,6 @@
 <!-- Subscription Modal -->
 <SubscriptionModal 
   bind:isOpen={showSubscriptionModal}
+  userType={userType}
   on:close={closeSubscriptionModal}
 /> 

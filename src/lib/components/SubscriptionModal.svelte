@@ -1,69 +1,46 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { getPlansForUserType, type Plan } from '$lib/subscription-plans';
+  import PaymentModal from './PaymentModal.svelte';
 
   export let isOpen = false;
+  export let userType: 'shipper' | 'forwarder' = 'shipper';
 
   const dispatch = createEventDispatcher();
 
-  let selectedPlan = 'basic';
+  let selectedPlan: Plan | null = null;
   let isLoading = false;
+  let showPaymentModal = false;
 
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      price: 29,
-      features: [
-        'Submit unlimited reviews',
-        'Advanced search options',
-        'Review management',
-        'Email support'
-      ]
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: 79,
-      features: [
-        'All Basic features',
-        'Analytics dashboard',
-        'Priority support',
-        'API access',
-        'Custom reports'
-      ]
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: 199,
-      features: [
-        'All Pro features',
-        'Unlimited API access',
-        'White-label options',
-        'Dedicated support',
-        'Custom integrations'
-      ]
-    }
-  ];
+  // Get the correct plans from subscription-plans.ts
+  $: plans = getPlansForUserType(userType);
 
   function closeModal() {
     dispatch('close');
   }
 
   async function handleSubscribe() {
-    isLoading = true;
+    if (!selectedPlan) return;
     
-    try {
-      // Simulate subscription API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Success - close modal
+    // For free plans, just close the modal
+    if (selectedPlan.price === 0) {
       closeModal();
-    } catch (error) {
-      console.error('Subscription failed:', error);
-    } finally {
-      isLoading = false;
+      return;
     }
+    
+    // For paid plans, show the payment modal
+    showPaymentModal = true;
+  }
+
+  function selectPlan(plan: Plan) {
+    selectedPlan = plan;
+  }
+
+  function handlePaymentClose() {
+    showPaymentModal = false;
+    selectedPlan = null;
+    // Close the subscription modal after payment
+    closeModal();
   }
 </script>
 
@@ -78,18 +55,31 @@
       <div class="modal-body">
         <div class="plans-grid">
           {#each plans as plan}
-            <div class="plan-card {selectedPlan === plan.id ? 'selected' : ''}">
+            <div class="plan-card {selectedPlan?.id === plan.id ? 'selected' : ''} {plan.popular ? 'popular' : ''}">
+              {#if plan.popular}
+                <div class="popular-badge">Most Popular</div>
+              {/if}
+              
               <div class="plan-header">
                 <input
                   type="radio"
                   name="plan"
-                  value={plan.id}
-                  bind:group={selectedPlan}
-                  id={plan.id}
+                  value={plan.id.toString()}
+                  checked={selectedPlan?.id === plan.id}
+                  on:change={() => selectPlan(plan)}
+                  id={plan.id.toString()}
                 />
-                <label for={plan.id} class="plan-name">{plan.name}</label>
-                <div class="plan-price">${plan.price}/month</div>
+                <label for={plan.id.toString()} class="plan-name">{plan.name}</label>
+                <div class="plan-price">
+                  {#if plan.price === 0}
+                    Free
+                  {:else}
+                    ${plan.price}/{plan.billingCycle}
+                  {/if}
+                </div>
               </div>
+              
+              <p class="plan-description">{plan.description}</p>
               
               <ul class="plan-features">
                 {#each plan.features as feature}
@@ -104,13 +94,21 @@
           <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
             Cancel
           </button>
-          <button type="button" class="btn-primary" on:click={handleSubscribe} disabled={isLoading}>
-            {isLoading ? 'Processing...' : 'Subscribe Now'}
+          <button type="button" class="btn-primary" on:click={handleSubscribe} disabled={isLoading || !selectedPlan}>
+            {isLoading ? 'Processing...' : selectedPlan ? (selectedPlan.price === 0 ? 'Get Started Free' : `Subscribe to ${selectedPlan.name}`) : 'Select a Plan'}
           </button>
         </div>
       </div>
     </div>
   </div>
+{/if}
+
+{#if showPaymentModal && selectedPlan}
+  <PaymentModal 
+    isOpen={showPaymentModal} 
+    selectedPlan={selectedPlan} 
+    on:close={handlePaymentClose} 
+  />
 {/if}
 
 <style>
@@ -187,6 +185,7 @@
     padding: 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative; /* Added for popular badge positioning */
   }
 
   .plan-card:hover {
@@ -196,6 +195,24 @@
   .plan-card.selected {
     border-color: #007bff;
     background: #f8f9ff;
+  }
+
+  .plan-card.popular {
+    border-color: #28a745; /* Green border for popular */
+    background: #e8f5e9; /* Light green background for popular */
+  }
+
+  .popular-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #28a745;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0 8px 0 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 1;
   }
 
   .plan-header {
@@ -220,6 +237,12 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: #007bff;
+  }
+
+  .plan-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
   }
 
   .plan-features {
