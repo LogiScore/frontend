@@ -1,5 +1,11 @@
 // Stripe integration service for LogiScore
-import { loadStripe, Stripe, StripeElements, StripeElement } from '@stripe/stripe-js';
+import * as StripeJS from '@stripe/stripe-js';
+
+// Extract the types and functions we need
+const { loadStripe } = StripeJS;
+type Stripe = StripeJS.Stripe;
+type StripeElements = StripeJS.StripeElements;
+type StripeElement = StripeJS.StripeElement;
 
 // Stripe configuration
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51Rxlqv2OLXWq2oiietu8CyKM';
