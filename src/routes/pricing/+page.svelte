@@ -162,11 +162,11 @@
               </div>
             </div>
 
-        <!-- Freight Forwarder Plans -->
+        <!-- Freight Forwarder Basic Plans -->
         <div class="plan-type-section">
           <h2 class="section-title">Freight Forwarder Plans</h2>
           <div class="plans-row">
-            {#each allPlans.forwarderPlans as plan}
+            {#each allPlans.forwarderPlans.filter(plan => plan.name !== 'Subscription Annual Plus') as plan}
               <div class="plan-card" class:featured={plan.popular}>
                 {#if plan.popular}
                   <div class="plan-badge">Most Popular</div>
@@ -180,6 +180,36 @@
                       <span class="amount">${plan.price}</span>
                       <span class="period">/{plan.billingCycle}</span>
                     {/if}
+                  </div>
+                  <p class="plan-description">{plan.description}</p>
+                </div>
+                
+                <div class="plan-features">
+                  <ul>
+                    {#each plan.features as feature}
+                      <li>{feature}</li>
+                    {/each}
+                  </ul>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Freight Forwarder Premium Plan -->
+        <div class="plan-type-section premium-section">
+          <h2 class="section-title">Premium Plan</h2>
+          <div class="plans-row">
+            {#each allPlans.forwarderPlans.filter(plan => plan.name === 'Subscription Annual Plus') as plan}
+              <div class="plan-card premium-card" class:featured={plan.popular}>
+                {#if plan.popular}
+                  <div class="plan-badge">Most Popular</div>
+                {/if}
+                <div class="plan-header">
+                  <h3>{plan.name}</h3>
+                  <div class="price">
+                    <span class="amount">${plan.price}</span>
+                    <span class="period">/{plan.billingCycle}</span>
                   </div>
                   <p class="plan-description">{plan.description}</p>
                 </div>
@@ -372,6 +402,17 @@
   .plan-card.featured {
     border-color: #667eea;
     transform: scale(1.05);
+  }
+
+  .premium-section {
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 2px solid #e0e0e0;
+  }
+
+  .premium-card {
+    border: 2px solid #667eea;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
   }
 
   .plan-badge {
