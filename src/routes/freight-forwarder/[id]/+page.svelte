@@ -17,6 +17,9 @@
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic';
   $: isLoggedIn = !!user;
   
+  // Debug logging
+  $: console.log('Auth state:', { user: !!user, subscription: user?.subscription_tier, isSubscribed });
+  
   onMount(async () => {
     if (!freightForwarderId) {
       error = 'Invalid freight forwarder ID';
@@ -82,6 +85,11 @@
   }
   
   function switchTab(tab: 'overview' | 'locations' | 'countries') {
+    // Only allow tab switching for subscribed users
+    if (!isSubscribed || !user || !user.subscription_tier || user.subscription_tier === 'Basic') {
+      return;
+    }
+    
     activeTab = tab;
     
     // Load scores if switching to a tab that needs them and they haven't been loaded yet
@@ -182,7 +190,6 @@
                 <div class="rating-note">Rating being calculated</div>
               </div>
             </div>
-
           {:else}
             <!-- No reviews or rating available -->
             <div class="aggregate-score">
@@ -238,7 +245,7 @@
       </section>
 
       <!-- Tabbed Navigation for Detailed Scores -->
-      {#if isSubscribed}
+      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic'}
         <section class="scores-tabs">
           <div class="tab-navigation">
             <button 
