@@ -32,14 +32,11 @@
     errorMessage = '';
 
     try {
-      const result = await authMethods.requestCode(email);
-      if (result.success) {
-        successMessage = `Verification code sent! Check your email. Code expires in ${result.expires_in} minutes.`;
-        codeRequested = true;
-        codeSent = true;
-      } else {
-        errorMessage = result.error || 'Failed to send verification code';
-      }
+      // Use admin-specific verification code request
+      const response = await apiClient.sendAdminVerificationCode(email);
+      successMessage = `Verification code sent! Check your email. Code expires in ${response.expires_in} minutes.`;
+      codeRequested = true;
+      codeSent = true;
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
     } finally {
@@ -62,30 +59,35 @@
     errorMessage = '';
 
     try {
-      const result = await authMethods.signinWithCode(email, verificationCode);
-      if (result.success) {
+      // Use admin-specific verification
+      const response = await apiClient.verifyAdminCode(email, verificationCode);
+      
+      if (response.user && response.access_token) {
         // Check if user has admin privileges
-        try {
-          // Get current user from auth store
-          let currentUser: any = null;
-          auth.subscribe(state => {
-            currentUser = state.user;
-          })();
+        if (response.user.user_type === 'admin') {
+          console.log('Admin login successful');
           
-          if (currentUser && currentUser.user_type === 'admin') {
-            console.log('Admin login successful');
-            dispatch('loginSuccess');
-          } else {
-            errorMessage = 'Access denied. This page is restricted to administrators only.';
-            // Log out the non-admin user
-            authMethods.logout();
+          // Manually update the auth store with admin user data
+          auth.update(state => ({
+            ...state,
+            user: response.user,
+            token: response.access_token,
+            error: null,
+            isLoading: false
+          }));
+          
+          // Save to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('logiscore_token', response.access_token);
+            localStorage.setItem('logiscore_user', JSON.stringify(response.user));
           }
-        } catch (err) {
-          errorMessage = 'Failed to verify admin privileges. Please contact support.';
-          authMethods.logout();
+          
+          dispatch('loginSuccess');
+        } else {
+          errorMessage = 'Access denied. This page is restricted to administrators only.';
         }
       } else {
-        errorMessage = result.error || 'Invalid verification code';
+        errorMessage = 'Invalid verification code or response';
       }
     } catch (error: any) {
       errorMessage = error.message || 'Verification failed';
