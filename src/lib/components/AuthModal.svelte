@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { auth, authMethods } from '../auth';
   import { apiClient } from '../api';
+  import { validateBusinessEmail } from '../emailValidation';
 
   export let isOpen = false;
   export let mode = 'signin'; // 'signin' or 'signup'
@@ -38,6 +39,13 @@
   async function requestCode() {
     if (!email) {
       errorMessage = 'Please enter your email address';
+      return;
+    }
+
+    // Validate email against free email service restrictions
+    const emailValidation = validateBusinessEmail(email);
+    if (!emailValidation.isValid) {
+      errorMessage = emailValidation.reason || 'Invalid email address';
       return;
     }
 
@@ -174,6 +182,10 @@
             disabled={isLoading || codeSent}
             placeholder="Enter your email address"
           />
+          <small class="help-text email-restriction">
+            <strong>Note:</strong> Only corporate or business email addresses are allowed. 
+            Free email services (Gmail, Yahoo, Hotmail, etc.) are not permitted.
+          </small>
         </div>
 
         {#if !codeSent}
@@ -440,6 +452,18 @@
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #eee;
+  }
+
+  .email-restriction {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    display: block;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 </style>
 

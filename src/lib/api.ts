@@ -1105,6 +1105,15 @@ class ApiClient {
   // Step 1: Send verification code to user's email
   async sendVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
       const response = await this.request<{ message: string; expires_in?: number }>('/api/users/request-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
@@ -1150,6 +1159,15 @@ class ApiClient {
   // Send verification code to admin's email
   async sendAdminVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
       const response = await this.request<{ message: string; expires_in?: number }>('/api/users/admin/send-verification-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
@@ -1194,6 +1212,15 @@ class ApiClient {
   // ===== METHOD: completeSignup =====
   async completeSignup(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
       return await this.request<{ user: User; access_token: string; token_type: string }>('/api/users/complete-signup', {
         method: 'POST',
         body: JSON.stringify({ email, code, name, company, user_type: userType }),
@@ -1783,6 +1810,15 @@ class ApiClient {
     message: string;
   }): Promise<{ message: string; email_sent: boolean; acknowledgment_sent: boolean }> {
     try {
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(contactData.email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
       const response = await fetch(`${API_BASE_URL}/api/email/contact-form`, {
         method: 'POST',
         headers: {
