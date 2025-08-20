@@ -271,6 +271,28 @@
       isLoading = true;
       console.log('Loading companies with token:', authState.token.substring(0, 20) + '...');
       companies = await apiClient.getAdminCompanies(authState.token, companySearch) as any[];
+      
+      // Debug: Log the companies data to see what fields are available
+      console.log('Companies loaded:', companies);
+      if (companies.length > 0) {
+        console.log('First company sample:', companies[0]);
+        console.log('Available fields:', Object.keys(companies[0]));
+        
+        // Check for specific fields we're looking for
+        const firstCompany = companies[0];
+        console.log('Headquarters field check:', {
+          'headquarters_country': firstCompany.headquarters_country,
+          'hq_country': firstCompany.hq_country,
+          'hq': firstCompany.hq,
+          'headquarters': firstCompany.headquarters
+        });
+        console.log('Description field check:', {
+          'description': firstCompany.description,
+          'company_description': firstCompany.company_description,
+          'desc': firstCompany.desc,
+          'company_desc': firstCompany.company_desc
+        });
+      }
     } catch (error) {
       console.error('Failed to load companies:', error);
       
@@ -844,6 +866,16 @@
 
           <!-- Companies Table -->
           <div class="companies-table">
+            <!-- Debug Info -->
+            {#if companies.length > 0}
+              <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; font-size: 12px;">
+                <strong>Debug Info:</strong> Loaded {companies.length} companies. 
+                {#if companies[0]}
+                  First company fields: {Object.keys(companies[0]).join(', ')}
+                {/if}
+              </div>
+            {/if}
+            
             <table>
               <thead>
                 <tr>
@@ -855,6 +887,7 @@
                   <th>Reviews</th>
                   <th>Status</th>
                   <th>Actions</th>
+                  <th>Debug</th>
                 </tr>
               </thead>
               <tbody>
@@ -878,16 +911,19 @@
                       {/if}
                     </td>
                     <td>
-                      {#if company.headquarters_country}
-                        <span class="headquarters">📍 {company.headquarters_country}</span>
+                      {#if company.headquarters_country || company.headquarters_country_alt || company.hq_country || company.hq}
+                        <span class="headquarters">📍 {company.headquarters_country || company.headquarters_country_alt || company.hq_country || company.hq || 'N/A'}</span>
                       {:else}
                         <span class="no-data">-</span>
                       {/if}
+                      <!-- Debug: Raw value: {JSON.stringify(company.headquarters_country)} -->
                     </td>
                     <td>
-                      {#if company.description}
-                        <div class="description-cell" title={company.description}>
-                          {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
+                      {#if company.description || company.company_description || company.desc || company.company_desc}
+                        <div class="description-cell" title={company.description || company.company_description || company.desc || company.company_desc || ''}>
+                          {(company.description || company.company_description || company.desc || company.company_desc || '').length > 50 ? 
+                            (company.description || company.company_description || company.desc || company.company_desc || '').substring(0, 50) + '...' : 
+                            (company.description || company.company_description || company.desc || company.company_desc || '')}
                         </div>
                       {:else}
                         <span class="no-data">-</span>
@@ -898,6 +934,11 @@
                     <td>
                       <button class="btn-secondary" on:click={() => openEditCompanyModal(company)}>Edit</button>
                       <button class="btn-danger" on:click={() => confirmDeleteCompany(company)}>Delete</button>
+                    </td>
+                    <td class="debug-cell" style="font-size: 10px; max-width: 200px; overflow: hidden;">
+                      <div>HQ: {company.headquarters_country || 'null'}</div>
+                      <div>Desc: {(company.description || '').substring(0, 30)}...</div>
+                      <div>Fields: {Object.keys(company).slice(0, 5).join(',')}</div>
                     </td>
                   </tr>
                 {/each}
