@@ -93,24 +93,40 @@
 
   // Load dashboard stats
   async function loadDashboardStats() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load dashboard stats: No authentication token');
+      return;
+    }
     
     try {
       isLoading = true;
-      const stats = await apiClient.getDashboardStats(authState.token);
+      console.log('Loading dashboard stats with token:', authState.token.substring(0, 20) + '...');
+      
+      const stats = await apiClient.getDashboardStats(authState.token) as any;
+      console.log('Dashboard stats received:', stats);
+      
       dashboardStats = {
-        totalUsers: stats.total_users,
-        totalCompanies: stats.total_companies,
-        totalReviews: stats.total_reviews,
-        pendingDisputes: stats.pending_disputes,
-        pendingReviews: stats.pending_reviews,
-        totalRevenue: stats.total_revenue
+        totalUsers: stats?.total_users || 0,
+        totalCompanies: stats?.total_companies || 0,
+        totalReviews: stats?.total_reviews || 0,
+        pendingDisputes: stats?.pending_disputes || 0,
+        pendingReviews: stats?.pending_reviews || 0,
+        totalRevenue: stats?.total_revenue || 0
       };
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
+      
+      // Handle specific error types
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        // Clear invalid auth state and show login form
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
+      
       // Show user-friendly error message
       if ((error as any).message) {
-        alert(`Dashboard Error: ${(error as any).message}`);
+        console.error('Dashboard Error:', (error as any).message);
       }
     } finally {
       isLoading = false;
@@ -119,13 +135,23 @@
 
   // Load users
   async function loadUsers() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load users: No authentication token');
+      return;
+    }
     
     try {
       isLoading = true;
-      users = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter);
+      console.log('Loading users with token:', authState.token.substring(0, 20) + '...');
+      users = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
     } catch (error) {
       console.error('Failed to load users:', error);
+      
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
     } finally {
       isLoading = false;
     }
@@ -133,13 +159,23 @@
 
   // Load reviews
   async function loadReviews() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load reviews: No authentication token');
+      return;
+    }
     
     try {
       isLoading = true;
-      pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter);
+      console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
+      pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter) as any[];
     } catch (error) {
       console.error('Failed to load reviews:', error);
+      
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
     } finally {
       isLoading = false;
     }
@@ -147,13 +183,23 @@
 
   // Load disputes
   async function loadDisputes() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load disputes: No authentication token');
+      return;
+    }
     
     try {
       isLoading = true;
-      disputes = await apiClient.getAdminDisputes(authState.token, disputeStatusFilter);
+      console.log('Loading disputes with token:', authState.token.substring(0, 20) + '...');
+      disputes = await apiClient.getAdminDisputes(authState.token, disputeStatusFilter) as any[];
     } catch (error) {
       console.error('Failed to load disputes:', error);
+      
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
     } finally {
       isLoading = false;
     }
@@ -161,13 +207,23 @@
 
   // Load companies
   async function loadCompanies() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load companies: No authentication token');
+      return;
+    }
     
     try {
       isLoading = true;
-      companies = await apiClient.getAdminCompanies(authState.token, companySearch);
+      console.log('Loading companies with token:', authState.token.substring(0, 20) + '...');
+      companies = await apiClient.getAdminCompanies(authState.token, companySearch) as any[];
     } catch (error) {
       console.error('Failed to load companies:', error);
+      
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
     } finally {
       isLoading = false;
     }
@@ -175,12 +231,22 @@
 
   // Load recent activity
   async function loadRecentActivity() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('Cannot load recent activity: No authentication token');
+      return;
+    }
     
     try {
-      recentActivity = await apiClient.getRecentActivity(authState.token);
+      console.log('Loading recent activity with token:', authState.token.substring(0, 20) + '...');
+      recentActivity = await apiClient.getRecentActivity(authState.token) as any[];
     } catch (error) {
       console.error('Failed to load recent activity:', error);
+      
+      if ((error as any).message?.includes('Authentication failed')) {
+        console.error('Authentication error - redirecting to login');
+        auth.update(state => ({ ...state, user: null, token: null }));
+        return;
+      }
     }
   }
 
@@ -198,29 +264,35 @@
     }
   }
 
-  // Load data when tab changes
-  $: if (activeTab === 'dashboard' && authState.token) {
+  // Load data when tab changes - only if properly authenticated
+  $: if (activeTab === 'dashboard' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading dashboard data for admin user');
     loadDashboardStats();
     loadRecentActivity();
   }
 
-  $: if (activeTab === 'users' && authState.token) {
+  $: if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading users data for admin user');
     loadUsers();
   }
 
-  $: if (activeTab === 'reviews' && authState.token) {
+  $: if (activeTab === 'reviews' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading reviews data for admin user');
     loadReviews();
   }
 
-  $: if (activeTab === 'disputes' && authState.token) {
+  $: if (activeTab === 'disputes' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading disputes data for admin user');
     loadDisputes();
   }
 
-  $: if (activeTab === 'companies' && authState.token) {
+  $: if (activeTab === 'companies' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading companies data for admin user');
     loadCompanies();
   }
 
-  $: if (activeTab === 'analytics' && authState.token) {
+  $: if (activeTab === 'analytics' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading analytics data for admin user');
     loadAnalytics();
   }
 
@@ -445,6 +517,15 @@
               🔄 Refresh Data
             </button>
           </div>
+          
+          <!-- Authentication Status Check -->
+          {#if !authState.user || authState.user.user_type !== 'admin'}
+            <div class="auth-warning">
+              <div class="warning-icon">⚠️</div>
+              <h3>Authentication Required</h3>
+              <p>Please log in with admin credentials to view dashboard data.</p>
+            </div>
+          {:else}
           <div class="stats-grid">
             {#if isLoading}
               {#each Array(6) as _, i}
@@ -497,6 +578,7 @@
               {/if}
             </div>
           </div>
+          {/if}
         </div>
       {/if}
 
@@ -944,6 +1026,34 @@
     padding: 0;
     background: #f8f9fa;
     min-height: calc(100vh - 200px);
+  }
+
+  /* Authentication Warning */
+  .auth-warning {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    margin: 40px 0;
+    box-shadow: 0 2px 10px rgba(255, 193, 7, 0.2);
+  }
+
+  .warning-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  .auth-warning h3 {
+    color: #856404;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+  }
+
+  .auth-warning p {
+    color: #856404;
+    font-size: 1.1rem;
+    margin: 0;
   }
 
   .admin-banner {
