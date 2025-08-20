@@ -5,10 +5,11 @@
   import { apiClient } from '$lib/api';
   import type { FreightForwarder, Location } from '$lib/api';
 
-  let searchType: 'company' | 'location' = 'company';
+  let searchType: 'company' | 'country' = 'company';
   let companyQuery = '';
-  let locationQuery = '';
+  let countryQuery = '';
   let searchResults: FreightForwarder[] = [];
+  let locationsWithReviews: Location[] = [];
   let isLoading = false;
   let error: string | null = null;
   let showSubscriptionPrompt = false;
@@ -21,11 +22,11 @@
     const query = urlParams.get('q') || '';
     const type = urlParams.get('type') || 'company';
     
-    searchType = type as 'company' | 'location';
+    searchType = type as 'company' | 'country';
     if (type === 'company') {
       companyQuery = query;
     } else {
-      locationQuery = query;
+      countryQuery = query;
     }
     
     if (query) {
@@ -43,8 +44,8 @@
     return unsubscribe;
   });
 
-  function canSearchByLocation(): boolean {
-    // Only paid subscribers can search by location
+  function canSearchByCountry(): boolean {
+    // Only paid subscribers can search by country
     return userSubscription !== 'free';
   }
 
@@ -54,11 +55,11 @@
   }
 
   async function performSearch() {
-    const query = searchType === 'company' ? companyQuery : locationQuery;
+    const query = searchType === 'company' ? companyQuery : countryQuery;
     if (!query.trim()) return;
 
     // Check subscription restrictions
-    if (searchType === 'location' && !canSearchByLocation()) {
+    if (searchType === 'country' && !canSearchByCountry()) {
       showSubscriptionPrompt = true;
       return;
     }
@@ -81,18 +82,25 @@
         
         const data = await response.json();
         results = data;
+        locationsWithReviews = [];
       } else {
-        // Search freight forwarders by location
-        // First get locations matching the query
+        // Search by country to find locations with reviews
+        // First get locations matching the country query
         const locations = await apiClient.searchLocations(query.trim());
         
         if (locations.length === 0) {
           searchResults = [];
+          locationsWithReviews = [];
           return;
         }
         
-        // For location search, we'll use the aggregated endpoint to get all companies
-        // and then filter by those that have operations in the searched locations
+        // Filter locations that are in the searched country
+        const countryLocations = locations.filter(loc => 
+          loc.country && loc.country.toLowerCase().includes(query.trim().toLowerCase())
+        );
+        
+        // For country search, we'll use the aggregated endpoint to get all companies
+        // and then filter by those that have operations in the searched country
         const response = await fetch(`https://logiscorebe.onrender.com/api/freight-forwarders/aggregated/?limit=100`);
         
         if (!response.ok) {
@@ -101,12 +109,15 @@
         
         const allCompanies = await response.json();
         
-        // Filter companies that might have operations in the searched locations
-        const locationCountries = locations.map(loc => loc.country.toLowerCase());
+        // Filter companies that might have operations in the searched country
+        const countryNames = countryLocations.map(loc => loc.country.toLowerCase());
         results = allCompanies.filter((company: FreightForwarder) => 
           company.headquarters_country && 
-          locationCountries.includes(company.headquarters_country.toLowerCase())
+          countryNames.includes(company.headquarters_country.toLowerCase())
         );
+        
+        // Store locations with reviews for display
+        locationsWithReviews = countryLocations;
       }
 
       searchResults = results.map(company => ({
@@ -117,13 +128,14 @@
       console.error('Error searching:', err);
       error = 'Failed to load search results';
       searchResults = [];
+      locationsWithReviews = [];
     } finally {
       isLoading = false;
     }
   }
 
   function handleSearch() {
-    const query = searchType === 'company' ? companyQuery : locationQuery;
+    const query = searchType === 'company' ? companyQuery : countryQuery;
     if (query.trim()) {
           const url = new URL(window.location.href);
     url.searchParams.set('q', query.trim());
@@ -139,9 +151,10 @@
     }
   }
 
-  function switchSearchType(type: 'company' | 'location') {
+  function switchSearchType(type: 'company' | 'country') {
     searchType = type;
     searchResults = [];
+    locationsWithReviews = [];
     error = null;
     showSubscriptionPrompt = false;
     
@@ -150,8 +163,8 @@
     url.searchParams.set('type', type);
     if (type === 'company' && companyQuery) {
       url.searchParams.set('q', companyQuery);
-    } else if (type === 'location' && locationQuery) {
-      url.searchParams.set('q', locationQuery);
+    } else if (type === 'country' && countryQuery) {
+      url.searchParams.set('q', countryQuery);
     } else {
       url.searchParams.delete('q');
     }
@@ -162,19 +175,19 @@
     if (searchType === 'company') {
       return 'Search by company name...';
     } else {
-      return 'Search by city, state, or country...';
+      return 'Search by country name...';
     }
   }
 
   function getCurrentQuery(): string {
-    return searchType === 'company' ? companyQuery : locationQuery;
+    return searchType === 'company' ? companyQuery : countryQuery;
   }
 
   function setCurrentQuery(value: string) {
     if (searchType === 'company') {
       companyQuery = value;
     } else {
-      locationQuery = value;
+      countryQuery = value;
     }
   }
 </script>
@@ -200,13 +213,13 @@
           Search by Company
         </button>
         <button 
-          class="search-type-btn {searchType === 'location' ? 'active' : ''}"
-          on:click={() => switchSearchType('location')}
-          class:disabled={!canSearchByLocation()}
+          class="search-type-btn {searchType === 'country' ? 'active' : ''}"
+          on:click={() => switchSearchType('country')}
+          class:disabled={!canSearchByCountry()}
         >
-          <span class="icon">📍</span>
-          Search by Location
-          {#if !canSearchByLocation()}
+          <span class="icon">🌍</span>
+          Search by Country
+          {#if !canSearchByCountry()}
             <span class="premium-badge">Premium</span>
           {/if}
         </button>
@@ -227,10 +240,10 @@
         </button>
       </div>
 
-      <!-- Subscription Notice for Location Search -->
-      {#if searchType === 'location' && !canSearchByLocation()}
+      <!-- Subscription Notice for Country Search -->
+      {#if searchType === 'country' && !canSearchByCountry()}
         <div class="subscription-notice">
-          <p>🔒 Location search requires a premium subscription to access detailed location-based results.</p>
+          <p>🔒 Country search requires a premium subscription to access detailed country-based results.</p>
           <a href="/pricing" class="upgrade-link">View Pricing Plans</a>
         </div>
       {/if}
@@ -242,13 +255,13 @@
     <div class="modal-overlay" on:click={() => showSubscriptionPrompt = false}>
       <div class="subscription-modal" on:click|stopPropagation>
         <h3>🔒 Premium Feature</h3>
-        <p>Location-based search is available to premium subscribers only.</p>
+        <p>Country-based search is available to premium subscribers only.</p>
         <p>Upgrade your subscription to unlock:</p>
         <ul>
-          <li>Search freight forwarders by location</li>
-          <li>Location-specific ratings and reviews</li>
-          <li>Detailed branch-level analytics</li>
-          <li>Compare performance across locations</li>
+          <li>Search freight forwarders by country</li>
+          <li>Country-specific ratings and reviews</li>
+          <li>Detailed location-level analytics</li>
+          <li>Compare performance across countries</li>
         </ul>
         <div class="modal-actions">
           <a href="/pricing" class="upgrade-btn">View Pricing Plans</a>
@@ -276,9 +289,35 @@
           {#if searchType === 'company'}
             Showing companies matching "{companyQuery}"
           {:else}
-            Showing companies with operations in locations matching "{locationQuery}"
+            Showing companies with operations in "{countryQuery}" ({locationsWithReviews.length} locations with reviews)
           {/if}
         </p>
+        
+        <!-- Show locations with reviews for country search -->
+        {#if searchType === 'country' && locationsWithReviews.length > 0}
+          <div class="locations-section">
+            <h3>📍 Locations with Reviews in {countryQuery}</h3>
+            <div class="locations-grid">
+              {#each locationsWithReviews as location}
+                <div class="location-card">
+                  <div class="location-info">
+                    <h4 class="location-name">{location.name}</h4>
+                    <p class="location-details">
+                      {#if location.city && location.city !== location.name}
+                        {location.city}
+                        {#if location.state}, {location.state}{/if}
+                      {:else if location.state}
+                        {location.state}
+                      {/if}
+                    </p>
+                    <p class="location-country">{location.country}</p>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+        
         <div class="results-grid">
           {#each searchResults as company}
             <div class="company-card">
@@ -340,8 +379,8 @@
                 <li>Use company abbreviations if known</li>
               {:else}
                 <li>Try searching by country name (e.g., "Germany" instead of "Hamburg")</li>
-                <li>Use major city names (e.g., "London", "New York")</li>
-                <li>Check spelling of city and country names</li>
+                <li>Use full country names (e.g., "United States", "United Kingdom")</li>
+                <li>Check spelling of country names</li>
               {/if}
             </ul>
           </div>
@@ -360,10 +399,10 @@
               </ul>
             </div>
             <div class="example-section">
-              <h3>Location Search Examples:</h3>
+              <h3>Country Search Examples:</h3>
               <ul>
                 <li>"Germany" - Companies in Germany</li>
-                <li>"New York" - Companies in New York</li>
+                <li>"United States" - Companies in USA</li>
                 <li>"Singapore" - Companies in Singapore</li>
               </ul>
             </div>
@@ -788,6 +827,66 @@
     background: #5a6268;
   }
 
+  /* New styles for locations section */
+  .locations-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .locations-section h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .location-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1rem;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .location-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .location-info {
+    margin-bottom: 0.5rem;
+  }
+
+  .location-name {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 0.3rem;
+  }
+
+  .location-details {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.3rem;
+  }
+
+  .location-country {
+    font-size: 0.8rem;
+    color: #555;
+  }
+
   @media (max-width: 768px) {
     .search-hero h1 {
       font-size: 2rem;
@@ -812,6 +911,10 @@
 
     .modal-actions {
       flex-direction: column;
+    }
+
+    .locations-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
