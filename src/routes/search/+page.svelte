@@ -549,8 +549,8 @@
   }
 
   .company-logo {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
