@@ -137,7 +137,6 @@
                       <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
                     </div>
                   {/if}
-
                 </div>
               </div>
             </a>

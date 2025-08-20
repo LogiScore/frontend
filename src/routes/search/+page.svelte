@@ -308,18 +308,13 @@
                           <span class="star {i < Math.floor(company.average_rating || 0) ? 'filled' : ''}">★</span>
                         {/each}
                       </span>
-                      <span class="rating-text">{(company.average_rating || 0).toFixed(1)}/5</span>
+                      {#if user && user.subscription_tier && user.subscription_tier !== 'free'}
+                        <span class="rating-text">{(company.average_rating || 0).toFixed(1)}/5</span>
+                      {/if}
                     </div>
                   {/if}
                 </div>
               </div>
-              {#if company.description}
-                <p class="company-description preserve-linebreaks">{company.description}</p>
-              {:else}
-                <p class="company-description">
-                  {company.name} provides comprehensive logistics and freight forwarding services worldwide.
-                </p>
-              {/if}
               <div class="company-stats">
                 {#if company.review_count}
                   <span class="stat">
@@ -327,20 +322,8 @@
                     <span class="stat-value">{company.review_count}</span>
                   </span>
                 {/if}
-                {#if company.global_rank}
-                  <span class="stat">
-                    <span class="stat-label">Global Rank:</span>
-                    <span class="stat-value">#{company.global_rank}</span>
-                  </span>
-                {/if}
-                {#if company.category_scores && company.category_scores.length > 0}
-                  <span class="stat">
-                    <span class="stat-label">Categories:</span>
-                    <span class="stat-value">{company.category_scores.length}</span>
-                  </span>
-                {/if}
               </div>
-              <a href="/freight-forwarder/{company.id}" class="view-details-btn">View Details</a>
+              <a href="/freight-forwarder/{company.id}" class="view-profile-btn">View Profile</a>
             </div>
           {/each}
         </div>
@@ -622,15 +605,7 @@
     font-weight: bold;
   }
 
-  .company-description {
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-  }
 
-  .preserve-linebreaks {
-    white-space: pre-line;
-  }
 
   .company-stats {
     display: flex;
@@ -660,7 +635,7 @@
     color: #333;
   }
 
-  .view-details-btn {
+  .view-profile-btn {
     background: #667eea;
     color: white;
     border: none;
@@ -674,7 +649,7 @@
     width: 100%;
   }
 
-  .view-details-btn:hover {
+  .view-profile-btn:hover {
     background: #5a6fd8;
   }
 
