@@ -1602,6 +1602,48 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAdminCompany =====
+  async getAdminCompany(token: string, companyId: string) {
+    try {
+      return await this.request(`/admin/companies/${companyId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to get company details:', error);
+      throw new Error('Failed to load company details. Please try again later.');
+    }
+  }
+
+  // ===== METHOD: updateCompany =====
+  async updateCompany(token: string, companyId: string, companyData: any) {
+    try {
+      return await this.request(`/admin/companies/${companyId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(companyData)
+      });
+    } catch (error) {
+      console.error('Failed to update company:', error);
+      throw new Error('Failed to update company');
+    }
+  }
+
+  // ===== METHOD: deleteCompany =====
+  async deleteCompany(token: string, companyId: string) {
+    try {
+      return await this.request(`/admin/companies/${companyId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to delete company:', error);
+      throw new Error('Failed to delete company');
+    }
+  }
+
   // ===== METHOD: createCompany =====
   async createCompany(token: string, companyData: any) {
     try {

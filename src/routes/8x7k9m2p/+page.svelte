@@ -58,9 +58,11 @@
   let activeTab = 'dashboard';
   let isLoading = false;
   let showAddCompanyModal = false;
+  let showEditCompanyModal = false;
   let showSubscriptionModal = false;
   let showEditUserModal = false;
   let selectedUserId: string | null = null;
+  let selectedCompanyId: string | null = null;
   let subscriptionData = {
     tier: 'free',
     comment: '',
@@ -374,6 +376,15 @@
   let newCompany = {
     name: '',
     website: '',
+    logo_url: '',
+    description: '',
+    headquarters_country: ''
+  };
+
+  let editCompanyData = {
+    name: '',
+    website: '',
+    logo_url: '',
     description: '',
     headquarters_country: ''
   };
@@ -405,14 +416,71 @@
       await apiClient.createCompany(authState.token, {
         name: newCompany.name,
         website: newCompany.website,
+        logo_url: newCompany.logo_url,
         description: newCompany.description,
         headquarters_country: newCompany.headquarters_country
       });
       
       await loadCompanies(); // Reload companies
-      newCompany = { name: '', website: '', description: '', headquarters_country: '' };
+      newCompany = { name: '', website: '', logo_url: '', description: '', headquarters_country: '' };
     } catch (error) {
       console.error('Failed to add company:', error);
+    }
+  }
+
+  function openEditCompanyModal(company: any) {
+    selectedCompanyId = company.id;
+    editCompanyData = {
+      name: company.name || '',
+      website: company.website || '',
+      logo_url: company.logo_url || '',
+      description: company.description || '',
+      headquarters_country: company.headquarters_country || ''
+    };
+    showEditCompanyModal = true;
+  }
+
+  function closeEditCompanyModal() {
+    showEditCompanyModal = false;
+    selectedCompanyId = null;
+    editCompanyData = { name: '', website: '', logo_url: '', description: '', headquarters_country: '' };
+  }
+
+  async function updateCompany() {
+    if (!authState.token || !selectedCompanyId) return;
+    
+    try {
+      await apiClient.updateCompany(authState.token, selectedCompanyId, {
+        name: editCompanyData.name,
+        website: editCompanyData.website,
+        logo_url: editCompanyData.logo_url,
+        description: editCompanyData.description,
+        headquarters_country: editCompanyData.headquarters_country
+      });
+      
+      await loadCompanies(); // Reload companies
+      closeEditCompanyModal();
+    } catch (error) {
+      console.error('Failed to update company:', error);
+      alert(`Failed to update company: ${(error as any).message || 'Unknown error'}`);
+    }
+  }
+
+  function confirmDeleteCompany(company: any) {
+    if (confirm(`Are you sure you want to delete "${company.name}"? This action cannot be undone.`)) {
+      deleteCompany(company.id);
+    }
+  }
+
+  async function deleteCompany(companyId: string) {
+    if (!authState.token) return;
+    
+    try {
+      await apiClient.deleteCompany(authState.token, companyId);
+      await loadCompanies(); // Reload companies
+    } catch (error) {
+      console.error('Failed to delete company:', error);
+      alert(`Failed to delete company: ${(error as any).message || 'Unknown error'}`);
     }
   }
 
@@ -757,6 +825,18 @@
                 <label for="company-website">Website</label>
                 <input type="url" id="company-website" bind:value={newCompany.website} />
               </div>
+              <div class="form-group">
+                <label for="company-logo">Logo URL</label>
+                <input type="url" id="company-logo" bind:value={newCompany.logo_url} placeholder="Enter logo URL (optional)" />
+              </div>
+              <div class="form-group">
+                <label for="company-description">Description</label>
+                <textarea id="company-description" bind:value={newCompany.description} rows="3" placeholder="Enter company description"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="company-headquarters">Headquarters Country</label>
+                <input type="text" id="company-headquarters" bind:value={newCompany.headquarters_country} placeholder="Enter headquarters country" />
+              </div>
 
               <button type="submit" class="btn-primary">Add Company</button>
             </form>
@@ -816,8 +896,8 @@
                     <td>{company.reviews_count}</td>
                     <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
                     <td>
-                      <button class="btn-secondary">Edit</button>
-                      <button class="btn-secondary">Manage Branches</button>
+                      <button class="btn-secondary" on:click={() => openEditCompanyModal(company)}>Edit</button>
+                      <button class="btn-danger" on:click={() => confirmDeleteCompany(company)}>Delete</button>
                     </td>
                   </tr>
                 {/each}
@@ -1015,6 +1095,76 @@
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeSubscriptionModal}>Cancel</button>
         <button class="btn-primary" on:click={updateUserSubscription}>Update Subscription</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Edit Company Modal -->
+{#if showEditCompanyModal}
+  <div class="modal-overlay" on:click={closeEditCompanyModal}>
+    <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>Edit Company</h2>
+        <button class="close-btn" on:click={closeEditCompanyModal}>&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="edit-company-name">Company Name:</label>
+          <input 
+            type="text" 
+            id="edit-company-name" 
+            bind:value={editCompanyData.name}
+            placeholder="Enter company name"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-company-website">Website:</label>
+          <input 
+            type="url" 
+            id="edit-company-website" 
+            bind:value={editCompanyData.website}
+            placeholder="Enter website URL"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-company-logo">Logo URL:</label>
+          <input 
+            type="url" 
+            id="edit-company-logo" 
+            bind:value={editCompanyData.logo_url}
+            placeholder="Enter logo URL"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-company-description">Description:</label>
+          <textarea 
+            id="edit-company-description" 
+            bind:value={editCompanyData.description}
+            placeholder="Enter company description"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-company-headquarters">Headquarters Country:</label>
+          <input 
+            type="text" 
+            id="edit-company-headquarters" 
+            bind:value={editCompanyData.headquarters_country}
+            placeholder="Enter headquarters country"
+          />
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" on:click={closeEditCompanyModal}>Cancel</button>
+        <button class="btn-primary" on:click={updateCompany}>Update Company</button>
       </div>
     </div>
   </div>
@@ -1419,6 +1569,22 @@
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+
+  .btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
   }
 
   /* Company Management */
