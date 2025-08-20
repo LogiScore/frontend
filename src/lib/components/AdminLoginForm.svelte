@@ -140,14 +140,10 @@
             verificationCode = target.value.replace(/[^0-9]/g, '');
           }}
         />
-        <small class="help-text">Enter the 6-digit code sent to your email</small>
+
       </div>
 
-      {#if successMessage}
-        <div class="success-message">
-          {successMessage}
-        </div>
-      {/if}
+
       
       {#if errorMessage}
         <div class="error-message">
