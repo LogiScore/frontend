@@ -813,33 +813,16 @@
             <button class="btn-primary" on:click={() => showAddCompanyModal = true}>Add Company</button>
           </div>
 
-          <!-- Add Company Form -->
-          <div class="add-company-form">
-            <h3>Add New Company</h3>
-            <form on:submit|preventDefault={addCompany}>
-              <div class="form-group">
-                <label for="company-name">Company Name</label>
-                <input type="text" id="company-name" bind:value={newCompany.name} required />
-              </div>
-              <div class="form-group">
-                <label for="company-website">Website</label>
-                <input type="url" id="company-website" bind:value={newCompany.website} />
-              </div>
-              <div class="form-group">
-                <label for="company-logo">Logo URL</label>
-                <input type="url" id="company-logo" bind:value={newCompany.logo_url} placeholder="Enter logo URL (optional)" />
-              </div>
-              <div class="form-group">
-                <label for="company-description">Description</label>
-                <textarea id="company-description" bind:value={newCompany.description} rows="3" placeholder="Enter company description"></textarea>
-              </div>
-              <div class="form-group">
-                <label for="company-headquarters">Headquarters Country</label>
-                <input type="text" id="company-headquarters" bind:value={newCompany.headquarters_country} placeholder="Enter headquarters country" />
-              </div>
 
-              <button type="submit" class="btn-primary">Add Company</button>
-            </form>
+
+          <!-- Company Search -->
+          <div class="company-search">
+            <input 
+              type="text" 
+              placeholder="Search companies by name..." 
+              class="search-input" 
+              bind:value={companySearch}
+            />
           </div>
 
           <!-- Companies Table -->
@@ -1595,36 +1578,28 @@
     margin-bottom: 30px;
   }
 
-  .add-company-form {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-  }
-
-  .add-company-form h3 {
-    margin-bottom: 20px;
-    color: #333;
-  }
-
-  .form-group {
+  .company-search {
     margin-bottom: 20px;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .form-group input {
+  .company-search .search-input {
     width: 100%;
-    padding: 12px;
+    max-width: 400px;
+    padding: 12px 16px;
     border: 2px solid #e9ecef;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .company-search .search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .company-search .search-input::placeholder {
+    color: #999;
   }
 
   .help-text {
