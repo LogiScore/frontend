@@ -584,6 +584,7 @@
   .company-rating {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     margin-top: 0.5rem;
   }
@@ -648,11 +649,12 @@
     cursor: pointer;
     transition: background 0.3s;
     text-decoration: none;
-    display: inline-block;
+    display: block;
     text-align: center;
     width: calc(100% - 2rem);
     max-width: 200px;
     box-sizing: border-box;
+    margin: 0 auto;
   }
 
   .view-profile-btn:hover {
