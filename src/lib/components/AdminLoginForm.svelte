@@ -30,7 +30,7 @@
     try {
       // Use admin-specific verification code request with pre-filled email
       const response = await apiClient.sendAdminVerificationCode(ADMIN_EMAIL);
-      successMessage = `Verification code sent to ${ADMIN_EMAIL}! Check your email. Code expires in ${response.expires_in} minutes.`;
+      successMessage = `Verification code sent! Check your email. Code expires in ${response.expires_in} minutes.`;
       codeRequested = true;
       codeSent = true;
     } catch (error: any) {
@@ -140,7 +140,7 @@
             verificationCode = target.value.replace(/[^0-9]/g, '');
           }}
         />
-        <small class="help-text">Enter the 6-digit code sent to {ADMIN_EMAIL}</small>
+        <small class="help-text">Enter the 6-digit code sent to your email</small>
       </div>
 
       {#if successMessage}
