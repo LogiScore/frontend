@@ -102,6 +102,84 @@
   let reviewStatusFilter = '';
   let disputeStatusFilter = '';
 
+  // Loading states for different sections
+  let dashboardLoading = false;
+  let usersLoading = false;
+  let reviewsLoading = false;
+  let disputesLoading = false;
+  let companiesLoading = false;
+  let analyticsLoading = false;
+
+  // Auto-refresh interval
+  let refreshInterval: number | null = null;
+  let lastRefreshTime = new Date();
+
+  // Start auto-refresh when authenticated
+  function startAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    
+    // Refresh dashboard data every 30 seconds
+    refreshInterval = setInterval(() => {
+      if (authState.token && authState.user?.user_type === 'admin') {
+        console.log('Auto-refreshing dashboard data...');
+        lastRefreshTime = new Date();
+        
+        if (activeTab === 'dashboard') {
+          loadDashboardStats();
+          loadRecentActivity();
+        } else if (activeTab === 'users') {
+          loadUsers();
+        } else if (activeTab === 'reviews') {
+          loadReviews();
+        } else if (activeTab === 'disputes') {
+          loadDisputes();
+        } else if (activeTab === 'companies') {
+          loadCompanies();
+        } else if (activeTab === 'analytics') {
+          loadAnalytics();
+        }
+      }
+    }, 30000); // 30 seconds
+  }
+
+  // Stop auto-refresh
+  function stopAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+  }
+
+  // Manual refresh function
+  async function refreshCurrentTab() {
+    if (!authState.token || authState.user?.user_type !== 'admin') return;
+    
+    lastRefreshTime = new Date();
+    
+    switch (activeTab) {
+      case 'dashboard':
+        await Promise.all([loadDashboardStats(), loadRecentActivity()]);
+        break;
+      case 'users':
+        await loadUsers();
+        break;
+      case 'reviews':
+        await loadReviews();
+        break;
+      case 'disputes':
+        await loadDisputes();
+        break;
+      case 'companies':
+        await loadCompanies();
+        break;
+      case 'analytics':
+        await loadAnalytics();
+        break;
+    }
+  }
+
   // Test authentication token with backend
   async function testAuthToken() {
     if (!authState.token) {
@@ -154,7 +232,7 @@
     }
     
     try {
-      isLoading = true;
+      dashboardLoading = true;
       console.log('Loading dashboard stats with valid token:', authState.token.substring(0, 20) + '...');
       
       const stats = await apiClient.getDashboardStats(authState.token) as any;
@@ -196,7 +274,7 @@
     }
     
     try {
-      isLoading = true;
+      usersLoading = true;
       console.log('Loading users with token:', authState.token.substring(0, 20) + '...');
       users = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
     } catch (error) {
@@ -208,7 +286,7 @@
         return;
       }
     } finally {
-      isLoading = false;
+      usersLoading = false;
     }
   }
 
@@ -220,7 +298,7 @@
     }
     
     try {
-      isLoading = true;
+      reviewsLoading = true;
       console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
       pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter) as any[];
     } catch (error) {
@@ -232,7 +310,7 @@
         return;
       }
     } finally {
-      isLoading = false;
+      reviewsLoading = false;
     }
   }
 
@@ -244,7 +322,7 @@
     }
     
     try {
-      isLoading = true;
+      disputesLoading = true;
       console.log('Loading disputes with token:', authState.token.substring(0, 20) + '...');
       disputes = await apiClient.getAdminDisputes(authState.token, disputeStatusFilter) as any[];
     } catch (error) {
@@ -256,7 +334,7 @@
         return;
       }
     } finally {
-      isLoading = false;
+      disputesLoading = false;
     }
   }
 
@@ -268,7 +346,7 @@
     }
     
     try {
-      isLoading = true;
+      companiesLoading = true;
       console.log('Loading companies with token:', authState.token.substring(0, 20) + '...');
       
       // Load all companies first (without search filter)
@@ -293,7 +371,7 @@
         return;
       }
     } finally {
-      isLoading = false;
+      companiesLoading = false;
     }
   }
 
@@ -323,12 +401,15 @@
     if (!authState.token) return;
     
     try {
+      analyticsLoading = true;
       analyticsError = null;
       analyticsData = await apiClient.getAdminAnalytics(authState.token);
     } catch (error) {
       console.error('Failed to load analytics:', error);
       analyticsError = (error as any).message || 'Failed to load analytics data';
       analyticsData = null;
+    } finally {
+      analyticsLoading = false;
     }
   }
 
@@ -338,6 +419,31 @@
     loadDashboardStats();
     loadRecentActivity();
   }
+
+  // Start auto-refresh when user is authenticated
+  $: if (authState.token && authState.user?.user_type === 'admin') {
+    startAutoRefresh();
+  } else {
+    stopAutoRefresh();
+  }
+
+  // Cleanup on component unmount
+  onMount(() => {
+    console.log('Admin page mounted');
+    console.log('Current auth state:', authState);
+    
+    // Try to recover session if needed
+    if (authState.user && authState.user.username === 'Demo User') {
+      console.log('Admin page: Detected demo user, attempting to recover session');
+      const result = authMethods.recoverSession();
+      console.log('Session recovery result:', result);
+    }
+
+    // Cleanup function
+    return () => {
+      stopAutoRefresh();
+    };
+  });
 
   $: if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
     console.log('Loading users data for admin user');
@@ -672,12 +778,18 @@
           <div class="dashboard-header">
             <h2>Dashboard Overview</h2>
             <div class="dashboard-actions">
-              <button class="btn-test-auth" on:click={testAuthToken}>
-                🔐 Test Auth
-              </button>
-              <button class="btn-refresh" on:click={() => { loadDashboardStats(); loadRecentActivity(); }}>
-                🔄 Refresh Data
-              </button>
+              <div class="refresh-info">
+                <span class="last-refresh">Last updated: {lastRefreshTime.toLocaleTimeString()}</span>
+                <span class="auto-refresh-status">🔄 Auto-refresh: ON</span>
+              </div>
+              <div class="action-buttons">
+                <button class="btn-test-auth" on:click={testAuthToken}>
+                  🔐 Test Auth
+                </button>
+                <button class="btn-refresh" on:click={refreshCurrentTab}>
+                  🔄 Refresh Now
+                </button>
+              </div>
             </div>
           </div>
           
@@ -690,7 +802,7 @@
             </div>
           {:else}
           <div class="stats-grid">
-            {#if isLoading}
+            {#if dashboardLoading}
               {#each Array(6) as _, i}
                 <div class="stat-card loading">
                   <div class="stat-skeleton"></div>
@@ -748,73 +860,101 @@
       <!-- Review Management Tab -->
       {#if activeTab === 'reviews'}
         <div class="reviews-content">
-          <h2>Review Management</h2>
-          <div class="reviews-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Company</th>
-                  <th>Branch</th>
-                  <th>Reviewer</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each pendingReviews as review}
-                  <tr>
-                    <td>{review.id}</td>
-                    <td>{review.freight_forwarder_name}</td>
-                    <td>{review.branch_name || 'N/A'}</td>
-                    <td>{review.reviewer_name}</td>
-                    <td><span class="status {review.status.toLowerCase()}">{review.status}</span></td>
-                    <td>{new Date(review.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
-                      <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
+          <div class="reviews-header">
+            <h2>Review Management</h2>
+            <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
           </div>
+          
+          {#if reviewsLoading}
+            <div class="loading-placeholder">Loading reviews...</div>
+          {:else if pendingReviews.length > 0}
+            <div class="reviews-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Company</th>
+                    <th>Branch</th>
+                    <th>Reviewer</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each pendingReviews as review}
+                    <tr>
+                      <td>{review.id}</td>
+                      <td>{review.freight_forwarder_name}</td>
+                      <td>{review.branch_name || 'N/A'}</td>
+                      <td>{review.reviewer_name}</td>
+                      <td><span class="status {review.status.toLowerCase()}">{review.status}</span></td>
+                      <td>{new Date(review.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
+                        <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {:else}
+            <div class="empty-state">
+              <div class="empty-icon">📝</div>
+              <h3>No Pending Reviews</h3>
+              <p>All reviews have been processed or there are no pending reviews at the moment.</p>
+            </div>
+          {/if}
         </div>
       {/if}
 
       <!-- Disputes Tab -->
       {#if activeTab === 'disputes'}
         <div class="disputes-content">
-          <h2>Dispute Resolution</h2>
-          <div class="disputes-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Company</th>
-                  <th>Issue</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each disputes as dispute}
-                  <tr>
-                    <td>{dispute.id}</td>
-                    <td>{dispute.freight_forwarder_name}</td>
-                    <td>{dispute.issue}</td>
-                    <td><span class="status {dispute.status.toLowerCase().replace(' ', '-')}">{dispute.status}</span></td>
-                    <td>{new Date(dispute.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <button class="btn-primary" on:click={() => resolveDispute(dispute.id)}>Resolve</button>
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
+          <div class="disputes-header">
+            <h2>Dispute Resolution</h2>
+            <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
           </div>
+          
+          {#if disputesLoading}
+            <div class="loading-placeholder">Loading disputes...</div>
+          {:else if disputes.length > 0}
+            <div class="disputes-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Company</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {#each disputes as dispute}
+                    <tr>
+                      <td>{dispute.id}</td>
+                      <td>{dispute.freight_forwarder_name}</td>
+                      <td>{dispute.issue}</td>
+                      <td><span class="status {dispute.status.toLowerCase().replace(' ', '-')}">{dispute.status}</span></td>
+                      <td>{new Date(dispute.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <button class="btn-primary" on:click={() => resolveDispute(dispute.id)}>Resolve</button>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {:else}
+            <div class="empty-state">
+              <div class="empty-icon">⚖️</div>
+              <h3>No Active Disputes</h3>
+              <p>All disputes have been resolved or there are no active disputes at the moment.</p>
+            </div>
+          {/if}
         </div>
       {/if}
 
@@ -823,7 +963,10 @@
         <div class="companies-content">
           <div class="companies-header">
             <h2>Company Management</h2>
-            <button class="btn-primary" on:click={() => showAddCompanyModal = true}>Add Company</button>
+            <div class="header-actions">
+              <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
+              <button class="btn-primary" on:click={() => showAddCompanyModal = true}>Add Company</button>
+            </div>
           </div>
 
 
@@ -846,74 +989,87 @@
           </div>
 
           <!-- Companies Table -->
-          <div class="companies-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Logo</th>
-                  <th>Company Name</th>
-                  <th>Website</th>
-                  <th>Headquarters</th>
-                  <th>Description</th>
-                  <th>Reviews</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each companies as company}
+          {#if companiesLoading}
+            <div class="loading-placeholder">Loading companies...</div>
+          {:else if companies.length > 0}
+            <div class="companies-table">
+              <table>
+                <thead>
                   <tr>
-                    <td>
-                      {#if company.logo_url}
-                        <img src={company.logo_url} alt="{company.name} logo" class="company-logo" />
-                      {:else}
-                        <div class="logo-placeholder">No Logo</div>
-                      {/if}
-                    </td>
-                    <td>{company.name}</td>
-                    <td>
-                      {#if company.website}
-                        <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
-                          {company.website}
-                        </a>
-                      {:else}
-                        <span class="no-data">-</span>
-                      {/if}
-                    </td>
-                    <td>
-                      {#if company.headquarters_country}
-                        <span class="headquarters">📍 {company.headquarters_country}</span>
-                      {:else}
-                        <span class="no-data">-</span>
-                      {/if}
-                    </td>
-                    <td>
-                      {#if company.description}
-                        <div class="description-cell" title={company.description}>
-                          {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
-                        </div>
-                      {:else}
-                        <span class="no-data">-</span>
-                      {/if}
-                    </td>
-                    <td>{company.reviews_count}</td>
-                    <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
-                    <td>
-                      <button class="btn-secondary" on:click={() => openEditCompanyModal(company)}>Edit</button>
-                      <button class="btn-danger" on:click={() => confirmDeleteCompany(company)}>Delete</button>
-                    </td>
+                    <th>Logo</th>
+                    <th>Company Name</th>
+                    <th>Website</th>
+                    <th>Headquarters</th>
+                    <th>Description</th>
+                    <th>Reviews</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {#each companies as company}
+                    <tr>
+                      <td>
+                        {#if company.logo_url}
+                          <img src={company.logo_url} alt="{company.name} logo" class="company-logo" />
+                        {:else}
+                          <div class="logo-placeholder">No Logo</div>
+                        {/if}
+                      </td>
+                      <td>{company.name}</td>
+                      <td>
+                        {#if company.website}
+                          <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
+                            {company.website}
+                          </a>
+                        {:else}
+                          <span class="no-data">-</span>
+                        {/if}
+                      </td>
+                      <td>
+                        {#if company.headquarters_country}
+                          <span class="headquarters">📍 {company.headquarters_country}</span>
+                        {:else}
+                          <span class="no-data">-</span>
+                        {/if}
+                      </td>
+                      <td>
+                        {#if company.description}
+                          <div class="description-cell" title={company.description}>
+                            {company.description.length > 50 ? company.description.substring(0, 50) + '...' : company.description}
+                          </div>
+                        {:else}
+                          <span class="no-data">-</span>
+                        {/if}
+                      </td>
+                      <td>{company.reviews_count}</td>
+                      <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
+                      <td>
+                        <button class="btn-secondary" on:click={() => openEditCompanyModal(company)}>Edit</button>
+                        <button class="btn-danger" on:click={() => confirmDeleteCompany(company)}>Delete</button>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {:else}
+            <div class="empty-state">
+              <div class="empty-icon">🏢</div>
+              <h3>No Companies Found</h3>
+              <p>No companies match your search criteria or there are no companies in the system yet.</p>
+            </div>
+          {/if}
         </div>
       {/if}
 
       <!-- User Management Tab -->
       {#if activeTab === 'users'}
         <div class="users-content">
-          <h2>User Management</h2>
+          <div class="users-header">
+            <h2>User Management</h2>
+            <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
+          </div>
           <div class="users-filters">
             <input 
               type="text" 
@@ -928,47 +1084,60 @@
               <option value="admin">Admins</option>
             </select>
           </div>
-          <div class="users-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Company Name</th>
-                  <th>Subscription</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each users as user}
+          {#if usersLoading}
+            <div class="loading-placeholder">Loading users...</div>
+          {:else if users.length > 0}
+            <div class="users-table">
+              <table>
+                <thead>
                   <tr>
-                    <td>{user.id}</td>
-                    <td>{user.full_name || user.username || 'N/A'}</td>
-                    <td>{user.email}</td>
-                    <td>{user.user_type}</td>
-                    <td>{user.company_name || 'N/A'}</td>
-                    <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
-                    <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
-                    <td>
-                      <button class="btn-secondary" on:click={() => openEditUserModal(user)}>Edit</button>
-                      <button class="btn-secondary">Suspend</button>
-                      <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
-                    </td>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Company Name</th>
+                    <th>Subscription</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {#each users as user}
+                    <tr>
+                      <td>{user.id}</td>
+                      <td>{user.full_name || user.username || 'N/A'}</td>
+                      <td>{user.email}</td>
+                      <td>{user.user_type}</td>
+                      <td>{user.company_name || 'N/A'}</td>
+                      <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
+                      <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
+                      <td>
+                        <button class="btn-secondary" on:click={() => openEditUserModal(user)}>Edit</button>
+                        <button class="btn-secondary">Suspend</button>
+                        <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {:else}
+            <div class="empty-state">
+              <div class="empty-icon">👥</div>
+              <h3>No Users Found</h3>
+              <p>No users match your search criteria or there are no users in the system yet.</p>
+            </div>
+          {/if}
         </div>
       {/if}
 
       <!-- Analytics Tab -->
       {#if activeTab === 'analytics'}
         <div class="analytics-content">
-          <h2>Platform Analytics</h2>
+          <div class="analytics-header">
+            <h2>Platform Analytics</h2>
+            <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
+          </div>
           {#if analyticsData}
             <div class="analytics-grid">
               <div class="analytics-card">
@@ -1035,6 +1204,8 @@
                 </div>
               </div>
             </div>
+          {:else if analyticsLoading}
+            <div class="loading-placeholder">Loading analytics data...</div>
           {:else if analyticsError}
             <div class="analytics-error">
               <div class="error-icon">⚠️</div>
@@ -1043,7 +1214,11 @@
               <button class="btn-retry" on:click={loadAnalytics}>🔄 Retry</button>
             </div>
           {:else}
-            <div class="loading-placeholder">Loading analytics data...</div>
+            <div class="empty-state">
+              <div class="empty-icon">📈</div>
+              <h3>No Analytics Data</h3>
+              <p>Analytics data is not available at the moment. Please try refreshing later.</p>
+            </div>
           {/if}
         </div>
       {/if}
@@ -1168,6 +1343,76 @@
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeEditCompanyModal}>Cancel</button>
         <button class="btn-primary" on:click={updateCompany}>Update Company</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Add Company Modal -->
+{#if showAddCompanyModal}
+  <div class="modal-overlay" on:click={() => showAddCompanyModal = false}>
+    <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>Add New Company</h2>
+        <button class="close-btn" on:click={() => showAddCompanyModal = false}>&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new-company-name">Company Name: *</label>
+          <input 
+            type="text" 
+            id="new-company-name" 
+            bind:value={newCompany.name}
+            placeholder="Enter company name"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="new-company-website">Website:</label>
+          <input 
+            type="url" 
+            id="new-company-website" 
+            bind:value={newCompany.website}
+            placeholder="https://example.com"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="new-company-logo">Logo URL:</label>
+          <input 
+            type="url" 
+            id="new-company-logo" 
+            bind:value={newCompany.logo_url}
+            placeholder="https://example.com/logo.png"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="new-company-description">Description:</label>
+          <textarea 
+            id="new-company-description" 
+            bind:value={newCompany.description}
+            placeholder="Enter company description"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="new-company-headquarters">Headquarters Country:</label>
+          <input 
+            type="text" 
+            id="new-company-headquarters" 
+            bind:value={newCompany.headquarters_country}
+            placeholder="e.g., United States, Germany, Singapore"
+          />
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" on:click={() => showAddCompanyModal = false}>Cancel</button>
+        <button class="btn-primary" on:click={addCompany} disabled={!newCompany.name.trim()}>Add Company</button>
       </div>
     </div>
   </div>
@@ -1371,8 +1616,32 @@
 
   .dashboard-actions {
     display: flex;
+    flex-direction: column;
     gap: 15px;
-    align-items: center;
+    align-items: flex-end;
+  }
+
+  .refresh-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .last-refresh {
+    font-weight: 500;
+  }
+
+  .auto-refresh-status {
+    color: #28a745;
+    font-weight: 600;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 10px;
   }
 
   .btn-test-auth {
@@ -1588,6 +1857,23 @@
     background: #c82333;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  }
+
+  /* Tab Headers */
+  .reviews-header,
+  .disputes-header,
+  .users-header,
+  .analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
 
   /* Company Management */
@@ -1954,6 +2240,39 @@
     color: #666;
     font-size: 1.2rem;
     animation: pulse 2s infinite;
+  }
+
+  .empty-state {
+    height: 300px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.6;
+  }
+
+  .empty-state h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+  }
+
+  .empty-state p {
+    color: #666;
+    font-size: 1rem;
+    max-width: 400px;
+    line-height: 1.5;
   }
 
   .analytics-error {
