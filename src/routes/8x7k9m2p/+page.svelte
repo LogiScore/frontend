@@ -257,12 +257,14 @@
         return;
       }
       
+
+      
       // Show user-friendly error message
       if ((error as any).message) {
         console.error('Dashboard Error:', (error as any).message);
       }
     } finally {
-      isLoading = false;
+      dashboardLoading = false;
     }
   }
 
@@ -393,6 +395,8 @@
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
+      
+
     }
   }
 
@@ -885,11 +889,11 @@
                   {#each pendingReviews as review}
                     <tr>
                       <td>{review.id}</td>
-                      <td>{review.freight_forwarder_name}</td>
-                      <td>{review.branch_name || 'N/A'}</td>
-                      <td>{review.reviewer_name}</td>
-                      <td><span class="status {review.status.toLowerCase()}">{review.status}</span></td>
-                      <td>{new Date(review.created_at).toLocaleDateString()}</td>
+                      <td>{review.freight_forwarder_name || review.freight_forwarder_id || 'N/A'}</td>
+                      <td>{review.branch_name || review.branch_id || 'N/A'}</td>
+                      <td>{review.reviewer_name || review.user_id || 'N/A'}</td>
+                      <td><span class="status {review.status?.toLowerCase() || (review.is_active ? 'active' : 'inactive')}">{review.status || (review.is_active ? 'Active' : 'Inactive')}</span></td>
+                      <td>{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'N/A'}</td>
                       <td>
                         <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
                         <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
@@ -930,16 +934,16 @@
                     <th>Status</th>
                     <th>Date</th>
                     <th>Actions</th>
-                    </tr>
+                  </tr>
                 </thead>
                 <tbody>
                   {#each disputes as dispute}
                     <tr>
                       <td>{dispute.id}</td>
-                      <td>{dispute.freight_forwarder_name}</td>
-                      <td>{dispute.issue}</td>
-                      <td><span class="status {dispute.status.toLowerCase().replace(' ', '-')}">{dispute.status}</span></td>
-                      <td>{new Date(dispute.created_at).toLocaleDateString()}</td>
+                      <td>{dispute.freight_forwarder_name || dispute.freight_forwarder_id || 'N/A'}</td>
+                      <td>{dispute.issue || dispute.description || 'N/A'}</td>
+                      <td><span class="status {dispute.status?.toLowerCase().replace(' ', '-') || 'unknown'}">{dispute.status || 'Unknown'}</span></td>
+                      <td>{dispute.created_at ? new Date(dispute.created_at).toLocaleDateString() : 'N/A'}</td>
                       <td>
                         <button class="btn-primary" on:click={() => resolveDispute(dispute.id)}>Resolve</button>
                       </td>
