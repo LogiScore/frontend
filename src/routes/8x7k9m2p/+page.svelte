@@ -85,6 +85,10 @@
     pendingReviews: 0,
     totalRevenue: 0
   };
+  
+  // Dashboard error states
+  let dashboardError: string | null = null;
+  let recentActivityError: string | null = null;
 
   // Dynamic data for different sections
   let pendingReviews: any[] = [];
@@ -157,6 +161,10 @@
     if (!authState.token || authState.user?.user_type !== 'admin') return;
     
     lastRefreshTime = new Date();
+    
+    // Clear any existing errors when refreshing
+    dashboardError = null;
+    recentActivityError = null;
     
     switch (activeTab) {
       case 'dashboard':
@@ -257,12 +265,9 @@
         return;
       }
       
-
-      
-      // Show user-friendly error message
-      if ((error as any).message) {
-        console.error('Dashboard Error:', (error as any).message);
-      }
+      // Set error state for user display
+      dashboardError = 'Failed to load dashboard statistics. Please try again later.';
+      console.error('Dashboard Error:', (error as any).message);
     } finally {
       dashboardLoading = false;
     }
@@ -396,7 +401,8 @@
         return;
       }
       
-
+      // Set error state for user display
+      recentActivityError = 'Failed to load recent activity. Please try again later.';
     }
   }
 
@@ -805,58 +811,80 @@
               <p>Please log in with admin credentials to view dashboard data.</p>
             </div>
           {:else}
-          <div class="stats-grid">
-            {#if dashboardLoading}
-              {#each Array(6) as _, i}
-                <div class="stat-card loading">
-                  <div class="stat-skeleton"></div>
-                </div>
-              {/each}
-            {:else}
-              <div class="stat-card">
-                <h3>Total Users</h3>
-                <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
-              </div>
-              <div class="stat-card">
-                <h3>Total Companies</h3>
-                <div class="stat-number">{dashboardStats.totalCompanies}</div>
-              </div>
-              <div class="stat-card">
-                <h3>Total Reviews</h3>
-                <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
-              </div>
-              <div class="stat-card">
-                <h3>Pending Disputes</h3>
-                <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
-              </div>
-              <div class="stat-card">
-                <h3>Pending Reviews</h3>
-                <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
-              </div>
-              <div class="stat-card">
-                <h3>Monthly Revenue</h3>
-                <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
-              </div>
-            {/if}
-          </div>
-
-          <div class="recent-activity">
-            <h2>Recent Activity</h2>
-            <div class="activity-list">
-              {#if recentActivity.length > 0}
-                {#each recentActivity as activity}
-                  <div class="activity-item">
-                    <span class="activity-time">{formatTimeAgo(activity.timestamp)}</span>
-                    <span class="activity-text">{activity.message}</span>
+          {#if dashboardError}
+            <div class="dashboard-error">
+              <div class="error-icon">⚠️</div>
+              <h3>Dashboard Data Unavailable</h3>
+              <p>{dashboardError}</p>
+              <button class="btn-retry" on:click={refreshCurrentTab}>
+                🔄 Retry
+              </button>
+            </div>
+          {:else}
+            <div class="stats-grid">
+              {#if dashboardLoading}
+                {#each Array(6) as _, i}
+                  <div class="stat-card loading">
+                    <div class="stat-skeleton"></div>
                   </div>
                 {/each}
               {:else}
-                <div class="activity-item">
-                  <span class="activity-text">No recent activity</span>
+                <div class="stat-card">
+                  <h3>Total Users</h3>
+                  <div class="stat-number">{dashboardStats.totalUsers.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Total Companies</h3>
+                  <div class="stat-number">{dashboardStats.totalCompanies}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Total Reviews</h3>
+                  <div class="stat-number">{dashboardStats.totalReviews.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Pending Disputes</h3>
+                  <div class="stat-number warning">{dashboardStats.pendingDisputes}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Pending Reviews</h3>
+                  <div class="stat-number warning">{dashboardStats.pendingReviews}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Monthly Revenue</h3>
+                  <div class="stat-number">${dashboardStats.totalRevenue.toLocaleString()}</div>
                 </div>
               {/if}
             </div>
-          </div>
+          {/if}
+
+          {#if recentActivityError}
+            <div class="recent-activity-error">
+              <div class="error-icon">⚠️</div>
+              <h3>Recent Activity Unavailable</h3>
+              <p>{recentActivityError}</p>
+              <button class="btn-retry" on:click={refreshCurrentTab}>
+                🔄 Retry
+              </button>
+            </div>
+          {:else}
+            <div class="recent-activity">
+              <h2>Recent Activity</h2>
+              <div class="activity-list">
+                {#if recentActivity.length > 0}
+                  {#each recentActivity as activity}
+                    <div class="activity-item">
+                      <span class="activity-time">{formatTimeAgo(activity.timestamp)}</span>
+                      <span class="activity-text">{activity.message}</span>
+                    </div>
+                  {/each}
+                {:else}
+                  <div class="activity-item">
+                    <span class="activity-text">No recent activity</span>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/if}
           {/if}
         </div>
       {/if}
@@ -2291,6 +2319,59 @@
     color: #c53030;
     text-align: center;
     padding: 20px;
+  }
+
+  /* Dashboard Error States */
+  .dashboard-error,
+  .recent-activity-error {
+    background: #fff5f5;
+    border: 2px dashed #f56565;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    margin: 20px 0;
+    color: #c53030;
+  }
+
+  .dashboard-error .error-icon,
+  .recent-activity-error .error-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-error h3,
+  .recent-activity-error h3 {
+    color: #c53030;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+  }
+
+  .dashboard-error p,
+  .recent-activity-error p {
+    color: #742a2a;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+
+  .btn-retry {
+    background: #3182ce;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-retry:hover {
+    background: #2c5aa0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
   }
 
   .error-icon {
