@@ -270,7 +270,20 @@
     try {
       isLoading = true;
       console.log('Loading companies with token:', authState.token.substring(0, 20) + '...');
-      companies = await apiClient.getAdminCompanies(authState.token, companySearch) as any[];
+      
+      // Load all companies first (without search filter)
+      const allCompanies = await apiClient.getAdminCompanies(authState.token) as any[];
+      
+      // Apply client-side search filtering for substring search
+      if (companySearch && companySearch.trim()) {
+        const searchTerm = companySearch.trim().toLowerCase();
+        companies = allCompanies.filter(company => 
+          company.name && company.name.toLowerCase().includes(searchTerm)
+        );
+        console.log(`Filtered ${companies.length} companies from ${allCompanies.length} total for search: "${searchTerm}"`);
+      } else {
+        companies = allCompanies;
+      }
     } catch (error) {
       console.error('Failed to load companies:', error);
       
@@ -817,12 +830,19 @@
 
           <!-- Company Search -->
           <div class="company-search">
-            <input 
-              type="text" 
-              placeholder="Search companies by name..." 
-              class="search-input" 
-              bind:value={companySearch}
-            />
+            <div class="search-container">
+              <input 
+                type="text" 
+                placeholder="Search companies by name..." 
+                class="search-input" 
+                bind:value={companySearch}
+              />
+              {#if companySearch && companySearch.trim()}
+                <div class="search-results">
+                  Found {companies.length} company{companies.length !== 1 ? 'ies' : 'y'}
+                </div>
+              {/if}
+            </div>
           </div>
 
           <!-- Companies Table -->
@@ -1582,6 +1602,13 @@
     margin-bottom: 20px;
   }
 
+  .search-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
   .company-search .search-input {
     width: 100%;
     max-width: 400px;
@@ -1600,6 +1627,16 @@
 
   .company-search .search-input::placeholder {
     color: #999;
+  }
+
+  .search-results {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
   }
 
   .help-text {
