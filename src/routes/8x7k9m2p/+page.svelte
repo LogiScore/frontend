@@ -428,26 +428,14 @@
   }
 
   function openEditUserModal(user: any) {
-    console.log('openEditUserModal called with user:', user);
-    console.log('User object keys:', Object.keys(user));
-    console.log('User ID:', user.id);
-    console.log('User full_name:', user.full_name);
-    console.log('User username:', user.username);
-    console.log('User email:', user.email);
-    console.log('User user_type:', user.user_type);
-    console.log('User company_name:', user.company_name);
-    
     selectedUserId = user.id;
     editUserData = {
-      full_name: user.full_name || user.username || '',
-      email: user.email || '',
-      user_type: user.user_type || 'shipper',
-      company_name: user.company_name || ''
+      full_name: (user.full_name || user.username || '').toString(),
+      email: (user.email || '').toString(),
+      user_type: (user.user_type || 'shipper').toString(),
+      company_name: (user.company_name || '').toString()
     };
-    console.log('editUserData set to:', editUserData);
-    console.log('selectedUserId set to:', selectedUserId);
     showEditUserModal = true;
-    console.log('Modal should now be visible:', showEditUserModal);
   }
 
   function closeEditUserModal() {
@@ -475,31 +463,43 @@
   }
 
   async function updateUserProfile() {
-    console.log('updateUserProfile called');
-    console.log('authState.token:', !!authState.token);
-    console.log('selectedUserId:', selectedUserId);
-    console.log('editUserData:', editUserData);
-    
     if (!authState.token || !selectedUserId) {
-      console.log('Missing token or userId, returning early');
+      return;
+    }
+    
+    // Validate and clean the data before sending to backend
+    const userUpdateData: any = {};
+    
+    // Only include fields that have valid values
+    if (editUserData.full_name && editUserData.full_name.trim() !== '') {
+      userUpdateData.full_name = editUserData.full_name.trim();
+    }
+    
+    if (editUserData.email && editUserData.email.trim() !== '') {
+      userUpdateData.email = editUserData.email.trim();
+    }
+    
+    if (editUserData.user_type && editUserData.user_type.trim() !== '') {
+      userUpdateData.user_type = editUserData.user_type.trim();
+    }
+    
+    if (editUserData.company_name && editUserData.company_name.trim() !== '') {
+      userUpdateData.company_name = editUserData.company_name.trim();
+    }
+    
+    // Check if we have any data to update
+    if (Object.keys(userUpdateData).length === 0) {
+      alert('No valid data to update. Please fill in at least one field.');
       return;
     }
     
     try {
-      console.log('Calling apiClient.adminUpdateUser...');
-      const result = await apiClient.adminUpdateUser(authState.token, selectedUserId, {
-        full_name: editUserData.full_name,
-        email: editUserData.email,
-        user_type: editUserData.user_type,
-        company_name: editUserData.company_name
-      });
+      const result = await apiClient.adminUpdateUser(authState.token, selectedUserId, userUpdateData);
       
-      console.log('Update successful:', result);
       await loadUsers(); // Reload users
       closeEditUserModal();
     } catch (error: any) {
       console.error('Failed to update user profile:', error);
-      // Show error to user
       alert(`Failed to update user profile: ${error.message || 'Unknown error'}`);
     }
   }
@@ -1076,13 +1076,7 @@
       
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeEditUserModal}>Cancel</button>
-        <button class="btn-primary" on:click={() => { 
-          console.log('Update Profile button clicked'); 
-          console.log('Current state - selectedUserId:', selectedUserId);
-          console.log('Current state - editUserData:', editUserData);
-          console.log('Current state - showEditUserModal:', showEditUserModal);
-          updateUserProfile(); 
-        }}>Update Profile</button>
+        <button class="btn-primary" on:click={updateUserProfile}>Update Profile</button>
       </div>
     </div>
   </div>
