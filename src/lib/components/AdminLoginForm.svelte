@@ -175,7 +175,7 @@
 
 <style>
   .admin-login-form {
-    max-width: 400px;
+    max-width: 320px;
     margin: 0 auto;
     padding: 2rem;
     background: white;
@@ -201,6 +201,7 @@
   
   .form-group {
     margin-bottom: 1.5rem;
+    width: 100%;
   }
   
   .form-group label {
@@ -208,6 +209,7 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: #374151;
+    width: 100%;
   }
   
   .form-group input {
@@ -217,6 +219,7 @@
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
   }
   
   .form-group input:focus {
@@ -233,6 +236,8 @@
     text-align: center;
     margin-bottom: 1rem;
     color: #374151;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .help-text {
@@ -240,6 +245,7 @@
     font-size: 0.875rem;
     margin-top: 0.5rem;
     text-align: center;
+    width: 100%;
   }
   
   .success-message {
@@ -249,6 +255,8 @@
     border-radius: 8px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .error-message {
@@ -258,6 +266,8 @@
     border-radius: 8px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .btn-admin-login {
@@ -276,6 +286,7 @@
     justify-content: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    box-sizing: border-box;
   }
   
   .btn-admin-login:hover:not(:disabled) {
@@ -304,6 +315,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    box-sizing: border-box;
   }
   
   .btn-secondary:hover {
@@ -315,11 +327,13 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    width: 100%;
   }
   
   .resend-section {
     text-align: center;
     margin-top: 1.5rem;
+    width: 100%;
   }
   
   .link-btn {
@@ -341,5 +355,49 @@
     color: #9ca3af;
     cursor: not-allowed;
     text-decoration: none;
+  }
+
+  /* Ensure form takes full width */
+  form {
+    width: 100%;
+  }
+
+  /* Fix any potential margin/padding issues */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Additional alignment fixes */
+  .admin-login-form > * {
+    width: 100%;
+  }
+
+  /* Ensure consistent button alignment */
+  button {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* Fix form group spacing */
+  .form-group > * {
+    width: 100%;
+    display: block;
+  }
+
+  /* Ensure help text is properly aligned */
+  .help-text {
+    text-align: center;
+    margin: 0.5rem 0;
+  }
+
+  /* Fix button margins */
+  .btn-admin-login,
+  .btn-secondary {
+    margin: 0.5rem 0;
+  }
+
+  /* Ensure form actions are properly spaced */
+  .form-actions > * {
+    margin: 0.25rem 0;
   }
 </style>
