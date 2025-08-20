@@ -542,14 +542,16 @@
 
   .company-header {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: 1rem;
+    text-align: center;
   }
 
   .company-logo {
-    width: 60px;
-    height: 60px;
-    margin-right: 1rem;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -563,7 +565,8 @@
   }
 
   .company-info {
-    flex: 1;
+    width: 100%;
+    text-align: center;
   }
 
   .company-name {
@@ -609,6 +612,7 @@
 
   .company-stats {
     display: flex;
+    justify-content: center;
     gap: 1rem;
     margin-bottom: 1rem;
     flex-wrap: wrap;
@@ -646,7 +650,9 @@
     text-decoration: none;
     display: inline-block;
     text-align: center;
-    width: 100%;
+    width: calc(100% - 2rem);
+    max-width: 200px;
+    box-sizing: border-box;
   }
 
   .view-profile-btn:hover {
