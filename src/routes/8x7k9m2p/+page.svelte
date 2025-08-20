@@ -428,6 +428,15 @@
   }
 
   function openEditUserModal(user: any) {
+    console.log('openEditUserModal called with user:', user);
+    console.log('User object keys:', Object.keys(user));
+    console.log('User ID:', user.id);
+    console.log('User full_name:', user.full_name);
+    console.log('User username:', user.username);
+    console.log('User email:', user.email);
+    console.log('User user_type:', user.user_type);
+    console.log('User company_name:', user.company_name);
+    
     selectedUserId = user.id;
     editUserData = {
       full_name: user.full_name || user.username || '',
@@ -435,7 +444,10 @@
       user_type: user.user_type || 'shipper',
       company_name: user.company_name || ''
     };
+    console.log('editUserData set to:', editUserData);
+    console.log('selectedUserId set to:', selectedUserId);
     showEditUserModal = true;
+    console.log('Modal should now be visible:', showEditUserModal);
   }
 
   function closeEditUserModal() {
@@ -463,20 +475,32 @@
   }
 
   async function updateUserProfile() {
-    if (!authState.token || !selectedUserId) return;
+    console.log('updateUserProfile called');
+    console.log('authState.token:', !!authState.token);
+    console.log('selectedUserId:', selectedUserId);
+    console.log('editUserData:', editUserData);
+    
+    if (!authState.token || !selectedUserId) {
+      console.log('Missing token or userId, returning early');
+      return;
+    }
     
     try {
-      await apiClient.adminUpdateUser(authState.token, selectedUserId, {
+      console.log('Calling apiClient.adminUpdateUser...');
+      const result = await apiClient.adminUpdateUser(authState.token, selectedUserId, {
         full_name: editUserData.full_name,
         email: editUserData.email,
         user_type: editUserData.user_type,
         company_name: editUserData.company_name
       });
       
+      console.log('Update successful:', result);
       await loadUsers(); // Reload users
       closeEditUserModal();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update user profile:', error);
+      // Show error to user
+      alert(`Failed to update user profile: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -1052,7 +1076,13 @@
       
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeEditUserModal}>Cancel</button>
-        <button class="btn-primary" on:click={updateUserProfile}>Update Profile</button>
+        <button class="btn-primary" on:click={() => { 
+          console.log('Update Profile button clicked'); 
+          console.log('Current state - selectedUserId:', selectedUserId);
+          console.log('Current state - editUserData:', editUserData);
+          console.log('Current state - showEditUserModal:', showEditUserModal);
+          updateUserProfile(); 
+        }}>Update Profile</button>
       </div>
     </div>
   </div>
@@ -1800,6 +1830,19 @@
   .btn-retry:hover {
     background: #2c5aa0;
     transform: translateY(-1px);
+  }
+
+  /* Feature Notice */
+  .feature-notice {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 15px;
+    text-align: center;
+    color: #856404;
+    font-size: 0.9rem;
+    font-weight: 500;
   }
 
   /* Responsive Design */
