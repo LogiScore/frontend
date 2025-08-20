@@ -20,7 +20,16 @@
   $: {
     const urlParams = new URLSearchParams($page.url.search);
     const query = urlParams.get('q') || '';
-    const type = urlParams.get('type') || 'company';
+    let type = urlParams.get('type') || 'company';
+    
+    // Force company search for non-subscribed users
+    if (type === 'country' && !canSearchByCountry()) {
+      type = 'company';
+      // Update URL to reflect the change
+      const url = new URL(window.location.href);
+      url.searchParams.set('type', 'company');
+      window.history.replaceState({}, '', url.toString());
+    }
     
     searchType = type as 'company' | 'country';
     if (type === 'company') {
@@ -212,17 +221,15 @@
           <span class="icon">🏢</span>
           Search by Company
         </button>
-        <button 
-          class="search-type-btn {searchType === 'country' ? 'active' : ''}"
-          on:click={() => switchSearchType('country')}
-          class:disabled={!canSearchByCountry()}
-        >
-          <span class="icon">🌍</span>
-          Search by Country
-          {#if !canSearchByCountry()}
-            <span class="premium-badge">Premium</span>
-          {/if}
-        </button>
+        {#if canSearchByCountry()}
+          <button 
+            class="search-type-btn {searchType === 'country' ? 'active' : ''}"
+            on:click={() => switchSearchType('country')}
+          >
+            <span class="icon">🌍</span>
+            Search by Country
+          </button>
+        {/if}
       </div>
 
       <!-- Search Box -->
@@ -240,13 +247,7 @@
         </button>
       </div>
 
-      <!-- Subscription Notice for Country Search -->
-      {#if searchType === 'country' && !canSearchByCountry()}
-        <div class="subscription-notice">
-          <p>🔒 Country search requires a premium subscription to access detailed country-based results.</p>
-          <a href="/pricing" class="upgrade-link">View Pricing Plans</a>
-        </div>
-      {/if}
+
     </div>
   </section>
 
@@ -373,15 +374,9 @@
           <div class="no-results-suggestions">
             <h3>Search Tips:</h3>
             <ul>
-              {#if searchType === 'company'}
-                <li>Try using partial company names (e.g., "DHL" instead of "DHL Supply Chain")</li>
-                <li>Check spelling and try alternative spellings</li>
-                <li>Use company abbreviations if known</li>
-              {:else}
-                <li>Try searching by country name (e.g., "Germany" instead of "Hamburg")</li>
-                <li>Use full country names (e.g., "United States", "United Kingdom")</li>
-                <li>Check spelling of country names</li>
-              {/if}
+              <li>Try using partial company names (e.g., "DHL" instead of "DHL Supply Chain")</li>
+              <li>Check spelling and try alternative spellings</li>
+              <li>Use company abbreviations if known</li>
             </ul>
           </div>
         </div>
@@ -396,14 +391,6 @@
                 <li>"DHL" - Find DHL Supply Chain</li>
                 <li>"Kuehne" - Find Kuehne + Nagel</li>
                 <li>"DB Schenker" - Find DB Schenker</li>
-              </ul>
-            </div>
-            <div class="example-section">
-              <h3>Country Search Examples:</h3>
-              <ul>
-                <li>"Germany" - Companies in Germany</li>
-                <li>"United States" - Companies in USA</li>
-                <li>"Singapore" - Companies in Singapore</li>
               </ul>
             </div>
           </div>
