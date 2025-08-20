@@ -772,7 +772,6 @@
                   <th>Website</th>
                   <th>Headquarters</th>
                   <th>Description</th>
-                  <th>Branches</th>
                   <th>Reviews</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -792,7 +791,7 @@
                     <td>
                       {#if company.website}
                         <a href={company.website} target="_blank" rel="noopener noreferrer" class="website-link">
-                          🌐 Visit
+                          {company.website}
                         </a>
                       {:else}
                         <span class="no-data">-</span>
@@ -814,7 +813,6 @@
                         <span class="no-data">-</span>
                       {/if}
                     </td>
-                    <td>{company.branches_count}</td>
                     <td>{company.reviews_count}</td>
                     <td><span class="status {company.status.toLowerCase()}">{company.status}</span></td>
                     <td>
