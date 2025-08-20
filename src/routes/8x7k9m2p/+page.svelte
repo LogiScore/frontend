@@ -14,22 +14,31 @@
   // Subscribe to auth store
   auth.subscribe(state => {
     console.log('Admin page: Auth state changed:', state);
+    console.log('Admin page: Token present:', !!state.token);
+    console.log('Admin page: User present:', !!state.user);
+    console.log('Admin page: User type:', state.user?.user_type);
+    
     authState = state;
     
     // Check if user is authenticated and has admin access
     if (state.user && state.token) {
       console.log('Admin page: User authenticated:', state.user);
+      console.log('Admin page: Token length:', state.token.length);
+      console.log('Admin page: Token preview:', state.token.substring(0, 50) + '...');
+      
       // Check if user has admin privileges
       if (state.user.user_type === 'admin') {
-        console.log('Admin page: User has admin access');
+        console.log('Admin page: User has admin access - ready to load data');
       } else {
         console.log('Admin page: User does not have admin access - redirecting');
         // Redirect non-admin users to home page
         window.location.href = '/';
       }
     } else if (!state.token) {
-      console.log('Admin page: No token');
+      console.log('Admin page: No token - showing login form');
       // User not logged in - stay on page to show login form
+    } else if (!state.user) {
+      console.log('Admin page: No user data - showing login form');
     }
   });
 
@@ -91,6 +100,42 @@
   let reviewStatusFilter = '';
   let disputeStatusFilter = '';
 
+  // Test authentication token with backend
+  async function testAuthToken() {
+    if (!authState.token) {
+      console.log('No token to test');
+      return false;
+    }
+    
+    try {
+      console.log('Testing authentication token...');
+      console.log('Token length:', authState.token.length);
+      console.log('Token preview:', authState.token.substring(0, 50) + '...');
+      
+      // Test with a simple health check or try to get user info
+      const response = await fetch('https://logiscorebe.onrender.com/health', {
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Auth test response status:', response.status);
+      console.log('Auth test response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        console.log('✅ Token is valid');
+        return true;
+      } else {
+        console.log('❌ Token validation failed:', response.status, response.statusText);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error testing auth token:', error);
+      return false;
+    }
+  }
+
   // Load dashboard stats
   async function loadDashboardStats() {
     if (!authState.token) {
@@ -98,9 +143,17 @@
       return;
     }
     
+    // Test authentication first
+    const isTokenValid = await testAuthToken();
+    if (!isTokenValid) {
+      console.error('Authentication token is invalid - clearing auth state');
+      auth.update(state => ({ ...state, user: null, token: null }));
+      return;
+    }
+    
     try {
       isLoading = true;
-      console.log('Loading dashboard stats with token:', authState.token.substring(0, 20) + '...');
+      console.log('Loading dashboard stats with valid token:', authState.token.substring(0, 20) + '...');
       
       const stats = await apiClient.getDashboardStats(authState.token) as any;
       console.log('Dashboard stats received:', stats);
@@ -513,9 +566,14 @@
         <div class="dashboard-content">
           <div class="dashboard-header">
             <h2>Dashboard Overview</h2>
-            <button class="btn-refresh" on:click={() => { loadDashboardStats(); loadRecentActivity(); }}>
-              🔄 Refresh Data
-            </button>
+            <div class="dashboard-actions">
+              <button class="btn-test-auth" on:click={testAuthToken}>
+                🔐 Test Auth
+              </button>
+              <button class="btn-refresh" on:click={() => { loadDashboardStats(); loadRecentActivity(); }}>
+                🔄 Refresh Data
+              </button>
+            </div>
           </div>
           
           <!-- Authentication Status Check -->
@@ -1134,6 +1192,32 @@
   .dashboard-header h2 {
     margin: 0;
     color: #333;
+  }
+
+  .dashboard-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .btn-test-auth {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-test-auth:hover {
+    background: #138496;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
   }
 
   .btn-refresh {
