@@ -109,16 +109,12 @@
 <div class="admin-login-form">
   <div class="form-header">
     <h2>🔐 Admin Authentication</h2>
-    <p>Verification code will be sent to {ADMIN_EMAIL}</p>
   </div>
   
   <form on:submit|preventDefault={handleSubmit}>
     {#if !codeSent}
       <!-- Send Code Step -->
       <div class="form-group">
-        <p class="admin-email-display">
-          <strong>Admin Email:</strong> {ADMIN_EMAIL}
-        </p>
         <p class="help-text">Click the button below to receive a verification code</p>
       </div>
       
