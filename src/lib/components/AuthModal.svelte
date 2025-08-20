@@ -240,10 +240,12 @@
             disabled={isLoading || codeSent}
             placeholder="Enter your email address"
           />
-          <small class="help-text email-restriction">
-            <strong>Note:</strong> Only corporate or business email addresses are allowed. 
-            Free email services (Gmail, Yahoo, Hotmail, etc.) are not permitted.
-          </small>
+          {#if mode === 'signup'}
+            <small class="help-text email-restriction">
+              <strong>Note:</strong> Only corporate or business email addresses are allowed. 
+              Free email services (Gmail, Yahoo, Hotmail, etc.) are not permitted.
+            </small>
+          {/if}
         </div>
 
         {#if !codeSent}
