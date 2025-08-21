@@ -341,7 +341,6 @@
         <p>Can't find what you're looking for? Our support team is here to help.</p>
         <div class="contact-buttons">
           <a href="/contact" class="contact-btn">Contact Support</a>
-          <a href="/pricing" class="contact-btn btn-outline">View Pricing Plans</a>
         </div>
       </div>
     </div>
@@ -506,24 +505,10 @@
   }
 
   .contact-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
+    /* Single button is centered by parent text-align: center */
   }
 
-  .btn-outline {
-    background: none;
-    border: 2px solid #667eea;
-    color: #667eea;
-    padding: 1rem 2rem;
-    border-radius: 6px;
-    transition: background 0.3s, color 0.3s;
-  }
 
-  .btn-outline:hover {
-    background: #667eea;
-    color: white;
-  }
 
   @media (max-width: 768px) {
     .hero h1 {
