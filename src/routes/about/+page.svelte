@@ -50,6 +50,12 @@
           <p>We understand that some forwarders may feel uncomfortable with this level of transparency. However, our hope is that LogiScore will serve as a <strong>constructive tool</strong>, helping forwarders identify areas for improvement, raise their level of service, and build stronger, long-term trust with shippers.</p>
           
           <p>Our goal is to <strong>elevate the logistics industry</strong> by making service performance as transparent as rates and transit times.</p>
+          
+          <div class="metal-badges">
+            <img src="/LogiScore Gold.png" alt="LogiScore Gold Badge" class="metal-badge" />
+            <img src="/LogiScore Silver.png" alt="LogiScore Silver Badge" class="metal-badge" />
+            <img src="/LogiScore Bronze.png" alt="LogiScore Bronze Badge" class="metal-badge" />
+          </div>
         </div>
 
         <div class="about-section">
@@ -213,6 +219,25 @@
     border-radius: 8px;
     margin-top: 2rem;
     font-weight: bold;
+  }
+
+  .metal-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .metal-badge {
+    max-width: 120px;
+    height: auto;
+    transition: transform 0.2s ease;
+  }
+
+  .metal-badge:hover {
+    transform: scale(1.05);
   }
 
   @media (max-width: 768px) {
