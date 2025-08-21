@@ -125,7 +125,6 @@
           <a href="/about" class="nav-link">About</a>
           <a href="/how-it-works" class="nav-link">How It Works</a>
           <a href="/pricing" class="nav-link">Pricing</a>
-          <a href="/help" class="nav-link">Help</a>
           <a href="/contact" class="nav-link">Contact</a>
         </div>
       {/if}

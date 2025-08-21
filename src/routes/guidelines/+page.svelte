@@ -174,7 +174,7 @@
   </div>
 
   <div class="footer-actions">
-    <a href="/help" class="btn btn-secondary">Need Help?</a>
+            <a href="/faq" class="btn btn-secondary">Need Help?</a>
     <a href="/contact" class="btn btn-primary">Contact Support</a>
   </div>
 </div>

@@ -28,7 +28,7 @@
       <div class="footer-section">
         <h3>Support</h3>
         <ul>
-          <li><a href="/help">Help Center</a></li>
+          <li><a href="/faq">Help Center</a></li>
           <li><a href="/contact">Contact Support</a></li>
         </ul>
       </div>
