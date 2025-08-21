@@ -360,12 +360,11 @@
           <h3>🔒 Unlock Detailed Analytics</h3>
           <p>With a subscription view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
           {#if isLoggedIn}
-            <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+            <!-- Pricing plans button removed -->
           {:else}
             <div class="auth-actions">
               <button class="btn btn-primary" on:click={() => openAuthModal('signin')}>Sign In</button>
               <button class="btn btn-outline" on:click={() => openAuthModal('signup')}>Sign Up</button>
-              <a href="/pricing" class="btn btn-outline">View Pricing Plans</a>
             </div>
           {/if}
         </div>
@@ -417,10 +416,29 @@
         </section>
       {/if}
 
-      <!-- Submit Review Button -->
-      <div class="review-section">
-        <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
-      </div>
+      <!-- Submit Review Button - Only show for logged-in and subscribed users -->
+      {#if isLoggedIn && isSubscribed}
+        <div class="review-section">
+          <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
+        </div>
+      {:else if isLoggedIn}
+        <div class="review-section">
+          <div class="review-prompt">
+            <p>🔒 Subscribe to submit reviews and help the community</p>
+            <a href="/pricing" class="btn btn-outline">View Pricing Plans</a>
+          </div>
+        </div>
+      {:else}
+        <div class="review-section">
+          <div class="review-prompt">
+            <p>🔒 Sign in and subscribe to submit reviews</p>
+            <div class="auth-actions">
+              <button class="btn btn-primary" on:click={() => openAuthModal('signin')}>Sign In</button>
+              <button class="btn btn-outline" on:click={() => openAuthModal('signup')}>Sign Up</button>
+            </div>
+          </div>
+        </div>
+      {/if}
     {:else}
       <div class="not-found">Freight forwarder not found.</div>
     {/if}
@@ -810,6 +828,28 @@
   .review-section {
     text-align: center;
     padding: 2rem 0;
+  }
+
+  .review-prompt {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 0 auto;
+    max-width: 500px;
+  }
+
+  .review-prompt p {
+    margin-bottom: 1rem;
+    color: #666;
+    font-size: 1rem;
+  }
+
+  .review-prompt .auth-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .btn {
