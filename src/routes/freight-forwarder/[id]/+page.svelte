@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { apiClient } from '$lib/api';
   import { auth } from '$lib/auth';
+  import AuthModal from '$lib/components/AuthModal.svelte';
   
   let freightForwarder: any = null;
   let locationScores: any[] = [];
@@ -11,12 +12,22 @@
   let isLoadingScores = false;
   let error: string | null = null;
   let activeTab: 'overview' | 'locations' | 'countries' = 'overview';
+  let showAuthModal = false;
+  let authModalMode: 'signin' | 'signup' = 'signin';
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
   
+  function openAuthModal(mode: 'signin' | 'signup') {
+    authModalMode = mode;
+    showAuthModal = true;
+  }
+  
+  function closeAuthModal() {
+    showAuthModal = false;
+  }
 
   
   onMount(async () => {
@@ -347,12 +358,13 @@
         <!-- For non-subscribed or non-logged-in users, show subscription prompt -->
         <div class="subscription-prompt">
           <h3>🔒 Unlock Detailed Analytics</h3>
-          <p>Upgrade to our subscription plan ($38/month) to view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
+          <p>With a subscription view category scores, location and country-specific scores, advanced analytics, and more detailed insights.</p>
           {#if isLoggedIn}
             <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
           {:else}
             <div class="auth-actions">
-              <a href="/auth" class="btn btn-primary">Sign In</a>
+              <button class="btn btn-primary" on:click={() => openAuthModal('signin')}>Sign In</button>
+              <button class="btn btn-outline" on:click={() => openAuthModal('signup')}>Sign Up</button>
               <a href="/pricing" class="btn btn-outline">View Pricing Plans</a>
             </div>
           {/if}
@@ -413,6 +425,15 @@
       <div class="not-found">Freight forwarder not found.</div>
     {/if}
   </div>
+  
+  <!-- Auth Modal -->
+  {#if showAuthModal}
+    <AuthModal
+      isOpen={showAuthModal}
+      mode={authModalMode}
+      on:close={closeAuthModal}
+    />
+  {/if}
 </main>
 
 <style>
