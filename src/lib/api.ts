@@ -262,10 +262,18 @@ class ApiClient {
     }
   }
 
-  async getFreightForwarder(id: string): Promise<any> {
+  async getFreightForwarder(id: string, city?: string, country?: string): Promise<any> {
     try {
+      // Build query parameters for city and country filtering
+      const params = new URLSearchParams();
+      if (city) params.append('city', city);
+      if (country) params.append('country', country);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/api/freight-forwarders/${id}?${queryString}` : `/api/freight-forwarders/${id}`;
+      
       // Add cache-busting headers to ensure fresh rating data
-      return await this.request<any>(`/api/freight-forwarders/${id}`, {
+      return await this.request<any>(url, {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',

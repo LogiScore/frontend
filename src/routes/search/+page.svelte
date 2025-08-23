@@ -105,14 +105,15 @@
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
-          const company = await apiClient.getFreightForwarder(id);
+          // Pass city and country parameters to filter data correctly
+          const company = await apiClient.getFreightForwarder(id, city, selectedCountry);
           
           // Convert category_scores_summary to category_scores format for compatibility
           if ((company as any).category_scores_summary) {
-            console.log('Raw category_scores_summary for', company.name, ':', (company as any).category_scores_summary);
             company.category_scores = Object.entries((company as any).category_scores_summary).map(([categoryId, categoryData]: [string, any]) => {
               // Convert from 0-1 scale to 1-5 scale by multiplying by 5
               const score = (parseFloat(categoryData.average_rating) || 0) * 5;
+              // Use backend review count (now should be correct with city/country filtering)
               const count = parseInt(categoryData.total_reviews) || 0;
               console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Converted to ${score}, Review count: ${count}`);
               return {
@@ -487,13 +488,14 @@
       <!-- DEBUG: Show actual review data -->
       <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; font-family: monospace; font-size: 12px;">
         <h4 style="margin: 0 0 10px 0; color: #856404;">🔍 DEBUG: Review Data Investigation</h4>
-        <p style="margin: 5px 0; color: #856404;"><strong>Issue:</strong> Backend shows 75+ reviews but user says there's only 1 review</p>
+        <p style="margin: 5px 0; color: #856404;"><strong>Fix Applied:</strong> Backend now receives city/country parameters for correct filtering</p>
+        <p style="margin: 5px 0; color: #856404;"><strong>API Call:</strong> GET /api/freight-forwarders/[id]?city={selectedCity}&country={selectedCountry}</p>
         <p style="margin: 5px 0; color: #856404;"><strong>Selected City:</strong> {selectedCity}, {selectedCountry}</p>
         <p style="margin: 5px 0; color: #856404;"><strong>Companies Found:</strong> {companiesForLocation.length}</p>
         {#each companiesForLocation as company}
           <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 4px;">
             <strong>{company.name}:</strong><br/>
-            <strong>Backend Review Counts:</strong> {JSON.stringify(Object.entries((company as any).category_scores_summary || {}).map(([cat, data]: [string, any]) => `${cat}: ${data.total_reviews}`))}<br/>
+            <strong>Backend Review Counts (with city filter):</strong> {JSON.stringify(Object.entries((company as any).category_scores_summary || {}).map(([cat, data]: [string, any]) => `${cat}: ${data.total_reviews}`))}<br/>
             <strong>Company average_rating:</strong> {company.average_rating}<br/>
             <strong>Company review_count:</strong> {company.review_count}
           </div>
