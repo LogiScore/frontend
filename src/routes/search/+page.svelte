@@ -111,11 +111,11 @@
           // Convert category_scores_summary to category_scores format for compatibility
           if ((company as any).category_scores_summary) {
             company.category_scores = Object.entries((company as any).category_scores_summary).map(([categoryId, categoryData]: [string, any]) => {
-              // Convert from 0-1 scale to 1-5 scale by multiplying by 5
-              const score = (parseFloat(categoryData.average_rating) || 0) * 5;
+              // Use raw scores directly from backend (no conversion needed)
+              const score = parseFloat(categoryData.average_rating) || 0;
               // Use backend review count (now should be correct with city/country filtering)
               const count = parseInt(categoryData.total_reviews) || 0;
-              console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Converted to ${score}, Review count: ${count}`);
+              console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Review count: ${count}`);
               return {
                 category_name: categoryId,
                 average_score: score,
