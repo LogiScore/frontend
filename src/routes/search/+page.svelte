@@ -59,6 +59,11 @@
     const unsubscribe = auth.subscribe(state => {
       user = state.user;
       userSubscription = state.user?.subscription_tier || 'free';
+      console.log('Auth state updated:', {
+        user: state.user,
+        subscription_tier: state.user?.subscription_tier,
+        userSubscription: userSubscription
+      });
     });
     
 
@@ -456,58 +461,20 @@
             <span class="icon">🌍</span>
             Search by Country
           </button>
-        {:else}
-          <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
-            Debug: Country search hidden because canSearchByCountry() returned false
-          </div>
+
         {/if}
       </div>
 
       <!-- Search Box -->
       <div class="search-box">
-        {#if searchType === 'location'}
-          <div class="location-search-container">
-            <input 
-              type="text" 
-              placeholder={getSearchPlaceholder()}
-              value={getCurrentQuery()}
-              on:input={handleLocationSearch}
-              on:keypress={handleKeyPress}
-              on:blur={hideLocationSuggestions}
-              class="search-input"
-            />
-            {#if showLocationSuggestions && locationSuggestions.length > 0}
-              <div class="location-suggestions">
-                {#each locationSuggestions as location}
-                  <div 
-                    class="location-suggestion-item"
-                    on:click={() => selectLocation(location)}
-                  >
-                    <span class="location-name">{location.name}</span>
-                    {#if location.city && location.city !== location.name}
-                      <span class="location-details">
-                        {location.city}
-                        {#if location.state}, {location.state}{/if}
-                      </span>
-                    {:else if location.state}
-                      <span class="location-details">{location.state}</span>
-                    {/if}
-                    <span class="location-country">{location.country}</span>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-          </div>
-        {:else}
-          <input 
-            type="text" 
-            placeholder={getSearchPlaceholder()}
-            value={getCurrentQuery()}
-            on:input={(e) => setCurrentQuery(e.currentTarget.value)}
-            on:keypress={handleKeyPress}
-            class="search-input"
-          />
-        {/if}
+        <input 
+          type="text" 
+          placeholder={getSearchPlaceholder()}
+          value={getCurrentQuery()}
+          on:input={(e) => setCurrentQuery(e.currentTarget.value)}
+          on:keypress={handleKeyPress}
+          class="search-input"
+        />
         <button on:click={handleSearch} class="search-button">
           Search
         </button>
