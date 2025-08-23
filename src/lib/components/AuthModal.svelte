@@ -341,6 +341,7 @@
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   }
 
   .modal-header {
@@ -348,12 +349,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
   }
 
   .modal-header h2 {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
+    color: #333;
   }
 
   .close-btn {
@@ -381,7 +385,7 @@
   }
 
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .form-group label {
@@ -389,20 +393,23 @@
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #333;
+    font-size: 1rem;
   }
 
   .form-group input {
-    width: 380px;
+    width: 100%;
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
+    box-sizing: border-box;
   }
 
   .form-group input:focus {
     outline: none;
     border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
   }
 
   .form-group input:disabled {
@@ -411,7 +418,7 @@
   }
 
   .form-group select {
-    width: 380px;
+    width: 100%;
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -419,11 +426,13 @@
     transition: border-color 0.3s ease;
     background-color: white;
     cursor: pointer;
+    box-sizing: border-box;
   }
 
   .form-group select:focus {
     outline: none;
     border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
   }
 
   .form-group select:disabled {
@@ -433,9 +442,10 @@
 
   .help-text {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
     color: #666;
+    line-height: 1.4;
   }
 
   .success-message {
@@ -445,6 +455,7 @@
     border-radius: 4px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
+    text-align: center;
   }
 
   .error-message {
@@ -454,12 +465,15 @@
     border-radius: 4px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
+    text-align: center;
   }
 
   .form-actions {
     display: flex;
     gap: 1rem;
-    justify-content: flex-end;
+    justify-content: center;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
 
   .btn-primary {
@@ -470,11 +484,15 @@
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    font-size: 1rem;
   }
 
   .btn-primary:hover:not(:disabled) {
     background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   .btn-primary:disabled {
@@ -491,11 +509,15 @@
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
+    min-width: 120px;
+    font-size: 1rem;
   }
 
   .btn-secondary:hover:not(:disabled) {
     background: #007bff;
     color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   .btn-secondary:disabled {
@@ -505,13 +527,16 @@
 
   .modal-footer {
     text-align: center;
-    padding-top: 1rem;
+    padding-top: 1.5rem;
     border-top: 1px solid #eee;
+    margin-top: 1rem;
   }
 
   .modal-footer p {
     margin: 0;
     color: #666;
+    font-size: 1rem;
+    line-height: 1.5;
   }
 
   .link-btn {
@@ -522,6 +547,8 @@
     font-weight: 500;
     text-decoration: underline;
     margin-left: 0.5rem;
+    font-size: 1rem;
+    transition: color 0.3s ease;
   }
 
   .link-btn:hover {
@@ -530,8 +557,8 @@
 
   .resend-section {
     text-align: center;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
     border-top: 1px solid #eee;
   }
 
@@ -540,11 +567,30 @@
     background-color: #fff3cd;
     border: 1px solid #ffeaa7;
     border-radius: 4px;
-    padding: 0.5rem;
+    padding: 0.75rem;
     margin-top: 0.5rem;
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     line-height: 1.4;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 600px) {
+    .modal-content {
+      padding: 1.5rem;
+      width: 95%;
+      margin: 1rem;
+    }
+    
+    .form-actions {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+      min-width: 100%;
+    }
   }
 </style>
 
