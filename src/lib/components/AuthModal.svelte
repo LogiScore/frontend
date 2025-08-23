@@ -76,7 +76,34 @@
       if (mode === 'signin') {
         // For sign-in: only send code to existing users
         console.log('📧 Calling authMethods.requestSigninCode...');
-        result = await authMethods.requestSigninCode(email);
+        try {
+          result = await authMethods.requestSigninCode(email);
+        } catch (error: any) {
+          console.log('🔍 Checking for user not found error...');
+          
+          // Check if backend returned "User not found" error
+          if (error.message?.includes('User not found') || 
+              error.message?.includes('not found') ||
+              error.message?.includes('does not exist')) {
+            
+            console.log('👤 User not found, redirecting to sign-up mode');
+            errorMessage = 'User not found. Please sign up instead.';
+            
+            // Automatically switch to sign-up mode
+            setTimeout(() => {
+              mode = 'signup';
+              resetForm();
+              errorMessage = '';
+              successMessage = 'Please complete your registration details below.';
+            }, 2000);
+            
+            isLoading = false;
+            return;
+          }
+          
+          // Re-throw other errors
+          throw error;
+        }
       } else {
         // For sign-up: send code to new users (requires additional fields)
         if (!companyName) {

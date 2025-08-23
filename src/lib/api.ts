@@ -1170,6 +1170,16 @@ class ApiClient {
         
         console.log('📧 Raw API response:', response);
         
+        // Check if the response indicates user not found (even with 200 status)
+        if (response.message && (
+            response.message.toLowerCase().includes('user not found') ||
+            response.message.toLowerCase().includes('does not exist') ||
+            response.message.toLowerCase().includes('not registered')
+        )) {
+          console.log('❌ Backend response indicates user not found');
+          throw new Error('User not found. Please sign up instead.');
+        }
+        
         // Provide default expiration time if backend doesn't return it
         const result = {
           message: response.message,
@@ -1205,6 +1215,34 @@ class ApiClient {
           
           // If we can't determine user existence, show helpful error
           throw new Error('Sign-in endpoint not implemented yet. Please contact support or try signing up instead.');
+        }
+        
+        // Check for specific backend error responses
+        if (backendError.status === 400) {
+          console.log('🔍 Backend returned 400 status, checking error details...');
+          
+          // Try to parse error response
+          let errorDetail = 'User not found';
+          try {
+            if (backendError.response) {
+              const errorData = await backendError.response.json();
+              errorDetail = errorData.detail || errorData.message || 'User not found';
+            }
+          } catch (parseError) {
+            console.log('Could not parse error response, using default message');
+          }
+          
+          console.log('❌ Backend error detail:', errorDetail);
+          
+          // Check if it's a "user not found" type error
+          if (errorDetail.toLowerCase().includes('not found') || 
+              errorDetail.toLowerCase().includes('does not exist') ||
+              errorDetail.toLowerCase().includes('user not found')) {
+            throw new Error('User not found. Please sign up instead.');
+          }
+          
+          // Other 400 errors
+          throw new Error(errorDetail || 'Invalid request. Please check your email and try again.');
         }
         
         // Re-throw other backend errors
