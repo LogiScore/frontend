@@ -10,60 +10,20 @@
   let countryQuery = '';
   let searchResults: FreightForwarder[] = [];
   let isLoading = false;
-  let isCityLoading = false;
   let error: string | null = null;
+  let selectedCity = '';
+  let selectedCompany: FreightForwarder | null = null;
+  let showCompanyDetails = false;
+  let companiesForLocation: FreightForwarder[] = [];
+  let citiesWithReviews: string[] = [];
+  let selectedCountry = '';
+  let isCityLoading = false;
   let showSubscriptionPrompt = false;
   let user: any = null;
   let userSubscription = 'free';
-  let companiesForLocation: FreightForwarder[] = [];
-  let citiesWithReviews: string[] = [];
-  let selectedCountry: string = '';
-  let selectedCity: string = '';
-  let selectedCompany: FreightForwarder | null = null;
-  let showCompanyDetails = false;
-  let userManuallyChangedSearchType = false;
 
-  // Get search query from URL parameters
-  $: {
-    const urlParams = new URLSearchParams($page.url.search);
-    const query = urlParams.get('q') || '';
-    let type = urlParams.get('type') || 'company';
-    
-    console.log('URL parameters changed:', { query, type, canSearchByCountry, userManuallyChangedSearchType });
-    
-    // Only force company search for non-subscribed users if they haven't manually changed the search type
-    if (type === 'country' && !canSearchByCountry && !userManuallyChangedSearchType) {
-      console.log('Forcing company search for non-subscribed user (automatic)');
-      type = 'company';
-      // Update URL to reflect the change - only in browser
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        url.searchParams.set('type', 'company');
-        window.history.replaceState({}, '', url.toString());
-      }
-    }
-    
-    // Only update searchType if user hasn't manually changed it, or if it's a forced change
-    if (!userManuallyChangedSearchType || (type === 'company' && !canSearchByCountry)) {
-      searchType = type as 'company' | 'country';
-      console.log('Search type updated from URL:', searchType);
-    } else {
-      console.log('Respecting manual search type selection, not overriding with URL value');
-    }
-    
-    if (type === 'company') {
-      companyQuery = query;
-    } else if (type === 'country') {
-      countryQuery = query;
-    }
-    
-    console.log('Search state updated:', { searchType, companyQuery, countryQuery });
-    
-    if (query) {
-      console.log('Executing search with query:', query);
-      performSearch();
-    }
-  }
+  // Initialize search type from URL only once on mount
+  let initialSearchTypeSet = false;
 
   onMount(() => {
     // Subscribe to auth store to get user info
@@ -79,6 +39,40 @@
       });
     });
     
+    // Set initial search type from URL only once
+    if (!initialSearchTypeSet && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const type = urlParams.get('type') || 'company';
+      const query = urlParams.get('q') || '';
+      
+      console.log('Initial URL parameters:', { type, query, userSubscription });
+      
+      // Handle initial search type - check if user can search by country
+      if (type === 'country' && userSubscription === 'free') {
+        console.log('Forcing company search for non-subscribed user (initial)');
+        searchType = 'company';
+        if (query) {
+          companyQuery = query;
+        }
+      } else {
+        searchType = type as 'company' | 'country';
+        if (type === 'company' && query) {
+          companyQuery = query;
+        } else if (type === 'country' && query) {
+          countryQuery = query;
+        }
+      }
+      
+      initialSearchTypeSet = true;
+      console.log('Initial search state set:', { searchType, companyQuery, countryQuery });
+      
+      // Perform initial search if query exists
+      if (query) {
+        console.log('Performing initial search with query:', query);
+        performSearch();
+      }
+    }
+    
     return unsubscribe;
   });
 
@@ -90,12 +84,6 @@
     userSubscriptionType: typeof userSubscription,
     comparison: userSubscription !== 'free'
   });
-  
-  // Reset manual change flag when subscription changes (user might have upgraded)
-  $: if (canSearchByCountry && userManuallyChangedSearchType) {
-    console.log('User can now search by country, resetting manual change flag');
-    userManuallyChangedSearchType = false;
-  }
 
   function canSearchByCompany(): boolean {
     // All users can search by company
@@ -249,14 +237,13 @@
   function updateSearchType(type: 'company' | 'country') {
     console.log('=== updateSearchType FUNCTION CALLED ===');
     console.log('Function called with type:', type);
-    console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+    console.log('Before update - searchType:', searchType);
     
-    userManuallyChangedSearchType = true; // Set flag to true when manually changed
-    console.log('Set userManuallyChangedSearchType to true');
-    
+    // Update search type immediately
     searchType = type;
     console.log('Set searchType to:', searchType);
     
+    // Clear all search data
     searchResults = [];
     companiesForLocation = [];
     citiesWithReviews = [];
@@ -267,7 +254,7 @@
     
     console.log('Cleared all search data');
     
-    // Update URL
+    // Update URL only in browser
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       url.searchParams.set('type', type);
@@ -277,7 +264,7 @@
     }
     
     console.log('=== updateSearchType FUNCTION COMPLETED ===');
-    console.log('Final state - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+    console.log('Final state - searchType:', searchType);
   }
 
   function getCurrentQuery(): string {
@@ -376,9 +363,9 @@
       class="search-type-btn {searchType === 'company' ? 'active' : ''}"
       on:click={() => {
         console.log('=== COMPANY BUTTON CLICKED ===');
-        console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+        console.log('Before update - searchType:', searchType);
         updateSearchType('company');
-        console.log('After update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+        console.log('After update - searchType:', searchType);
       }}
     >
       Search by Company
@@ -388,9 +375,9 @@
       class="search-type-btn {searchType === 'country' ? 'active' : ''} {!canSearchByCountry ? 'disabled' : ''}"
       on:click={() => {
         console.log('=== COUNTRY BUTTON CLICKED ===');
-        console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+        console.log('Before update - searchType:', searchType);
         updateSearchType('country');
-        console.log('After update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+        console.log('After update - searchType:', searchType);
       }}
       title="Search for companies by country"
     >
@@ -406,7 +393,7 @@
       User Subscription: {userSubscription}<br>
       Can Search by Country: {canSearchByCountry}<br>
       Search Type: {searchType}<br>
-      Manual Change Flag: {userManuallyChangedSearchType}
+      Manual Change Flag: {userSubscription !== 'free'}
     </div>
   </div>
 
