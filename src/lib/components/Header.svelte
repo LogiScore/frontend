@@ -149,6 +149,12 @@
                   <span class="user-name">{authState.user.full_name || authState.user.username}</span>
                   <span class="user-email">{authState.user.email}</span>
                 </div>
+                <div class="subscription-info">
+                  <span class="subscription-label">Plan:</span>
+                  <span class="subscription-value" class:premium={authState.user.subscription_tier !== 'free'}>
+                    {authState.user.subscription_tier === 'free' ? 'Free Plan' : authState.user.subscription_tier}
+                  </span>
+                </div>
               </div>
               
               <div class="dropdown-actions">
