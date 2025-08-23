@@ -30,13 +30,6 @@
     const unsubscribe = auth.subscribe(state => {
       user = state.user;
       userSubscription = state.user?.subscription_tier || 'free';
-      console.log('Auth state updated:', {
-        user: state.user,
-        subscription_tier: state.user?.subscription_tier,
-        userSubscription: userSubscription,
-        canSearchByCountry: userSubscription !== 'free',
-        userObject: JSON.stringify(state.user, null, 2)
-      });
     });
     
     // Set initial search type from URL only once
@@ -45,11 +38,8 @@
       const type = urlParams.get('type') || 'company';
       const query = urlParams.get('q') || '';
       
-      console.log('Initial URL parameters:', { type, query, userSubscription });
-      
       // Handle initial search type - check if user can search by country
       if (type === 'country' && userSubscription === 'free') {
-        console.log('Forcing company search for non-subscribed user (initial)');
         searchType = 'company';
         if (query) {
           companyQuery = query;
@@ -64,11 +54,9 @@
       }
       
       initialSearchTypeSet = true;
-      console.log('Initial search state set:', { searchType, companyQuery, countryQuery });
       
       // Perform initial search if query exists
       if (query) {
-        console.log('Performing initial search with query:', query);
         performSearch();
       }
     }
@@ -77,13 +65,6 @@
   });
 
   $: canSearchByCountry = userSubscription !== 'free';
-  $: console.log('Subscription state changed:', { 
-    userSubscription, 
-    canSearchByCountry, 
-    user: user,
-    userSubscriptionType: typeof userSubscription,
-    comparison: userSubscription !== 'free'
-  });
 
   function canSearchByCompany(): boolean {
     // All users can search by company
@@ -91,7 +72,6 @@
   }
 
   function goBackToCities() {
-    console.log('Going back to cities');
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
@@ -100,27 +80,22 @@
   }
 
   function goBackToCompanies() {
-    console.log('Going back to companies');
     selectedCompany = null;
     showCompanyDetails = false;
   }
 
   async function selectCompany(company: FreightForwarder) {
-    console.log('Company selected:', company);
     selectedCompany = company;
     showCompanyDetails = true;
     
     // Fetch detailed company information with category scores if not already present
     if (!company.category_scores || company.category_scores.length === 0) {
       try {
-        console.log('Fetching detailed company information for:', company.id);
         const detailedCompany = await apiClient.getFreightForwarder(company.id);
-        console.log('Detailed company information received:', detailedCompany);
         
         // Update the selected company with detailed information
         if (detailedCompany && detailedCompany.category_scores) {
           selectedCompany = detailedCompany;
-          console.log('Company updated with category scores:', selectedCompany?.category_scores);
         } else {
           console.log('No category scores found in detailed company data');
         }
@@ -134,19 +109,15 @@
   }
 
   async function selectCity(city: string) {
-    console.log('City clicked:', city, 'Country:', selectedCountry);
     selectedCity = city;
     isCityLoading = true;
     error = null;
     
     try {
       // Get companies that have reviews in this city
-      console.log('Fetching reviews for city:', city);
       const reviews = await apiClient.getReviewsByCity(city, selectedCountry);
-      console.log('Reviews received for city:', reviews);
       
       if (reviews.length === 0) {
-        console.log('No reviews found for city:', city);
         companiesForLocation = [];
         searchResults = [];
         error = `No reviews found for ${city}, ${selectedCountry}`;
@@ -155,14 +126,11 @@
       
       // Extract unique freight forwarder IDs from the reviews
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
-      console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
-          console.log('Fetching company details for ID:', id);
           const company = await apiClient.getFreightForwarder(id);
-          console.log('Company details received:', company);
           return company;
         } catch (error) {
           console.error(`Failed to fetch company ${id}:`, error);
@@ -173,8 +141,6 @@
       const companies = await Promise.all(companiesPromises);
       companiesForLocation = companies.filter(company => company !== null);
       searchResults = companiesForLocation;
-      
-      console.log('Final companies for location:', companiesForLocation);
       
       if (companiesForLocation.length === 0) {
         error = `No companies found for ${city}, ${selectedCountry}`;
@@ -194,7 +160,6 @@
     if (searchType === 'company' && !companyQuery.trim()) return;
     if (searchType === 'country' && !countryQuery.trim()) return;
     
-    console.log('Performing search:', { searchType, companyQuery, countryQuery });
     isLoading = true;
     error = null;
     searchResults = [];
@@ -207,21 +172,16 @@
     try {
       if (searchType === 'company') {
         // Company search
-        console.log('Searching for companies with query:', companyQuery);
         const results = await apiClient.searchFreightForwarders(companyQuery);
-        console.log('Company search results:', results);
         searchResults = results;
       } else if (searchType === 'country') {
         // Country search - get cities with reviews
-        console.log('Searching for cities in country:', countryQuery);
         selectedCountry = countryQuery;
         const reviews = await apiClient.getReviewsByCountry(countryQuery);
-        console.log('Country search reviews:', reviews);
         
         // Extract unique cities from reviews
         const cities = [...new Set(reviews.map(review => review.city).filter((city): city is string => city !== undefined))];
         citiesWithReviews = cities;
-        console.log('Cities found:', cities);
         
         // Show cities instead of companies
         searchResults = [];
@@ -235,13 +195,7 @@
   }
 
   function updateSearchType(type: 'company' | 'country') {
-    console.log('=== updateSearchType FUNCTION CALLED ===');
-    console.log('Function called with type:', type);
-    console.log('Before update - searchType:', searchType);
-    
-    // Update search type immediately
     searchType = type;
-    console.log('Set searchType to:', searchType);
     
     // Clear all search data
     searchResults = [];
@@ -252,29 +206,21 @@
     showCompanyDetails = false;
     error = null;
     
-    console.log('Cleared all search data');
-    
     // Update URL only in browser
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       url.searchParams.set('type', type);
       url.searchParams.delete('q');
       window.history.pushState({}, '', url.toString());
-      console.log('URL updated to:', url.toString());
     }
-    
-    console.log('=== updateSearchType FUNCTION COMPLETED ===');
-    console.log('Final state - searchType:', searchType);
   }
 
   function getCurrentQuery(): string {
     const query = searchType === 'company' ? companyQuery : countryQuery;
-    console.log('Getting current query:', { searchType, query });
     return query;
   }
 
   function setCurrentQuery(value: string) {
-    console.log('Setting current query:', { searchType, value });
     if (searchType === 'company') {
       companyQuery = value;
     } else if (searchType === 'country') {
@@ -288,7 +234,6 @@
       url.searchParams.set('type', searchType);
       url.searchParams.set('q', getCurrentQuery());
       window.history.pushState({}, '', url.toString());
-      console.log('URL updated to:', url.toString());
     }
   }
 
@@ -306,7 +251,6 @@
       'after_hours_support': 'After Hours Support'
     };
     const result = categoryMap[categoryId] || categoryId;
-    console.log('Getting category name:', { categoryId, result });
     return result;
   }
 
@@ -319,7 +263,6 @@
     else if (score <= 3) result = 'Good';
     else result = 'Excellent';
     
-    console.log('Formatting score:', { score, result });
     return result;
   }
 
@@ -332,7 +275,6 @@
     else if (score <= 3) result = 'score-good';
     else result = 'score-excellent';
     
-    console.log('Getting score color class:', { score, result });
     return result;
   }
 </script>
@@ -357,15 +299,11 @@
 
   <!-- Search Type Selection -->
   <div class="search-type-selection">
-    {console.log('Search type selection state:', { searchType, canSearchByCountry, userSubscription })}
     
     <button 
       class="search-type-btn {searchType === 'company' ? 'active' : ''}"
       on:click={() => {
-        console.log('=== COMPANY BUTTON CLICKED ===');
-        console.log('Before update - searchType:', searchType);
         updateSearchType('company');
-        console.log('After update - searchType:', searchType);
       }}
     >
       Search by Company
@@ -374,10 +312,7 @@
     <button 
       class="search-type-btn {searchType === 'country' ? 'active' : ''} {!canSearchByCountry ? 'disabled' : ''}"
       on:click={() => {
-        console.log('=== COUNTRY BUTTON CLICKED ===');
-        console.log('Before update - searchType:', searchType);
         updateSearchType('country');
-        console.log('After update - searchType:', searchType);
       }}
       title="Search for companies by country"
     >
@@ -387,14 +322,6 @@
       {/if}
     </button>
     
-    <!-- Debug info display -->
-    <div class="debug-info" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px; opacity: 0.8;">
-      <strong>Debug Info:</strong><br>
-      User Subscription: {userSubscription}<br>
-      Can Search by Country: {canSearchByCountry}<br>
-      Search Type: {searchType}<br>
-      Manual Change Flag: {userSubscription !== 'free'}
-    </div>
   </div>
 
   <!-- Search Input -->
@@ -404,19 +331,16 @@
       placeholder={searchType === 'company' ? 'Enter company name...' : 'Enter country name...'}
       value={getCurrentQuery()}
       on:input={(e) => {
-        console.log('Search input changed:', e.currentTarget.value);
         setCurrentQuery(e.currentTarget.value);
       }}
       on:keydown={(e) => {
         if (e.key === 'Enter') {
-          console.log('Enter key pressed, performing search');
           performSearch();
         }
       }}
       class="search-input"
     />
     <button on:click={() => {
-      console.log('Search button clicked');
       performSearch();
     }} class="search-btn" disabled={isLoading}>
       {isLoading ? 'Searching...' : 'Search'}
@@ -425,7 +349,6 @@
 
   <!-- Error Display -->
   {#if error}
-    {console.log('Error display state:', { error, searchType, selectedCity, companiesForLocationLength: companiesForLocation.length })}
     <div class="error-message">
       {error}
     </div>
@@ -433,7 +356,6 @@
 
   <!-- Loading State -->
   {#if isLoading}
-    {console.log('Main loading state:', { isLoading, searchType, companyQuery, countryQuery })}
     <div class="loading">
       <div class="spinner"></div>
       <p>Searching...</p>
@@ -442,7 +364,6 @@
 
   <!-- City Loading State -->
   {#if isCityLoading}
-    {console.log('City loading state:', { isCityLoading, selectedCity, selectedCountry })}
     <div class="loading">
       <div class="spinner"></div>
       <p>Loading companies for {selectedCity}...</p>
@@ -451,15 +372,6 @@
 
   <!-- Search Results -->
   {#if !isLoading && !error}
-    {console.log('Search results display state:', {
-      searchType,
-      searchResultsLength: searchResults.length,
-      citiesWithReviewsLength: citiesWithReviews.length,
-      selectedCity,
-      companiesForLocationLength: companiesForLocation.length,
-      showCompanyDetails,
-      selectedCompany: !!selectedCompany
-    })}
     
     {#if searchType === 'company' && searchResults.length > 0}
       <!-- Company Search Results -->
@@ -499,7 +411,6 @@
         <div class="cities-grid">
           {#each citiesWithReviews as city}
             <div class="city-card" on:click={() => {
-              console.log('City card clicked:', city);
               selectCity(city);
             }}>
               <div class="city-name">{city}</div>
@@ -518,7 +429,6 @@
         <div class="companies-grid">
           {#each companiesForLocation as company}
             <div class="company-card clickable" on:click={() => {
-              console.log('Company card clicked:', company);
               selectCompany(company);
             }}>
               <div class="company-info">
@@ -538,7 +448,6 @@
               </div>
               <div class="company-actions">
                 <button class="view-scores-btn" on:click={() => {
-                  console.log('View Scores button clicked for company:', company);
                   selectCompany(company);
                 }}>View Scores</button>
               </div>
@@ -623,14 +532,6 @@
                     <div class="review-count">Based on {score.review_count} review{score.review_count !== 1 ? 's' : ''}</div>
                   </div>
                 </div>
-                
-                {console.log('Rendering category score:', { 
-                  categoryName: getCategoryName(score.category_name), 
-                  formattedScore: formatScore(score.average_score), 
-                  scoreColorClass: getScoreColorClass(score.average_score), 
-                  reviewCount: score.review_count, 
-                  score 
-                })}
               {/each}
             </div>
           </div>
@@ -656,7 +557,6 @@
 
   <!-- Subscription Prompt -->
   {#if showSubscriptionPrompt}
-    {console.log('Subscription prompt state:', { showSubscriptionPrompt, userSubscription, canSearchByCountry })}
     <div class="subscription-prompt">
       <h3>Upgrade Your Subscription</h3>
       <p>Get access to advanced search features and more comprehensive results.</p>
