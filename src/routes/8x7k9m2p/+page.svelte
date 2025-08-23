@@ -52,6 +52,36 @@
       const result = authMethods.recoverSession();
       console.log('Session recovery result:', result);
     }
+
+    // Cleanup function
+    return () => {
+      stopAutoRefresh();
+    };
+  });
+
+  // Global error handler
+  function handleGlobalError(error: ErrorEvent) {
+    console.error('Global error caught:', error);
+    
+    // Prevent default error handling for known issues
+    if (error.message?.includes('ResizeObserver') || 
+        error.message?.includes('Source Map') ||
+        error.message?.includes('favicon')) {
+      error.preventDefault();
+      return;
+    }
+    
+    // Show user-friendly error for other issues
+    addNotification('error', 'An unexpected error occurred. Please refresh the page.');
+  }
+
+  // Add global error listener
+  onMount(() => {
+    window.addEventListener('error', handleGlobalError);
+    
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+    };
   });
 
   // Admin state
@@ -75,6 +105,13 @@
     user_type: 'shipper',
     company_name: ''
   };
+
+  // Notification system
+  let notifications: Array<{id: string; type: 'success' | 'error' | 'info'; message: string; timestamp: Date}> = [];
+  let notificationId = 0;
+
+  // Company update loading state
+  let isUpdatingCompany = false;
 
   // Dashboard data
   let dashboardStats = {
@@ -437,24 +474,6 @@
     stopAutoRefresh();
   }
 
-  // Cleanup on component unmount
-  onMount(() => {
-    console.log('Admin page mounted');
-    console.log('Current auth state:', authState);
-    
-    // Try to recover session if needed
-    if (authState.user && authState.user.username === 'Demo User') {
-      console.log('Admin page: Detected demo user, attempting to recover session');
-      const result = authMethods.recoverSession();
-      console.log('Session recovery result:', result);
-    }
-
-    // Cleanup function
-    return () => {
-      stopAutoRefresh();
-    };
-  });
-
   $: if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
     console.log('Loading users data for admin user');
     loadUsers();
@@ -530,13 +549,26 @@
     if (diffMins < 60) {
       return `${diffMins} minutes ago`;
     } else if (diffHours < 24) {
-      return `${diffHours} hours ago`;
+      return `${diffMins} hours ago`;
     } else {
       return `${diffDays} days ago`;
     }
   }
 
+  // Notification functions
+  function addNotification(type: 'success' | 'error' | 'info', message: string) {
+    const id = `notification-${++notificationId}`;
+    notifications = [...notifications, { id, type, message, timestamp: new Date() }];
+    
+    // Auto-remove notification after 5 seconds
+    setTimeout(() => {
+      removeNotification(id);
+    }, 5000);
+  }
 
+  function removeNotification(id: string) {
+    notifications = notifications.filter(n => n.id !== id);
+  }
 
   async function addCompany() {
     if (!authState.token) return;
@@ -579,7 +611,11 @@
     if (!authState.token || !selectedCompanyId) return;
     
     try {
-      await apiClient.updateCompany(authState.token, selectedCompanyId, {
+      isUpdatingCompany = true;
+      console.log('Updating company with data:', editCompanyData);
+      console.log('Company ID:', selectedCompanyId);
+      
+      const result = await apiClient.updateCompany(authState.token, selectedCompanyId, {
         name: editCompanyData.name,
         website: editCompanyData.website,
         logo_url: editCompanyData.logo_url,
@@ -587,11 +623,40 @@
         headquarters_country: editCompanyData.headquarters_country
       });
       
+      console.log('Company update successful:', result);
+      
+      // Check if we got a valid result or if it's empty (which might still indicate success)
+      if (result && typeof result === 'object' && Object.keys(result).length > 0) {
+        console.log('Company update returned data:', result);
+      } else {
+        console.log('Company update returned empty response (this might be normal)');
+      }
+      
+      // Show success message
+      addNotification('success', 'Company updated successfully!');
+      
       await loadCompanies(); // Reload companies
       closeEditCompanyModal();
     } catch (error) {
       console.error('Failed to update company:', error);
-      alert(`Failed to update company: ${(error as any).message || 'Unknown error'}`);
+      
+      // Extract more detailed error information
+      let errorMessage = 'Failed to update company';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('API request failed:')) {
+          // Extract the specific API error details
+          errorMessage = error.message.replace('API request failed:', 'Update failed:').trim();
+        } else if (error.message !== 'Failed to update company') {
+          // Use the original error message if it's different from our generic one
+          errorMessage = error.message;
+        }
+      }
+      
+      // Show the detailed error message
+      addNotification('error', `Failed to update company: ${errorMessage}`);
+    } finally {
+      isUpdatingCompany = false;
     }
   }
 
@@ -609,7 +674,7 @@
       await loadCompanies(); // Reload companies
     } catch (error) {
       console.error('Failed to delete company:', error);
-      alert(`Failed to delete company: ${(error as any).message || 'Unknown error'}`);
+      addNotification('error', `Failed to delete company: ${(error as any).message || 'Unknown error'}`);
     }
   }
 
@@ -742,6 +807,25 @@
 
 <!-- Admin Dashboard -->
 <section class="admin-dashboard">
+  <!-- Notification System -->
+  {#if notifications.length > 0}
+    <div class="notifications-container">
+      {#each notifications as notification}
+        <div class="notification notification-{notification.type}" on:click={() => removeNotification(notification.id)}>
+          <div class="notification-content">
+            <span class="notification-icon">
+              {#if notification.type === 'success'}✅{/if}
+              {#if notification.type === 'error'}❌{/if}
+              {#if notification.type === 'info'}ℹ️{/if}
+            </span>
+            <span class="notification-message">{notification.message}</span>
+            <button class="notification-close" on:click={() => removeNotification(notification.id)}>&times;</button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+
   <div class="admin-banner">
     <div class="container">
       <!-- Admin Login Form -->
@@ -1373,8 +1457,14 @@
       </div>
       
       <div class="modal-footer">
-        <button class="btn-secondary" on:click={closeEditCompanyModal}>Cancel</button>
-        <button class="btn-primary" on:click={updateCompany}>Update Company</button>
+        <button class="btn-secondary" on:click={closeEditCompanyModal} disabled={isUpdatingCompany}>Cancel</button>
+        <button class="btn-primary" on:click={updateCompany} disabled={isUpdatingCompany}>
+          {#if isUpdatingCompany}
+            🔄 Updating...
+          {:else}
+            Update Company
+          {/if}
+        </button>
       </div>
     </div>
   </div>
@@ -1516,6 +1606,21 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  }
+
+  /* Optimize for ResizeObserver stability */
+  html, body {
+    overflow-x: hidden;
+    will-change: auto;
+  }
+
+  /* Reduce layout thrashing */
+  .admin-dashboard {
+    contain: layout style;
+  }
+
+  .container {
+    contain: layout;
   }
 
   body {
@@ -2425,8 +2530,6 @@
       display: none;
     }
 
-
-
     .tab-navigation {
       flex-direction: column;
     }
@@ -2447,5 +2550,109 @@
     .analytics-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* Notification System */
+  .notifications-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+  }
+
+  .notification {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 4px solid;
+    animation: slideInRight 0.3s ease;
+  }
+
+  .notification:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .notification-success {
+    border-left-color: #28a745;
+    background: #d4edda;
+  }
+
+  .notification-error {
+    border-left-color: #dc3545;
+    background: #f8d7da;
+  }
+
+  .notification-info {
+    border-left-color: #17a2b8;
+    background: #d1ecf1;
+  }
+
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .notification-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .notification-message {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .notification-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .notification-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Button loading state */
+  .btn-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .btn-primary:disabled:hover {
+    transform: none;
+    box-shadow: none;
   }
 </style> 

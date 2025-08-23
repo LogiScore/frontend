@@ -145,6 +145,15 @@ class ApiClient {
         ...options,
       });
 
+      // Debug: Log the raw response details
+      console.log('API Response Details:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         
@@ -178,11 +187,40 @@ class ApiClient {
         headers: Object.fromEntries(response.headers.entries())
       });
       
-      return response.json();
+      // Try to parse the response as JSON, but handle cases where it might be empty
+      try {
+        const responseText = await response.text();
+        console.log('API Response Text:', responseText);
+        
+        if (!responseText || responseText.trim() === '') {
+          console.log('API: Empty response body, returning empty object');
+          return {} as T;
+        }
+        
+        return JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('API: Failed to parse response as JSON:', parseError);
+        console.log('API: Raw response text:', await response.text());
+        throw new Error('Invalid response format from server');
+      }
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        // Check if it's a network connection issue
+        if (error.message.includes('network connection was lost') || 
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError')) {
+          throw new Error('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+        }
         throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
       }
+      
+      // Log the full error for debugging
+      console.error('API Request Error Details:', {
+        endpoint,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       throw error;
     }
   }
@@ -1920,7 +1958,9 @@ class ApiClient {
   // ===== METHOD: updateCompany =====
   async updateCompany(token: string, companyId: string, companyData: any) {
     try {
-      return await this.request(`/admin/companies/${companyId}`, {
+      console.log('API: Updating company', companyId, 'with data:', companyData);
+      
+      const result = await this.request(`/admin/companies/${companyId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -1928,8 +1968,18 @@ class ApiClient {
         },
         body: JSON.stringify(companyData)
       });
+      
+      console.log('API: Company update successful:', result);
+      return result;
     } catch (error) {
-      console.error('Failed to update company:', error);
+      console.error('API: Failed to update company:', error);
+      
+      // Preserve the original error message if it's more specific
+      if (error instanceof Error && error.message !== 'Failed to update company') {
+        throw error; // Re-throw the original error with its detailed message
+      }
+      
+      // Fall back to generic error if we don't have specific details
       throw new Error('Failed to update company');
     }
   }

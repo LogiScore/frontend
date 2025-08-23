@@ -1,0 +1,20 @@
+{
+  "name": "LogiScore",
+  "short_name": "LogiScore",
+  "description": "LogiScore - Freight Forwarder Review Platform",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
