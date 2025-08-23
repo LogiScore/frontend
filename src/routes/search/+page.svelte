@@ -538,8 +538,6 @@
                             ">
                               {categoryScore.average_score.toFixed(1)}
                             </div>
-                            <div style="font-size: 12px; color: #666;">{formatScore(categoryScore.average_score)}</div>
-                            <div style="font-size: 11px; color: #999;">({categoryScore.review_count} reviews)</div>
                           </div>
                         {:else}
                           <span style="color: #999; font-style: italic;">N/A</span>
@@ -579,6 +577,17 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Total Review Count -->
+        <div style="margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+          <p style="margin: 0; color: #6c757d; font-size: 14px;">
+            <strong>Total Reviews:</strong> 
+            {#each companiesForLocation as company, index}
+              {company.name}: {company.review_count} review{#if company.review_count !== 1}s{/if}
+              {#if index < companiesForLocation.length - 1} | {/if}
+            {/each}
+          </p>
         </div>
         
         <div style="margin-top: 20px; text-align: center;">
