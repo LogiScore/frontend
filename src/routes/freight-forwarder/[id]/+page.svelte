@@ -428,16 +428,7 @@
             <a href="/pricing" class="btn btn-outline">View Pricing Plans</a>
           </div>
         </div>
-      {:else}
-        <div class="review-section">
-          <div class="review-prompt">
-            <p>🔒 Sign in and subscribe to submit reviews</p>
-            <div class="auth-actions">
-              <button class="btn btn-primary" on:click={() => openAuthModal('signin')}>Sign In</button>
-              <button class="btn btn-outline" on:click={() => openAuthModal('signup')}>Sign Up</button>
-            </div>
-          </div>
-        </div>
+
       {/if}
     {:else}
       <div class="not-found">Freight forwarder not found.</div>
