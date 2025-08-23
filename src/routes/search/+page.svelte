@@ -501,8 +501,8 @@
 
   /* Search Section */
   .search-section {
-    padding: 80px 0;
-    background: #f8f9fa;
+    padding: 40px 0;
+    background: white;
   }
 
   .search-type-selector {
@@ -646,8 +646,9 @@
   }
 
   .cities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 1rem;
     margin-bottom: 2rem;
   }
@@ -661,6 +662,8 @@
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    width: 200px;
+    flex-shrink: 0;
   }
 
   .city-card:hover {
