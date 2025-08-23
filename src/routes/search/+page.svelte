@@ -108,12 +108,20 @@
           const company = await apiClient.getFreightForwarder(id);
           
           // Convert category_scores_summary to category_scores format for compatibility
-          if (company.category_scores_summary) {
-            company.category_scores = Object.entries(company.category_scores_summary).map(([categoryId, categoryData]: [string, any]) => ({
-              category_name: categoryId,
-              average_score: parseFloat(categoryData.average_rating) || 0,
-              review_count: parseInt(categoryData.total_reviews) || 0
-            }));
+          if ((company as any).category_scores_summary) {
+            console.log('Raw category_scores_summary for', company.name, ':', (company as any).category_scores_summary);
+            company.category_scores = Object.entries((company as any).category_scores_summary).map(([categoryId, categoryData]: [string, any]) => {
+              console.log('Processing category:', categoryId, 'with data:', categoryData);
+              const score = parseFloat(categoryData.average_rating) || 0;
+              const count = parseInt(categoryData.total_reviews) || 0;
+              console.log('Parsed score:', score, 'count:', count);
+              return {
+                category_name: categoryId,
+                average_score: score,
+                review_count: count
+              };
+            });
+            console.log('Final category_scores for', company.name, ':', company.category_scores);
           } else {
             company.category_scores = [];
           }
@@ -476,6 +484,19 @@
     
     <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
     {#if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
+      <!-- DEBUG: Show raw data structure -->
+      <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; font-family: monospace; font-size: 12px;">
+        <h4 style="margin: 0 0 10px 0; color: #856404;">🔍 DEBUG: Raw Data Structure</h4>
+        {#each companiesForLocation as company}
+          <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 4px;">
+            <strong>{company.name}:</strong><br/>
+            <strong>category_scores_summary:</strong> {JSON.stringify((company as any).category_scores_summary, null, 2)}<br/>
+            <strong>category_scores (converted):</strong> {JSON.stringify(company.category_scores, null, 2)}<br/>
+            <strong>average_rating:</strong> {company.average_rating}
+          </div>
+        {/each}
+      </div>
+      
       <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px;">
         <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
         <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
