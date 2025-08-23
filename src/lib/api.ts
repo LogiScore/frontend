@@ -581,6 +581,54 @@ class ApiClient {
     }
   }
 
+  async getCategoryScoresByCity(city: string, country?: string): Promise<{
+    [freightForwarderId: string]: Array<{
+      category_name: string;
+      average_score: number;
+      review_count: number;
+    }>;
+  }> {
+    try {
+      // Query category scores for reviews in a specific city
+      let url = `/api/reviews/category-scores/?city=${encodeURIComponent(city)}`;
+      if (country) {
+        url += `&country=${encodeURIComponent(country)}`;
+      }
+      
+      const response = await this.request<{
+        category_scores: Array<{
+          freight_forwarder_id: string;
+          category_name: string;
+          average_score: number;
+          review_count: number;
+        }>;
+      }>(url);
+      
+      // Group by freight forwarder ID
+      const groupedScores: { [freightForwarderId: string]: Array<{
+        category_name: string;
+        average_score: number;
+        review_count: number;
+      }> } = {};
+      
+      response.category_scores.forEach(score => {
+        if (!groupedScores[score.freight_forwarder_id]) {
+          groupedScores[score.freight_forwarder_id] = [];
+        }
+        groupedScores[score.freight_forwarder_id].push({
+          category_name: score.category_name,
+          average_score: score.average_score,
+          review_count: score.review_count
+        });
+      });
+      
+      return groupedScores;
+    } catch (error: any) {
+      console.error('Failed to fetch category scores for city:', error);
+      return {};
+    }
+  }
+
   // Fallback review questions (if API fails) - Updated to match LogiScore Review Questions document
   private getFallbackReviewQuestions(): ReviewCategory[] {
     return [

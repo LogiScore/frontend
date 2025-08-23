@@ -110,12 +110,27 @@
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
       console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
+      // Get category scores for this city
+      console.log('Fetching category scores for city:', city);
+      const categoryScores = await apiClient.getCategoryScoresByCity(city, selectedCountry);
+      console.log('Category scores received:', categoryScores);
+      
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
           console.log('Fetching company details for ID:', id);
           const company = await apiClient.getFreightForwarder(id);
           console.log('Company details received:', company);
+          
+          // Add category scores to the company data
+          if (categoryScores[id]) {
+            company.category_scores = categoryScores[id];
+            console.log('Added category scores to company:', company.name, company.category_scores);
+          } else {
+            console.log('No category scores found for company:', company.name);
+            company.category_scores = [];
+          }
+          
           return company;
         } catch (error) {
           console.error(`Failed to fetch company ${id}:`, error);
