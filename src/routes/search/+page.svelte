@@ -12,8 +12,6 @@
   let isLoading = false;
   let error: string | null = null;
   let selectedCity = '';
-  let selectedCompany: FreightForwarder | null = null;
-  let showCompanyDetails = false;
   let companiesForLocation: FreightForwarder[] = [];
   let citiesWithReviews: string[] = [];
   let selectedCountry = '';
@@ -72,39 +70,16 @@
   }
 
   function goBackToCities() {
+    console.log('Going back to cities');
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
-    selectedCompany = null;
-    showCompanyDetails = false;
-  }
-
-  function goBackToCompanies() {
-    selectedCompany = null;
-    showCompanyDetails = false;
   }
 
   async function selectCompany(company: FreightForwarder) {
-    selectedCompany = company;
-    showCompanyDetails = true;
-    
-    // Fetch detailed company information with category scores if not already present
-    if (!company.category_scores || company.category_scores.length === 0) {
-      try {
-        const detailedCompany = await apiClient.getFreightForwarder(company.id);
-        
-        // Update the selected company with detailed information
-        if (detailedCompany && detailedCompany.category_scores) {
-          selectedCompany = detailedCompany;
-        } else {
-          console.log('No category scores found in detailed company data');
-        }
-      } catch (error) {
-        console.error('Failed to fetch detailed company information:', error);
-        // Keep the original company data if detailed fetch fails
-      }
-    } else {
-      console.log('Company already has category scores:', company.category_scores);
+    // Navigate directly to the company's forwarder page
+    if (typeof window !== 'undefined') {
+      window.location.href = `/freight-forwarder/${company.id}`;
     }
   }
 
@@ -187,8 +162,6 @@
     companiesForLocation = [];
     citiesWithReviews = [];
     selectedCity = '';
-    selectedCompany = null;
-    showCompanyDetails = false;
     
     try {
       if (searchType === 'company') {
@@ -223,8 +196,6 @@
     companiesForLocation = [];
     citiesWithReviews = [];
     selectedCity = '';
-    selectedCompany = null;
-    showCompanyDetails = false;
     error = null;
     
     // Update URL only in browser
@@ -439,7 +410,7 @@
           {/each}
         </div>
       </div>
-    {:else if searchType === 'country' && selectedCity && companiesForLocation.length > 0 && !showCompanyDetails}
+    {:else if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
       <!-- City Search Results - Companies -->
       <div class="city-companies-section">
         <div class="city-header">
@@ -522,13 +493,11 @@
         searchResults.length: {searchResults.length}<br>
         isCityLoading: {isCityLoading}<br>
         error: {error || 'none'}<br>
-        showCompanyDetails: {showCompanyDetails}<br>
         <strong>Display Conditions:</strong><br>
         searchType === 'country': {searchType === 'country'}<br>
         selectedCity exists: {!!selectedCity}<br>
         companiesForLocation.length > 0: {companiesForLocation.length > 0}<br>
-        !showCompanyDetails: {!showCompanyDetails}<br>
-        <strong>Final Condition:</strong> {searchType === 'country' && selectedCity && companiesForLocation.length > 0 && !showCompanyDetails}
+        <strong>Final Condition:</strong> {searchType === 'country' && selectedCity && companiesForLocation.length > 0}
       </div>
       
       <!-- SIMPLE TEST DISPLAY - Show companies directly -->
@@ -662,59 +631,7 @@
       {/if}
     {/if}
     
-    {#if showCompanyDetails && selectedCompany}
-      <!-- Company Details with Category Scores -->
-      <div class="company-details-section">
-        <div class="company-details-header">
-          <button on:click={goBackToCompanies} class="back-btn">← Back to Companies</button>
-          <h2>{selectedCompany.name}</h2>
-          <div class="company-summary">
-            {#if selectedCompany.headquarters_country}
-              <p class="company-location">📍 {selectedCompany.headquarters_country}</p>
-            {/if}
-            {#if selectedCompany.average_rating}
-              <div class="company-rating">
-                <span class="stars">{'★'.repeat(Math.round(selectedCompany.average_rating))}</span>
-                <span class="rating-text">{selectedCompany.average_rating.toFixed(1)}</span>
-              </div>
-            {/if}
-          </div>
-        </div>
-
-        {#if selectedCompany.category_scores && selectedCompany.category_scores.length > 0}
-          <div class="category-scores-section">
-            <h3>Category Performance Scores</h3>
-            <p class="scores-description">Performance ratings across 7 key categories based on customer reviews</p>
-            
-            <div class="category-scores-grid">
-              {#each selectedCompany.category_scores as score}
-                <div class="category-score-card">
-                  <div class="category-header">
-                    <h4>{getCategoryName(score.category_name)}</h4>
-                    <div class="score-badge {getScoreColorClass(score.average_score)}">
-                      {score.average_score.toFixed(1)}
-                    </div>
-                  </div>
-                  <div class="score-details">
-                    <div class="score-label">{formatScore(score.average_score)}</div>
-                    <div class="review-count">Based on {score.review_count} review{score.review_count !== 1 ? 's' : ''}</div>
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </div>
-        {:else}
-          <div class="no-scores">
-            <p>No category scores available for this company yet.</p>
-            <p>Category scores are calculated from customer reviews and will appear once reviews are submitted.</p>
-          </div>
-        {/if}
-
-        <div class="company-actions-footer">
-          <a href="/freight-forwarder/{selectedCompany.id}" class="view-full-profile-btn">View Full Company Profile</a>
-        </div>
-      </div>
-    {:else if !isLoading && getCurrentQuery() && searchResults.length === 0 && citiesWithReviews.length === 0}
+    {#if !isLoading && getCurrentQuery() && searchResults.length === 0 && citiesWithReviews.length === 0}
       <!-- No Results -->
       <div class="no-results">
         <p>No results found for "{getCurrentQuery()}".</p>
