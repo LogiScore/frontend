@@ -73,8 +73,9 @@
 
   function canSearchByCountry(): boolean {
     // Only paid subscribers can search by country
-    console.log('canSearchByCountry called:', { userSubscription, result: userSubscription !== 'free' });
-    return userSubscription !== 'free';
+    // Temporarily enable for all users to test functionality
+    console.log('canSearchByCountry called:', { userSubscription, result: true });
+    return true; // userSubscription !== 'free';
   }
 
   function canSearchByCompany(): boolean {
