@@ -54,7 +54,8 @@
       console.log('Auth state updated:', {
         user: state.user,
         subscription_tier: state.user?.subscription_tier,
-        userSubscription: userSubscription
+        userSubscription: userSubscription,
+        canSearchByCountry: userSubscription !== 'free'
       });
     });
     
@@ -63,6 +64,7 @@
 
   function canSearchByCountry(): boolean {
     // Only paid subscribers can search by country
+    console.log('canSearchByCountry called:', { userSubscription, result: userSubscription !== 'free' });
     return userSubscription !== 'free';
   }
 
@@ -208,6 +210,13 @@
   <!-- Search Section -->
   <section class="search-section">
     <div class="container">
+
+  <!-- Debug Info (Remove after testing) -->
+  <div class="debug-info" style="background: #f0f0f0; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem;">
+    <strong>Debug:</strong> User: {user ? 'Logged in' : 'Not logged in'} | 
+    Subscription: {userSubscription} | 
+    Can search by country: {canSearchByCountry()}
+  </div>
 
   <!-- Search Type Selection -->
   <div class="search-type-selector">
