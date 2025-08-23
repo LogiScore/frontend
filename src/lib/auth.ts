@@ -778,6 +778,8 @@ export const authMethods = {
     }
   },
 
+
+
   // Start inactivity tracking manually
   startInactivityTracking: () => {
     console.log('Manually starting inactivity tracking');

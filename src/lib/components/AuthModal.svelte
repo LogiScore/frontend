@@ -63,6 +63,10 @@
     }
 
     console.log('🔍 Starting email verification process for:', email, 'mode:', mode);
+    console.log('🔍 Available auth methods:', Object.keys(authMethods));
+    console.log('🔍 authMethods.requestSigninCode exists:', typeof authMethods.requestSigninCode);
+    console.log('🔍 authMethods.requestSignupCode exists:', typeof authMethods.requestSignupCode);
+    
     isLoading = true;
     errorMessage = '';
 
@@ -104,6 +108,11 @@
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
       console.error('💥 Exception during verification code request:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
     } finally {
       isLoading = false;
     }
