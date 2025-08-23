@@ -26,7 +26,7 @@
     let type = urlParams.get('type') || 'company';
     
     // Force company search for non-subscribed users
-    if (type === 'country' && !canSearchByCountry()) {
+    if (type === 'country' && !canSearchByCountry) {
       type = 'company';
       // Update URL to reflect the change
       const url = new URL(window.location.href);
@@ -62,11 +62,8 @@
     return unsubscribe;
   });
 
-  function canSearchByCountry(): boolean {
-    // Only paid subscribers can search by country
-    console.log('canSearchByCountry called:', { userSubscription, result: userSubscription !== 'free' });
-    return userSubscription !== 'free';
-  }
+  $: canSearchByCountry = userSubscription !== 'free';
+  $: console.log('canSearchByCountry reactive update:', { userSubscription, canSearchByCountry });
 
   function canSearchByCompany(): boolean {
     // All users can search by company
@@ -215,7 +212,7 @@
   <div class="debug-info" style="background: #f0f0f0; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem;">
     <strong>Debug:</strong> User: {user ? 'Logged in' : 'Not logged in'} | 
     Subscription: {userSubscription} | 
-    Can search by country: {canSearchByCountry()}
+    Can search by country: {canSearchByCountry}
   </div>
 
   <!-- Search Type Selection -->
@@ -227,7 +224,7 @@
       Search by Company
     </button>
     
-    {#if canSearchByCountry()}
+    {#if canSearchByCountry}
       <button 
         class="search-type-btn {searchType === 'country' ? 'active' : ''}"
         on:click={() => updateSearchType('country')}
