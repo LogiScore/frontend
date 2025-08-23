@@ -10,6 +10,7 @@
   let countryQuery = '';
   let searchResults: FreightForwarder[] = [];
   let isLoading = false;
+  let isCityLoading = false;
   let error: string | null = null;
   let showSubscriptionPrompt = false;
   let user: any = null;
@@ -27,8 +28,11 @@
     const query = urlParams.get('q') || '';
     let type = urlParams.get('type') || 'company';
     
+    console.log('URL parameters changed:', { query, type, canSearchByCountry });
+    
     // Force company search for non-subscribed users
     if (type === 'country' && !canSearchByCountry) {
+      console.log('Forcing company search for non-subscribed user');
       type = 'company';
       // Update URL to reflect the change
       const url = new URL(window.location.href);
@@ -43,7 +47,10 @@
       countryQuery = query;
     }
     
+    console.log('Search state updated:', { searchType, companyQuery, countryQuery });
+    
     if (query) {
+      console.log('Executing search with query:', query);
       performSearch();
     }
   }
@@ -56,7 +63,8 @@
       console.log('Auth state updated:', {
         user: state.user,
         subscription_tier: state.user?.subscription_tier,
-        userSubscription: userSubscription
+        userSubscription: userSubscription,
+        canSearchByCountry: userSubscription !== 'free'
       });
     });
     
@@ -64,6 +72,7 @@
   });
 
   $: canSearchByCountry = userSubscription !== 'free';
+  $: console.log('Subscription state changed:', { userSubscription, canSearchByCountry });
 
   function canSearchByCompany(): boolean {
     // All users can search by company
@@ -71,6 +80,7 @@
   }
 
   function goBackToCities() {
+    console.log('Going back to cities');
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
@@ -79,47 +89,69 @@
   }
 
   function goBackToCompanies() {
+    console.log('Going back to companies');
     selectedCompany = null;
     showCompanyDetails = false;
   }
 
   async function selectCompany(company: FreightForwarder) {
+    console.log('Company selected:', company);
     selectedCompany = company;
     showCompanyDetails = true;
     
     // Fetch detailed company information with category scores if not already present
     if (!company.category_scores || company.category_scores.length === 0) {
       try {
+        console.log('Fetching detailed company information for:', company.id);
         const detailedCompany = await apiClient.getFreightForwarder(company.id);
-        selectedCompany = detailedCompany;
+        console.log('Detailed company information received:', detailedCompany);
+        
+        // Update the selected company with detailed information
+        if (detailedCompany && detailedCompany.category_scores) {
+          selectedCompany = detailedCompany;
+          console.log('Company updated with category scores:', selectedCompany?.category_scores);
+        } else {
+          console.log('No category scores found in detailed company data');
+        }
       } catch (error) {
         console.error('Failed to fetch detailed company information:', error);
+        // Keep the original company data if detailed fetch fails
       }
+    } else {
+      console.log('Company already has category scores:', company.category_scores);
     }
   }
 
   async function selectCity(city: string) {
+    console.log('City clicked:', city, 'Country:', selectedCountry);
     selectedCity = city;
-    isLoading = true;
+    isCityLoading = true;
     error = null;
     
     try {
       // Get companies that have reviews in this city
+      console.log('Fetching reviews for city:', city);
       const reviews = await apiClient.getReviewsByCity(city, selectedCountry);
+      console.log('Reviews received for city:', reviews);
       
       if (reviews.length === 0) {
+        console.log('No reviews found for city:', city);
         companiesForLocation = [];
         searchResults = [];
+        error = `No reviews found for ${city}, ${selectedCountry}`;
         return;
       }
       
       // Extract unique freight forwarder IDs from the reviews
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
+      console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
+          console.log('Fetching company details for ID:', id);
           const company = await apiClient.getFreightForwarder(id);
+          console.log('Company details received:', company);
           return company;
         } catch (error) {
           console.error(`Failed to fetch company ${id}:`, error);
@@ -131,13 +163,19 @@
       companiesForLocation = companies.filter(company => company !== null);
       searchResults = companiesForLocation;
       
+      console.log('Final companies for location:', companiesForLocation);
+      
+      if (companiesForLocation.length === 0) {
+        error = `No companies found for ${city}, ${selectedCountry}`;
+      }
+      
     } catch (err: any) {
       console.error('Error fetching companies for city:', err);
-      error = 'Failed to load companies for this city';
+      error = 'Failed to load companies for this city. Please try again.';
       companiesForLocation = [];
       searchResults = [];
     } finally {
-      isLoading = false;
+      isCityLoading = false;
     }
   }
 
@@ -145,6 +183,7 @@
     if (searchType === 'company' && !companyQuery.trim()) return;
     if (searchType === 'country' && !countryQuery.trim()) return;
     
+    console.log('Performing search:', { searchType, companyQuery, countryQuery });
     isLoading = true;
     error = null;
     searchResults = [];
@@ -157,16 +196,21 @@
     try {
       if (searchType === 'company') {
         // Company search
+        console.log('Searching for companies with query:', companyQuery);
         const results = await apiClient.searchFreightForwarders(companyQuery);
+        console.log('Company search results:', results);
         searchResults = results;
       } else if (searchType === 'country') {
         // Country search - get cities with reviews
+        console.log('Searching for cities in country:', countryQuery);
         selectedCountry = countryQuery;
         const reviews = await apiClient.getReviewsByCountry(countryQuery);
+        console.log('Country search reviews:', reviews);
         
         // Extract unique cities from reviews
         const cities = [...new Set(reviews.map(review => review.city).filter((city): city is string => city !== undefined))];
         citiesWithReviews = cities;
+        console.log('Cities found:', cities);
         
         // Show cities instead of companies
         searchResults = [];
@@ -180,6 +224,7 @@
   }
 
   function updateSearchType(type: 'company' | 'country') {
+    console.log('Updating search type to:', type);
     searchType = type;
     searchResults = [];
     companiesForLocation = [];
@@ -194,13 +239,17 @@
     url.searchParams.set('type', type);
     url.searchParams.delete('q');
     window.history.pushState({}, '', url.toString());
+    console.log('URL updated to:', url.toString());
   }
 
   function getCurrentQuery(): string {
-    return searchType === 'company' ? companyQuery : countryQuery;
+    const query = searchType === 'company' ? companyQuery : countryQuery;
+    console.log('Getting current query:', { searchType, query });
+    return query;
   }
 
   function setCurrentQuery(value: string) {
+    console.log('Setting current query:', { searchType, value });
     if (searchType === 'company') {
       companyQuery = value;
     } else if (searchType === 'country') {
@@ -213,6 +262,7 @@
     url.searchParams.set('type', searchType);
     url.searchParams.set('q', getCurrentQuery());
     window.history.pushState({}, '', url.toString());
+    console.log('URL updated to:', url.toString());
   }
 
   // Get category name from ID
@@ -228,25 +278,35 @@
       'proactivity_insight': 'Proactivity & Insight',
       'after_hours_support': 'After Hours Support'
     };
-    return categoryMap[categoryId] || categoryId;
+    const result = categoryMap[categoryId] || categoryId;
+    console.log('Getting category name:', { categoryId, result });
+    return result;
   }
 
   // Format score for display
   function formatScore(score: number): string {
-    if (score === 0) return 'N/A';
-    if (score <= 1) return 'Poor';
-    if (score <= 2) return 'Fair';
-    if (score <= 3) return 'Good';
-    return 'Excellent';
+    let result: string;
+    if (score === 0) result = 'N/A';
+    else if (score <= 1) result = 'Poor';
+    else if (score <= 2) result = 'Fair';
+    else if (score <= 3) result = 'Good';
+    else result = 'Excellent';
+    
+    console.log('Formatting score:', { score, result });
+    return result;
   }
 
   // Get score color class
   function getScoreColorClass(score: number): string {
-    if (score === 0) return 'score-na';
-    if (score <= 1) return 'score-poor';
-    if (score <= 2) return 'score-fair';
-    if (score <= 3) return 'score-good';
-    return 'score-excellent';
+    let result: string;
+    if (score === 0) result = 'score-na';
+    else if (score <= 1) result = 'score-poor';
+    else if (score <= 2) result = 'score-fair';
+    else if (score <= 3) result = 'score-good';
+    else result = 'score-excellent';
+    
+    console.log('Getting score color class:', { score, result });
+    return result;
   }
 </script>
 
@@ -269,10 +329,15 @@
     <div class="container">
 
   <!-- Search Type Selection -->
-  <div class="search-type-selector">
+  <div class="search-type-selection">
+    {console.log('Search type selection state:', { searchType, canSearchByCountry, userSubscription })}
+    
     <button 
       class="search-type-btn {searchType === 'company' ? 'active' : ''}"
-      on:click={() => updateSearchType('company')}
+      on:click={() => {
+        console.log('Company search type button clicked');
+        updateSearchType('company');
+      }}
     >
       Search by Company
     </button>
@@ -280,7 +345,10 @@
     {#if canSearchByCountry}
       <button 
         class="search-type-btn {searchType === 'country' ? 'active' : ''}"
-        on:click={() => updateSearchType('country')}
+        on:click={() => {
+          console.log('Country search type button clicked');
+          updateSearchType('country');
+        }}
       >
         Search by Country
       </button>
@@ -293,17 +361,29 @@
       type="text"
       placeholder={searchType === 'company' ? 'Enter company name...' : 'Enter country name...'}
       value={getCurrentQuery()}
-      on:input={(e) => setCurrentQuery(e.currentTarget.value)}
-      on:keydown={(e) => e.key === 'Enter' && performSearch()}
+      on:input={(e) => {
+        console.log('Search input changed:', e.currentTarget.value);
+        setCurrentQuery(e.currentTarget.value);
+      }}
+      on:keydown={(e) => {
+        if (e.key === 'Enter') {
+          console.log('Enter key pressed, performing search');
+          performSearch();
+        }
+      }}
       class="search-input"
     />
-    <button on:click={performSearch} class="search-btn" disabled={isLoading}>
+    <button on:click={() => {
+      console.log('Search button clicked');
+      performSearch();
+    }} class="search-btn" disabled={isLoading}>
       {isLoading ? 'Searching...' : 'Search'}
     </button>
   </div>
 
   <!-- Error Display -->
   {#if error}
+    {console.log('Error display state:', { error, searchType, selectedCity, companiesForLocationLength: companiesForLocation.length })}
     <div class="error-message">
       {error}
     </div>
@@ -311,14 +391,34 @@
 
   <!-- Loading State -->
   {#if isLoading}
+    {console.log('Main loading state:', { isLoading, searchType, companyQuery, countryQuery })}
     <div class="loading">
       <div class="spinner"></div>
       <p>Searching...</p>
     </div>
   {/if}
 
+  <!-- City Loading State -->
+  {#if isCityLoading}
+    {console.log('City loading state:', { isCityLoading, selectedCity, selectedCountry })}
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading companies for {selectedCity}...</p>
+    </div>
+  {/if}
+
   <!-- Search Results -->
   {#if !isLoading && !error}
+    {console.log('Search results display state:', {
+      searchType,
+      searchResultsLength: searchResults.length,
+      citiesWithReviewsLength: citiesWithReviews.length,
+      selectedCity,
+      companiesForLocationLength: companiesForLocation.length,
+      showCompanyDetails,
+      selectedCompany: !!selectedCompany
+    })}
+    
     {#if searchType === 'company' && searchResults.length > 0}
       <!-- Company Search Results -->
       <div class="results-section">
@@ -356,7 +456,10 @@
         
         <div class="cities-grid">
           {#each citiesWithReviews as city}
-            <div class="city-card" on:click={() => selectCity(city)}>
+            <div class="city-card" on:click={() => {
+              console.log('City card clicked:', city);
+              selectCity(city);
+            }}>
               <div class="city-name">{city}</div>
             </div>
           {/each}
@@ -372,7 +475,10 @@
         
         <div class="companies-grid">
           {#each companiesForLocation as company}
-            <div class="company-card clickable" on:click={() => selectCompany(company)}>
+            <div class="company-card clickable" on:click={() => {
+              console.log('Company card clicked:', company);
+              selectCompany(company);
+            }}>
               <div class="company-info">
                 <h3>{company.name}</h3>
                 {#if company.headquarters_country}
@@ -389,10 +495,52 @@
                 {/if}
               </div>
               <div class="company-actions">
-                <button class="view-scores-btn">View Scores</button>
+                <button class="view-scores-btn" on:click={() => {
+                  console.log('View Scores button clicked for company:', company);
+                  selectCompany(company);
+                }}>View Scores</button>
               </div>
             </div>
           {/each}
+        </div>
+      </div>
+    {:else if searchType === 'country' && selectedCity && companiesForLocation.length === 0 && !isCityLoading && !error}
+      <!-- City Selected but No Companies Found -->
+      <div class="city-companies-section">
+        <div class="city-header">
+          <h2>Companies with Reviews in {selectedCity}, {selectedCountry}</h2>
+          <button on:click={goBackToCities} class="back-btn">← Back to Cities</button>
+        </div>
+        
+        <div class="no-companies-found">
+          <div class="empty-icon">🏢</div>
+          <h3>No Companies Found</h3>
+          <p>No companies with reviews were found in {selectedCity}, {selectedCountry}.</p>
+          <p>This could mean:</p>
+          <ul>
+            <li>No reviews have been submitted for companies in this city yet</li>
+            <li>The city name might be spelled differently in our database</li>
+            <li>Companies in this city haven't received any reviews</li>
+          </ul>
+          <button on:click={goBackToCities} class="btn-primary">Try Another City</button>
+        </div>
+      </div>
+    {:else if searchType === 'country' && selectedCity && error}
+      <!-- City Selected but Error Occurred -->
+      <div class="city-companies-section">
+        <div class="city-header">
+          <h2>Companies with Reviews in {selectedCity}, {selectedCountry}</h2>
+          <button on:click={goBackToCities} class="back-btn">← Back to Cities</button>
+        </div>
+        
+        <div class="error-display">
+          <div class="error-icon">⚠️</div>
+          <h3>Unable to Load Companies</h3>
+          <p>{error}</p>
+          <div class="error-actions">
+            <button on:click={() => selectCity(selectedCity)} class="btn-primary">Try Again</button>
+            <button on:click={goBackToCities} class="btn-secondary">Back to Cities</button>
+          </div>
         </div>
       </div>
     {:else if showCompanyDetails && selectedCompany}
@@ -433,6 +581,14 @@
                     <div class="review-count">Based on {score.review_count} review{score.review_count !== 1 ? 's' : ''}</div>
                   </div>
                 </div>
+                
+                {console.log('Rendering category score:', { 
+                  categoryName: getCategoryName(score.category_name), 
+                  formattedScore: formatScore(score.average_score), 
+                  scoreColorClass: getScoreColorClass(score.average_score), 
+                  reviewCount: score.review_count, 
+                  score 
+                })}
               {/each}
             </div>
           </div>
@@ -458,10 +614,11 @@
 
   <!-- Subscription Prompt -->
   {#if showSubscriptionPrompt}
+    {console.log('Subscription prompt state:', { showSubscriptionPrompt, userSubscription, canSearchByCountry })}
     <div class="subscription-prompt">
       <h3>Upgrade Your Subscription</h3>
       <p>Get access to advanced search features and more comprehensive results.</p>
-      <a href="/pricing" class="upgrade-btn">View Plans</a>
+      <a href="/pricing" class="upgrade-btn">View Pricing Plans</a>
     </div>
   {/if}
     </div>
@@ -552,8 +709,15 @@
   }
 
   .search-type-btn.active {
-    background: #3498db;
+    background: #667eea;
     color: white;
+  }
+
+  .search-type-selection {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
   }
 
   .search-input-container {
@@ -1003,6 +1167,114 @@
 
   .upgrade-btn:hover {
     background: #e55a2b;
+  }
+
+  .no-companies-found {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+  }
+
+  .no-companies-found .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .no-companies-found h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .no-companies-found p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .no-companies-found ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+
+  .no-companies-found li {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #555;
+  }
+
+  .no-companies-found .btn-primary {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .no-companies-found .btn-primary:hover {
+    background: #5a6fd8;
+  }
+
+  .error-display {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+  }
+
+  .error-display .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .error-display h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .error-display p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .error-display .error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .error-display .btn-primary {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .error-display .btn-primary:hover {
+    background: #5a6fd8;
+  }
+
+  .error-display .btn-secondary {
+    padding: 12px 24px;
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .error-display .btn-secondary:hover {
+    background: #d0d0d0;
   }
 
   @media (max-width: 768px) {
