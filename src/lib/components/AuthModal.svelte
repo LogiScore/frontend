@@ -336,8 +336,8 @@
   .modal-content {
     background: white;
     border-radius: 8px;
-    padding: 1.6rem;
-    max-width: 400px;
+    padding: 1.44rem;
+    max-width: 360px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -575,9 +575,9 @@
   }
 
   /* Responsive improvements */
-  @media (max-width: 500px) {
+  @media (max-width: 450px) {
     .modal-content {
-      padding: 1.2rem;
+      padding: 1.08rem;
       width: 95%;
       margin: 1rem;
     }
