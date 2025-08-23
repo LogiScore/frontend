@@ -599,7 +599,7 @@ export const authMethods = {
     try {
       console.log('Signing in with verification code...');
       
-      const response = await apiClient.verifyCode(email, code);
+      const response = await apiClient.verifySigninCode(email, code);
       
       if (response.user && response.access_token) {
         // Save the real JWT token and user data
@@ -642,8 +642,115 @@ export const authMethods = {
     }
   },
 
+  // ===== METHOD: requestSigninCode =====
+  // Request verification code for existing user sign-in
+  async requestSigninCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
+    try {
+      console.log('🔍 AuthMethods.requestSigninCode called for email:', email);
+      
+      const response = await apiClient.sendSigninCode(email);
+      console.log('📧 API response received:', response);
+      
+      console.log('✅ Verification code sent successfully for sign-in');
+      return { 
+        success: true, 
+        expires_in: response.expires_in 
+      };
+    } catch (error: any) {
+      console.error('💥 AuthMethods.requestSigninCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to send verification code for sign-in' 
+      };
+    }
+  },
+
+  // ===== METHOD: requestSignupCode =====
+  // Request verification code for new user sign-up
+  async requestSignupCode(email: string, userType: string, companyName: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
+    try {
+      console.log('🔍 AuthMethods.requestSignupCode called for email:', email, 'userType:', userType, 'companyName:', companyName);
+      
+      const response = await apiClient.sendSignupCode(email, userType, companyName);
+      console.log('📧 API response received:', response);
+      
+      console.log('✅ Verification code sent successfully for sign-up');
+      return { 
+        success: true, 
+        expires_in: response.expires_in 
+      };
+    } catch (error: any) {
+      console.error('💥 AuthMethods.requestSignupCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to send verification code for sign-up' 
+      };
+    }
+  },
+
+  // ===== METHOD: verifySignupCode =====
+  // Verify sign-up code and complete new user registration
+  async verifySignupCode(email: string, code: string, fullName: string, companyName: string, userType: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('🔍 AuthMethods.verifySignupCode called for email:', email, 'fullName:', fullName, 'companyName:', companyName, 'userType:', userType);
+      
+      const response = await apiClient.verifySignupCode(email, code, fullName, companyName, userType);
+      
+      if (response.user && response.access_token) {
+        // Save the real JWT token and user data
+        saveToken(response.access_token);
+        saveUser(response.user);
+        
+        // Update the auth store
+        auth.update(state => ({
+          ...state,
+          user: response.user,
+          token: response.access_token,
+          error: null,
+          isLoading: false
+        }));
+        
+        // Start inactivity tracking after successful signup
+        setTimeout(() => {
+          authMethods.startInactivityTracking();
+        }, 100);
+        
+        console.log('Sign up successful with real JWT token');
+        return { success: true };
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error: any) {
+      console.error('Sign up with code failed:', error);
+      
+      // Update the auth store with error
+      auth.update(state => ({
+        ...state,
+        error: error.message || 'Failed to complete sign-up with verification code',
+        isLoading: false
+      }));
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to complete sign-up with verification code' 
+      };
+    }
+  },
+
   // ===== METHOD: requestCode =====
-  // Request verification code to be sent to email
+  // Legacy method: Request verification code to be sent to email (for backward compatibility)
   async requestCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
     try {
       console.log('🔍 AuthMethods.requestCode called for email:', email);

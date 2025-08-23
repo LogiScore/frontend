@@ -1144,10 +1144,114 @@ class ApiClient {
     }
   }
 
-  // ===== METHOD: verifyCode =====
-  // Step 2: Verify code and complete user authentication
-  async verifyCode(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
+  // ===== METHOD: sendSigninCode =====
+  // Send verification code for existing user sign-in
+  async sendSigninCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
+      console.log('🔍 API sendSigninCode called for email:', email);
+      
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        console.error('❌ Email validation failed:', emailValidation.reason);
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
+      console.log('✅ Email validation passed, making API request to /api/auth/send-signin-code');
+      
+      const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signin-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      
+      console.log('📧 Raw API response:', response);
+      
+      // Provide default expiration time if backend doesn't return it
+      const result = {
+        message: response.message,
+        expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
+      };
+      console.log('✅ Processed API result:', result);
+      return result;
+    } catch (error: any) {
+      console.error('💥 API sendSigninCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      throw error;
+    }
+  }
+
+  // ===== METHOD: sendSignupCode =====
+  // Send verification code for new user sign-up
+  async sendSignupCode(email: string, userType: string, companyName: string): Promise<{ message: string; expires_in: number }> {
+    try {
+      console.log('🔍 API sendSignupCode called for email:', email, 'userType:', userType, 'companyName:', companyName);
+      
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        console.error('❌ Email validation failed:', emailValidation.reason);
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
+      console.log('✅ Email validation passed, making API request to /api/auth/send-signup-code');
+      
+      const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signup-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, user_type: userType, company_name: companyName }),
+      });
+      
+      console.log('📧 Raw API response:', response);
+      
+      // Provide default expiration time if backend doesn't return it
+      const result = {
+        message: response.message,
+        expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
+      };
+      console.log('✅ Processed API result:', result);
+      return result;
+    } catch (error: any) {
+      console.error('💥 API sendSignupCode failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      throw error;
+    }
+  }
+
+  // ===== METHOD: verifySigninCode =====
+  // Verify sign-in code for existing users
+  async verifySigninCode(email: string, code: string): Promise<{ user: User; access_token: string; token_type: string }> {
+    try {
+      console.log('🔍 API verifySigninCode called for email:', email);
+      
+      return await this.request<{ user: User; access_token: string; token_type: string }>('/api/auth/verify-signin-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      });
+    } catch (error: any) {
+      console.error('Sign-in code verification failed:', error);
+      throw new Error('Sign-in code verification failed. Please try again later.');
+    }
+  }
+
+  // ===== METHOD: verifySignupCode =====
+  // Verify sign-up code for new users
+  async verifySignupCode(email: string, code: string, fullName: string, companyName: string, userType: string): Promise<{ user: User; access_token: string; token_type: string }> {
+    try {
+      console.log('🔍 API verifySignupCode called for email:', email, 'fullName:', fullName, 'companyName:', companyName, 'userType:', userType);
+      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
@@ -1157,12 +1261,42 @@ class ApiClient {
         throw new Error(emailValidation.reason || 'Invalid email address');
       }
       
+      return await this.request<{ user: User; access_token: string; token_type: string }>('/api/auth/verify-signup-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, code, full_name: fullName, company_name: companyName, user_type: userType }),
+      });
+    } catch (error: any) {
+      console.error('Sign-up code verification failed:', error);
+      // Check if it's a duplicate user error
+      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
+        throw new Error('A user with this email already exists. Please try signing in instead.');
+      }
+      throw new Error('Sign-up code verification failed. Please try again later.');
+    }
+  }
+
+  // ===== METHOD: verifyCode =====
+  // Legacy method: Verify code and complete user authentication (for backward compatibility)
+  async verifyCode(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
+    try {
+      console.log('🔍 Legacy API verifyCode called for email:', email);
+      
+      // Import email validation dynamically to avoid circular dependencies
+      const { validateBusinessEmail } = await import('./emailValidation');
+      
+      // Validate email before making the request
+      const emailValidation = validateBusinessEmail(email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.reason || 'Invalid email address');
+      }
+      
+      // Use the legacy endpoint for backward compatibility
       return await this.request<{ user: User; access_token: string; token_type: string }>('/auth/verify-code', {
         method: 'POST',
         body: JSON.stringify({ email, code, name, company, user_type: userType }),
       });
     } catch (error: any) {
-      console.error('Code verification failed:', error);
+      console.error('Legacy code verification failed:', error);
       // Check if it's a duplicate user error
       if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('A user with this email already exists. Please try signing in instead.');

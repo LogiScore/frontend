@@ -62,13 +62,34 @@
       return;
     }
 
-    console.log('🔍 Starting email verification process for:', email);
+    console.log('🔍 Starting email verification process for:', email, 'mode:', mode);
     isLoading = true;
     errorMessage = '';
 
     try {
-      console.log('📧 Calling authMethods.requestCode...');
-      const result = await authMethods.requestCode(email);
+      let result;
+      
+      if (mode === 'signin') {
+        // For sign-in: only send code to existing users
+        console.log('📧 Calling authMethods.requestSigninCode...');
+        result = await authMethods.requestSigninCode(email);
+      } else {
+        // For sign-up: send code to new users (requires additional fields)
+        if (!companyName) {
+          errorMessage = 'Please enter your company name';
+          isLoading = false;
+          return;
+        }
+        if (!userType) {
+          errorMessage = 'Please select your user type';
+          isLoading = false;
+          return;
+        }
+        
+        console.log('📧 Calling authMethods.requestSignupCode...');
+        result = await authMethods.requestSignupCode(email, userType, companyName);
+      }
+      
       console.log('📧 Result from requestCode:', result);
       
       if (result.success) {
@@ -104,6 +125,7 @@
           return;
         }
 
+        console.log('🔐 Calling signinWithCode for existing user');
         const result = await authMethods.signinWithCode(email, verificationCode);
         if (result.success) {
           closeModal();
@@ -132,30 +154,14 @@
           return;
         }
 
-        // Generate username from full name
-        const username = generateUsername(fullName);
-
-        console.log('🔐 Calling verifyCode endpoint with:', { email, code: verificationCode, name: fullName, company: companyName, userType });
+        console.log('🔐 Calling verifySignupCode for new user registration');
 
         // For signup, verify the code and complete user authentication
-        const result = await apiClient.verifyCode(email, verificationCode, fullName, companyName, userType);
-        if (result.user && result.access_token) {
-          // Update auth store
-          auth.update(state => ({
-            ...state,
-            user: result.user,
-            token: result.access_token,
-            isLoading: false,
-            error: null
-          }));
-          // Save token and user to localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('logiscore_token', result.access_token);
-            localStorage.setItem('logiscore_user', JSON.stringify(result.user));
-          }
+        const result = await authMethods.verifySignupCode(email, verificationCode, fullName, companyName, userType);
+        if (result.success) {
           closeModal();
         } else {
-          errorMessage = 'Registration failed';
+          errorMessage = result.error || 'Registration failed';
         }
       }
     } catch (error: any) {
@@ -250,10 +256,21 @@
             <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
               Cancel
             </button>
-            <button type="button" class="btn-primary" on:click={requestCode} disabled={isLoading}>
+            <button 
+              type="button" 
+              class="btn-primary" 
+              on:click={requestCode} 
+              disabled={isLoading || (mode === 'signup' && (!companyName || !userType))}
+            >
               {isLoading ? 'Sending...' : 'Send Verification Code'}
             </button>
           </div>
+          
+          {#if mode === 'signup' && (!companyName || !userType)}
+            <div class="help-text" style="color: #856404; text-align: center; margin-top: 0.5rem;">
+              Please fill in your company name and select user type before requesting a verification code.
+            </div>
+          {/if}
         {:else}
           <div class="form-group">
             <input
