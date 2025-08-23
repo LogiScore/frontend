@@ -522,8 +522,43 @@
         searchResults.length: {searchResults.length}<br>
         isCityLoading: {isCityLoading}<br>
         error: {error || 'none'}<br>
-        showCompanyDetails: {showCompanyDetails}
+        showCompanyDetails: {showCompanyDetails}<br>
+        <strong>Display Conditions:</strong><br>
+        searchType === 'country': {searchType === 'country'}<br>
+        selectedCity exists: {!!selectedCity}<br>
+        companiesForLocation.length > 0: {companiesForLocation.length > 0}<br>
+        !showCompanyDetails: {!showCompanyDetails}<br>
+        <strong>Final Condition:</strong> {searchType === 'country' && selectedCity && companiesForLocation.length > 0 && !showCompanyDetails}
       </div>
+      
+      <!-- FORCE DISPLAY TEST - Show companies regardless of conditions -->
+      {#if companiesForLocation.length > 0}
+        <div style="margin-top: 20px; padding: 20px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+          <h3 style="color: #155724; margin-bottom: 15px;">🧪 FORCE DISPLAY TEST - Companies Found:</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+            {#each companiesForLocation as company}
+              <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <h4 style="margin: 0 0 10px 0; color: #333;">{company.name}</h4>
+                {#if company.headquarters_country}
+                  <p style="margin: 5px 0; color: #666;">📍 {company.headquarters_country}</p>
+                {/if}
+                {#if company.description}
+                  <p style="margin: 5px 0; color: #555; font-size: 14px;">{company.description}</p>
+                {/if}
+                {#if company.average_rating}
+                  <p style="margin: 5px 0; color: #f39c12; font-weight: bold;">Rating: {company.average_rating.toFixed(1)} ⭐</p>
+                {/if}
+                <button 
+                  style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;"
+                  on:click={() => selectCompany(company)}
+                >
+                  View Details
+                </button>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
     {/if}
     
     {#if showCompanyDetails && selectedCompany}
