@@ -128,15 +128,7 @@
                   {#if company.headquarters_country}
                     <p class="company-headquarters">📍 {company.headquarters_country}</p>
                   {/if}
-                  {#if company.average_rating}
-                    <div class="rating">
-                      <span class="stars">{'★'.repeat(Math.round(company.average_rating))}</span>
-                    </div>
-                  {:else if company.rating}
-                    <div class="rating">
-                      <span class="stars">{'★'.repeat(Math.round(company.rating))}</span>
-                    </div>
-                  {/if}
+
                 </div>
               </div>
             </a>
