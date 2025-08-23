@@ -82,12 +82,13 @@
           console.log('🔍 Checking for user not found error...');
           
           // Check if backend returned "User not found" error
-          if (error.message?.includes('User not found') || 
+          if (error.message?.includes('Email is not registered') || 
+              error.message?.includes('User not found') || 
               error.message?.includes('not found') ||
               error.message?.includes('does not exist')) {
             
-            console.log('👤 User not found, redirecting to sign-up mode');
-            errorMessage = 'User not found. Please sign up instead.';
+            console.log('👤 User not registered, redirecting to sign-up mode');
+            errorMessage = 'Email is not registered. Please register instead.';
             
             // Automatically switch to sign-up mode
             setTimeout(() => {

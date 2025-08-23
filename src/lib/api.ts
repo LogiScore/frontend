@@ -1218,15 +1218,24 @@ class ApiClient {
         }
         
         // Check for specific backend error responses
-        if (backendError.status === 400) {
+        if (backendError.status === 400 || backendError.message?.includes('400')) {
           console.log('🔍 Backend returned 400 status, checking error details...');
           
-          // Try to parse error response
+          // Try to parse error response from the error message
           let errorDetail = 'User not found';
           try {
-            if (backendError.response) {
-              const errorData = await backendError.response.json();
+            // The error message contains the full response: "API request failed: 400 - {"detail":"User not found. Please sign up instead."}"
+            if (backendError.message && backendError.message.includes('{')) {
+              const jsonStart = backendError.message.indexOf('{');
+              const jsonEnd = backendError.message.lastIndexOf('}') + 1;
+              const jsonString = backendError.message.substring(jsonStart, jsonEnd);
+              
+              console.log('🔍 Extracting JSON from error message:', jsonString);
+              
+              const errorData = JSON.parse(jsonString);
               errorDetail = errorData.detail || errorData.message || 'User not found';
+              
+              console.log('✅ Extracted error detail:', errorDetail);
             }
           } catch (parseError) {
             console.log('Could not parse error response, using default message');
@@ -1238,7 +1247,7 @@ class ApiClient {
           if (errorDetail.toLowerCase().includes('not found') || 
               errorDetail.toLowerCase().includes('does not exist') ||
               errorDetail.toLowerCase().includes('user not found')) {
-            throw new Error('User not found. Please sign up instead.');
+            throw new Error('Email is not registered. Please register.');
           }
           
           // Other 400 errors
