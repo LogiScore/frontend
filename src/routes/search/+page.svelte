@@ -70,7 +70,6 @@
   }
 
   function goBackToCities() {
-    console.log('Going back to cities');
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
@@ -84,22 +83,15 @@
   }
 
   async function selectCity(city: string) {
-    console.log('=== selectCity FUNCTION CALLED ===');
-    console.log('City selected:', city);
-    console.log('Country:', selectedCountry);
-    
     selectedCity = city;
     isCityLoading = true;
     error = null;
     
     try {
       // Get companies that have reviews in this city
-      console.log('Fetching reviews for city:', city);
       const reviews = await apiClient.getReviewsByCity(city, selectedCountry);
-      console.log('Reviews received for city:', reviews);
       
       if (reviews.length === 0) {
-        console.log('No reviews found for city:', city);
         companiesForLocation = [];
         searchResults = [];
         error = `No reviews found for ${city}, ${selectedCountry}`;
@@ -108,26 +100,20 @@
       
       // Extract unique freight forwarder IDs from the reviews
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
-      console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
-          console.log('Fetching company details for ID:', id);
           const company = await apiClient.getFreightForwarder(id);
-          console.log('Company details received:', company);
           
           // Convert category_scores_summary to category_scores format for compatibility
           if (company.category_scores_summary) {
-            console.log('Converting category_scores_summary to category_scores format');
             company.category_scores = Object.entries(company.category_scores_summary).map(([categoryId, categoryData]: [string, any]) => ({
               category_name: categoryId,
               average_score: parseFloat(categoryData.average_rating) || 0,
               review_count: parseInt(categoryData.total_reviews) || 0
             }));
-            console.log('Converted category scores:', company.category_scores);
           } else {
-            console.log('No category scores summary found for company:', company.name);
             company.category_scores = [];
           }
           
@@ -142,9 +128,6 @@
       companiesForLocation = companies.filter(company => company !== null);
       searchResults = companiesForLocation;
       
-      console.log('Final companies for location:', companiesForLocation);
-      console.log('Companies array length:', companiesForLocation.length);
-      
       if (companiesForLocation.length === 0) {
         error = `No companies found for ${city}, ${selectedCountry}`;
       }
@@ -156,14 +139,6 @@
       searchResults = [];
     } finally {
       isCityLoading = false;
-      console.log('=== selectCity FUNCTION COMPLETED ===');
-      console.log('Final state:', {
-        selectedCity,
-        companiesForLocation: companiesForLocation.length,
-        searchResults: searchResults.length,
-        error,
-        isCityLoading
-      });
     }
   }
 
@@ -433,33 +408,79 @@
           <button on:click={goBackToCities} class="back-btn">← Back to Cities</button>
         </div>
         
-        <div class="companies-grid">
-          {#each companiesForLocation as company}
-            <div class="company-card clickable" on:click={() => {
-              selectCompany(company);
-            }}>
-              <div class="company-info">
-                <h3>{company.name}</h3>
-                {#if company.headquarters_country}
-                  <p class="company-location">📍 {company.headquarters_country}</p>
-                {/if}
-                {#if company.description}
-                  <p class="company-description">{company.description}</p>
-                {/if}
-                {#if company.average_rating}
-                  <div class="company-rating">
-                    <span class="stars">{'★'.repeat(Math.round(company.average_rating))}</span>
-                    <span class="rating-text">{company.average_rating.toFixed(1)}</span>
-                  </div>
-                {/if}
-              </div>
-              <div class="company-actions">
-                <button class="view-scores-btn" on:click={() => {
-                  selectCompany(company);
-                }}>View Scores</button>
-              </div>
-            </div>
-          {/each}
+        <!-- Category Comparison Table -->
+        <div class="category-comparison-section">
+          <h3>Category Performance Comparison</h3>
+          <p class="comparison-subtitle">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
+          
+          <div class="comparison-table-container">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  {#each companiesForLocation as company}
+                    <th>{company.name}</th>
+                  {/each}
+                </tr>
+              </thead>
+              <tbody>
+                {#each ['responsiveness', 'shipment_management', 'documentation', 'customer_experience', 'technology_process', 'reliability_execution', 'compliance_security'] as category}
+                  <tr>
+                    <td class="category-name">{getCategoryName(category)}</td>
+                    {#each companiesForLocation as company}
+                      <td class="score-cell">
+                        {#if company.category_scores && company.category_scores.length > 0}
+                          {@const categoryScore = company.category_scores.find(score => score.category_name === category)}
+                          {#if categoryScore}
+                            <div class="score-display">
+                              <div class="score-badge {getScoreColorClass(categoryScore.average_score)}">
+                                {categoryScore.average_score.toFixed(1)}
+                              </div>
+                              <div class="score-label">{formatScore(categoryScore.average_score)}</div>
+                              <div class="review-count">({categoryScore.review_count} reviews)</div>
+                            </div>
+                          {:else}
+                            <span class="no-score">N/A</span>
+                          {/if}
+                        {:else}
+                          <span class="no-score">No scores</span>
+                        {/if}
+                      </td>
+                    {/each}
+                  </tr>
+                {/each}
+                <!-- Aggregated Score Row -->
+                <tr class="aggregated-row">
+                  <td class="category-name">🏆 Aggregated Score</td>
+                  {#each companiesForLocation as company}
+                    <td class="score-cell">
+                      {#if company.average_rating}
+                        <div class="score-display">
+                          <div class="score-badge aggregated {getScoreColorClass(company.average_rating)}">
+                            {company.average_rating.toFixed(1)} ⭐
+                          </div>
+                          <div class="score-label">{formatScore(company.average_rating)}</div>
+                        </div>
+                      {:else}
+                        <span class="no-score">No rating</span>
+                      {/if}
+                    </td>
+                  {/each}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="comparison-actions">
+            <button class="btn-secondary" on:click={goBackToCities}>
+              ← Back to Cities
+            </button>
+            {#if companiesForLocation.length === 1}
+              <button class="btn-primary" on:click={() => selectCompany(companiesForLocation[0])}>
+                View Company Details
+              </button>
+            {/if}
+          </div>
         </div>
       </div>
     {:else if searchType === 'country' && selectedCity && companiesForLocation.length === 0 && !isCityLoading && !error}
@@ -496,154 +517,6 @@
           <p>Loading companies...</p>
         </div>
       </div>
-    {/if}
-    
-    <!-- Debug Info for City Selection -->
-    {#if searchType === 'country' && selectedCity}
-      <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 12px;">
-        <strong>Debug Info for City Selection:</strong><br>
-        selectedCity: {selectedCity}<br>
-        selectedCountry: {selectedCountry}<br>
-        companiesForLocation.length: {companiesForLocation.length}<br>
-        searchResults.length: {searchResults.length}<br>
-        isCityLoading: {isCityLoading}<br>
-        error: {error || 'none'}<br>
-        <strong>Display Conditions:</strong><br>
-        searchType === 'country': {searchType === 'country'}<br>
-        selectedCity exists: {!!selectedCity}<br>
-        companiesForLocation.length > 0: {companiesForLocation.length > 0}<br>
-        <strong>Final Condition:</strong> {searchType === 'country' && selectedCity && companiesForLocation.length > 0}
-      </div>
-      
-      <!-- SIMPLE TEST DISPLAY - Show companies directly -->
-      <div style="margin-top: 20px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
-        <h3 style="color: #856404; margin-bottom: 15px;">🧪 SIMPLE TEST - Companies in {selectedCity}:</h3>
-        <p style="color: #856404; margin-bottom: 15px;">Found {companiesForLocation.length} company(ies)</p>
-        
-        {#each companiesForLocation as company, index}
-          <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-            <h4 style="margin: 0 0 10px 0; color: #333;">Company {index + 1}: {company.name}</h4>
-            <p style="margin: 5px 0; color: #666;">ID: {company.id}</p>
-            {#if company.headquarters_country}
-              <p style="margin: 5px 0; color: #666;">📍 {company.headquarters_country}</p>
-            {/if}
-            {#if company.description}
-              <p style="margin: 5px 0; color: #555; font-size: 14px;">{company.description}</p>
-            {/if}
-            {#if company.average_rating}
-              <p style="margin: 5px 0; color: #f39c12; font-weight: bold;">Rating: {company.average_rating.toFixed(1)} ⭐</p>
-            {/if}
-            <button 
-              style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;"
-              on:click={() => selectCompany(company)}
-            >
-              View Details
-            </button>
-          </div>
-        {/each}
-      </div>
-      
-      <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
-      {#if companiesForLocation.length > 0}
-        <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px;">
-          <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
-          <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
-          
-          <!-- Category Comparison Table -->
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-              <thead>
-                <tr style="background: #f5f5f5;">
-                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd; font-weight: bold; color: #333; min-width: 200px;">Category</th>
-                  {#each companiesForLocation as company}
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; font-weight: bold; color: #333; min-width: 150px;">{company.name}</th>
-                  {/each}
-                </tr>
-              </thead>
-              <tbody>
-                {#each ['responsiveness', 'shipment_management', 'documentation', 'customer_experience', 'technology_process', 'reliability_execution', 'compliance_security'] as category}
-                  <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px; font-weight: 600; color: #555; background: #fafafa;">{getCategoryName(category)}</td>
-                    {#each companiesForLocation as company}
-                      <td style="padding: 12px; text-align: center; border-left: 1px solid #eee;">
-                        {#if company.category_scores && company.category_scores.length > 0}
-                          {@const categoryScore = company.category_scores.find(score => score.category_name === category)}
-                          {#if categoryScore}
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                              <div style="
-                                padding: 6px 12px; 
-                                border-radius: 20px; 
-                                font-weight: bold; 
-                                font-size: 14px;
-                                background: {categoryScore.average_score >= 3 ? '#d4edda' : categoryScore.average_score >= 2 ? '#fff3cd' : categoryScore.average_score >= 1 ? '#f8d7da' : '#f8f9fa'};
-                                color: {categoryScore.average_score >= 3 ? '#155724' : categoryScore.average_score >= 2 ? '#856404' : categoryScore.average_score >= 1 ? '#721c24' : '#6c757d'};
-                                border: 1px solid {categoryScore.average_score >= 3 ? '#c3e6cb' : categoryScore.average_score >= 2 ? '#ffeaa7' : categoryScore.average_score >= 1 ? '#f5c6cb' : '#dee2e6'};
-                              ">
-                                {categoryScore.average_score.toFixed(1)}
-                              </div>
-                              <div style="font-size: 12px; color: #666;">{formatScore(categoryScore.average_score)}</div>
-                              <div style="font-size: 11px; color: #999;">({categoryScore.review_count} reviews)</div>
-                            </div>
-                          {:else}
-                            <span style="color: #999; font-style: italic;">N/A</span>
-                          {/if}
-                        {:else}
-                          <span style="color: #999; font-style: italic;">No scores</span>
-                        {/if}
-                      </td>
-                    {/each}
-                  </tr>
-                {/each}
-                <!-- Aggregated Score Row -->
-                <tr style="background: #f8f9fa; border-top: 2px solid #ddd;">
-                  <td style="padding: 12px; font-weight: 700; color: #333; background: #e9ecef;">🏆 AGGREGATED SCORE</td>
-                  {#each companiesForLocation as company}
-                    <td style="padding: 12px; text-align: center; border-left: 1px solid #eee;">
-                      {#if company.average_rating}
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                          <div style="
-                            padding: 8px 16px; 
-                            border-radius: 25px; 
-                            font-weight: bold; 
-                            font-size: 16px;
-                            background: {company.average_rating >= 3 ? '#d4edda' : company.average_rating >= 2 ? '#fff3cd' : company.average_rating >= 1 ? '#f8d7da' : '#f8f9fa'};
-                            color: {company.average_rating >= 3 ? '#155724' : company.average_rating >= 2 ? '#856404' : company.average_rating >= 1 ? '#721c24' : '#6c757d'};
-                            border: 2px solid {company.average_rating >= 3 ? '#c3e6cb' : company.average_rating >= 2 ? '#ffeaa7' : company.average_rating >= 1 ? '#f5c6cb' : '#dee2e6'};
-                          ">
-                            {company.average_rating.toFixed(1)} ⭐
-                          </div>
-                          <div style="font-size: 12px; color: #666;">{formatScore(company.average_rating)}</div>
-                        </div>
-                      {:else}
-                        <span style="color: #999; font-style: italic;">No rating</span>
-                      {/if}
-                    </td>
-                  {/each}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <div style="margin-top: 20px; text-align: center;">
-            <button 
-              style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 0 10px;"
-              on:click={() => goBackToCities()}
-            >
-              ← Back to Cities
-            </button>
-            <button 
-              style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 0 10px;"
-              on:click={() => {
-                if (companiesForLocation.length === 1) {
-                  selectCompany(companiesForLocation[0]);
-                }
-              }}
-            >
-              {companiesForLocation.length === 1 ? 'View Company Details' : 'Select a Company'}
-            </button>
-          </div>
-        </div>
-      {/if}
     {/if}
     
     {#if !isLoading && getCurrentQuery() && searchResults.length === 0 && citiesWithReviews.length === 0}
@@ -1342,6 +1215,129 @@
     background: #d0d0d0;
   }
 
+  /* Category Comparison Section */
+  .category-comparison-section {
+    margin-top: 2rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .category-comparison-section h3 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+  }
+
+  .comparison-subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .comparison-table-container {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+  }
+
+  .comparison-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px; /* Ensure table is wide enough for multiple columns */
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    text-align: center;
+    color: #343a40;
+  }
+
+  .comparison-table th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    color: #495057;
+  }
+
+  .category-name {
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: left;
+    padding-left: 1rem;
+  }
+
+  .score-cell {
+    vertical-align: middle;
+  }
+
+  .score-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .score-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: white;
+  }
+
+  .aggregated {
+    background: #28a745; /* Green for aggregated score */
+  }
+
+  .no-score {
+    color: #7f8c8d;
+    font-style: italic;
+  }
+
+  .comparison-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-secondary {
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #5a6268;
+  }
+
+  .btn-primary {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #5a6fd8;
+  }
+
   @media (max-width: 768px) {
     .hero h1 {
       font-size: 2.5rem;
@@ -1388,6 +1384,24 @@
 
     .category-scores-grid {
       grid-template-columns: 1fr;
+    }
+
+    .comparison-table {
+      min-width: 100%;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 0.5rem;
+    }
+
+    .category-name {
+      padding-left: 0.5rem;
+    }
+
+    .comparison-actions {
+      flex-direction: column;
+      gap: 0.5rem;
     }
   }
 </style>
