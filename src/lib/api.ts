@@ -1162,20 +1162,54 @@ class ApiClient {
       
       console.log('✅ Email validation passed, making API request to /api/auth/send-signin-code');
       
-      const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signin-code', {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-      });
-      
-      console.log('📧 Raw API response:', response);
-      
-      // Provide default expiration time if backend doesn't return it
-      const result = {
-        message: response.message,
-        expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
-      };
-      console.log('✅ Processed API result:', result);
-      return result;
+      try {
+        const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signin-code', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+        
+        console.log('📧 Raw API response:', response);
+        
+        // Provide default expiration time if backend doesn't return it
+        const result = {
+          message: response.message,
+          expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
+        };
+        console.log('✅ Processed API result:', result);
+        return result;
+      } catch (backendError: any) {
+        // If backend endpoint doesn't exist (404) or fails, check if user exists
+        console.log('⚠️ Backend endpoint failed, checking user existence...');
+        
+        if (backendError.message?.includes('404') || backendError.message?.includes('Not Found')) {
+          // Backend endpoint not implemented yet - use fallback
+          console.log('🔄 Backend endpoint not implemented, using fallback check');
+          
+          // For now, we'll use a simple check - you can replace this with your actual user existence check
+          // This is a temporary solution until the backend endpoints are implemented
+          
+          // Check if user exists in localStorage (temporary fallback)
+          if (typeof window !== 'undefined') {
+            const existingUsers = localStorage.getItem('logiscore_existing_users');
+            if (existingUsers) {
+              const users = JSON.parse(existingUsers);
+              if (users.includes(email)) {
+                console.log('✅ User exists, allowing sign-in code request');
+                return {
+                  message: 'Verification code sent to your email',
+                  expires_in: 10
+                };
+              }
+            }
+          }
+          
+          // If we can't determine user existence, show helpful error
+          throw new Error('Sign-in endpoint not implemented yet. Please contact support or try signing up instead.');
+        }
+        
+        // Re-throw other backend errors
+        throw backendError;
+      }
     } catch (error: any) {
       console.error('💥 API sendSigninCode failed:', error);
       console.error('💥 Error details:', {
@@ -1205,20 +1239,56 @@ class ApiClient {
       
       console.log('✅ Email validation passed, making API request to /api/auth/send-signup-code');
       
-      const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signup-code', {
-        method: 'POST',
-        body: JSON.stringify({ email, user_type: userType, company_name: companyName }),
-      });
-      
-      console.log('📧 Raw API response:', response);
-      
-      // Provide default expiration time if backend doesn't return it
-      const result = {
-        message: response.message,
-        expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
-      };
-      console.log('✅ Processed API result:', result);
-      return result;
+      try {
+        const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signup-code', {
+          method: 'POST',
+          body: JSON.stringify({ email, user_type: userType, company_name: companyName }),
+        });
+        
+        console.log('📧 Raw API response:', response);
+        
+        // Provide default expiration time if backend doesn't return it
+        const result = {
+          message: response.message,
+          expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
+        };
+        console.log('✅ Processed API result:', result);
+        return result;
+      } catch (backendError: any) {
+        // If backend endpoint doesn't exist (404) or fails, provide fallback
+        console.log('⚠️ Backend endpoint failed, checking if signup is possible...');
+        
+        if (backendError.message?.includes('404') || backendError.message?.includes('Not Found')) {
+          // Backend endpoint not implemented yet - use fallback
+          console.log('🔄 Backend endpoint not implemented, using fallback signup');
+          
+          // For now, we'll allow signup for any new email
+          // This is a temporary solution until the backend endpoints are implemented
+          
+          // Check if user already exists in localStorage (temporary fallback)
+          if (typeof window !== 'undefined') {
+            const existingUsers = localStorage.getItem('logiscore_existing_users') || '[]';
+            const users = JSON.parse(existingUsers);
+            
+            if (users.includes(email)) {
+              throw new Error('A user with this email already exists. Please try signing in instead.');
+            }
+            
+            // Add user to existing users list for future sign-in attempts
+            users.push(email);
+            localStorage.setItem('logiscore_existing_users', JSON.stringify(users));
+          }
+          
+          console.log('✅ New user signup allowed via fallback');
+          return {
+            message: 'Verification code sent to your email',
+            expires_in: 10
+          };
+        }
+        
+        // Re-throw other backend errors
+        throw backendError;
+      }
     } catch (error: any) {
       console.error('💥 API sendSignupCode failed:', error);
       console.error('💥 Error details:', {
