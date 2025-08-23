@@ -13,7 +13,6 @@
 
   // Form data
   let formData = {
-    username: '',
     full_name: '',
     email: '',
     company_name: '',
@@ -34,7 +33,6 @@
     if (state.user) {
       // Initialize form data with current user data
       formData = {
-        username: state.user.username || '',
         full_name: state.user.full_name || state.user.username || '',
         email: state.user.email || '',
         company_name: state.user.company_name || '',
@@ -66,7 +64,6 @@
     try {
       // Call the profile update API
       const response = await apiClient.updateUserProfile(authState.token, {
-        username: formData.username,
         full_name: formData.full_name,
         company_name: formData.company_name
       });
@@ -89,7 +86,7 @@
   <div class="modal-overlay" on:click={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>Edit Profile</h2>
+        <h2>View Profile</h2>
         <button class="close-btn" on:click={closeModal}>&times;</button>
       </div>
       
@@ -102,17 +99,6 @@
               id="full_name"
               bind:value={formData.full_name}
               placeholder="Enter your full name"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input 
-              type="text" 
-              id="username"
-              bind:value={formData.username}
-              placeholder="Enter your username"
               required
             />
           </div>
@@ -154,7 +140,7 @@
               Cancel
             </button>
             <button type="submit" class="btn-primary" disabled={isLoading}>
-              {isLoading ? 'Updating...' : 'Update Profile'}
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
