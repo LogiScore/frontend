@@ -21,6 +21,7 @@
   let selectedCity: string = '';
   let selectedCompany: FreightForwarder | null = null;
   let showCompanyDetails = false;
+  let userManuallyChangedSearchType = false;
 
   // Get search query from URL parameters
   $: {
@@ -28,11 +29,11 @@
     const query = urlParams.get('q') || '';
     let type = urlParams.get('type') || 'company';
     
-    console.log('URL parameters changed:', { query, type, canSearchByCountry });
+    console.log('URL parameters changed:', { query, type, canSearchByCountry, userManuallyChangedSearchType });
     
-    // Force company search for non-subscribed users
-    if (type === 'country' && !canSearchByCountry) {
-      console.log('Forcing company search for non-subscribed user');
+    // Only force company search for non-subscribed users if they haven't manually changed the search type
+    if (type === 'country' && !canSearchByCountry && !userManuallyChangedSearchType) {
+      console.log('Forcing company search for non-subscribed user (automatic)');
       type = 'company';
       // Update URL to reflect the change
       const url = new URL(window.location.href);
@@ -64,7 +65,8 @@
         user: state.user,
         subscription_tier: state.user?.subscription_tier,
         userSubscription: userSubscription,
-        canSearchByCountry: userSubscription !== 'free'
+        canSearchByCountry: userSubscription !== 'free',
+        userObject: JSON.stringify(state.user, null, 2)
       });
     });
     
@@ -72,7 +74,19 @@
   });
 
   $: canSearchByCountry = userSubscription !== 'free';
-  $: console.log('Subscription state changed:', { userSubscription, canSearchByCountry });
+  $: console.log('Subscription state changed:', { 
+    userSubscription, 
+    canSearchByCountry, 
+    user: user,
+    userSubscriptionType: typeof userSubscription,
+    comparison: userSubscription !== 'free'
+  });
+  
+  // Reset manual change flag when subscription changes (user might have upgraded)
+  $: if (canSearchByCountry && userManuallyChangedSearchType) {
+    console.log('User can now search by country, resetting manual change flag');
+    userManuallyChangedSearchType = false;
+  }
 
   function canSearchByCompany(): boolean {
     // All users can search by company
@@ -225,6 +239,7 @@
 
   function updateSearchType(type: 'company' | 'country') {
     console.log('Updating search type to:', type);
+    userManuallyChangedSearchType = true; // Set flag to true when manually changed
     searchType = type;
     searchResults = [];
     companiesForLocation = [];
@@ -342,17 +357,43 @@
       Search by Company
     </button>
     
-    {#if canSearchByCountry}
-      <button 
-        class="search-type-btn {searchType === 'country' ? 'active' : ''}"
-        on:click={() => {
-          console.log('Country search type button clicked');
-          updateSearchType('country');
-        }}
-      >
-        Search by Country
-      </button>
-    {/if}
+    <button 
+      class="search-type-btn {searchType === 'country' ? 'active' : ''} {!canSearchByCountry ? 'disabled' : ''}"
+      on:click={() => {
+        console.log('=== COUNTRY BUTTON CLICKED ===');
+        console.log('Event triggered successfully');
+        console.log('Current values:', { canSearchByCountry, userSubscription, searchType });
+        
+        // Use the proper function to update search type
+        console.log('Updating search type to country');
+        updateSearchType('country');
+        
+        console.log('Search type changed to:', searchType);
+      }}
+      title="Search for companies by country"
+    >
+      Search by Country
+      {#if !canSearchByCountry}
+        <span class="premium-badge">🔒 Premium</span>
+      {/if}
+    </button>
+    
+    <!-- Debug info display -->
+    <div class="debug-info" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px; opacity: 0.8;">
+      <strong>Debug Info:</strong><br>
+      User Subscription: {userSubscription}<br>
+      Can Search by Country: {canSearchByCountry}<br>
+      Search Type: {searchType}<br>
+      Manual Change Flag: {userManuallyChangedSearchType}
+    </div>
+    
+    <!-- Test button -->
+    <button 
+      style="margin-top: 10px; padding: 10px; background: green; color: white; border: none; border-radius: 5px; cursor: pointer;"
+      on:click={() => alert('Test button works!')}
+    >
+      Test Button (Click me!)
+    </button>
   </div>
 
   <!-- Search Input -->
@@ -711,6 +752,21 @@
   .search-type-btn.active {
     background: #667eea;
     color: white;
+  }
+
+  .search-type-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    color: #95a5a6;
+    border-color: #dee2e6;
+  }
+
+  .search-type-btn.disabled:hover {
+    background-color: #f8f9fa;
+    color: #95a5a6;
+    transform: none;
+    box-shadow: none;
   }
 
   .search-type-selection {
@@ -1167,6 +1223,16 @@
 
   .upgrade-btn:hover {
     background: #e55a2b;
+  }
+
+  .premium-badge {
+    background-color: #ff6b35;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-left: 10px;
   }
 
   .no-companies-found {
