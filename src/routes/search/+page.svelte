@@ -238,9 +238,16 @@
   }
 
   function updateSearchType(type: 'company' | 'country') {
-    console.log('Updating search type to:', type);
+    console.log('=== updateSearchType FUNCTION CALLED ===');
+    console.log('Function called with type:', type);
+    console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
+    
     userManuallyChangedSearchType = true; // Set flag to true when manually changed
+    console.log('Set userManuallyChangedSearchType to true');
+    
     searchType = type;
+    console.log('Set searchType to:', searchType);
+    
     searchResults = [];
     companiesForLocation = [];
     citiesWithReviews = [];
@@ -249,12 +256,17 @@
     showCompanyDetails = false;
     error = null;
     
+    console.log('Cleared all search data');
+    
     // Update URL
     const url = new URL(window.location.href);
     url.searchParams.set('type', type);
     url.searchParams.delete('q');
     window.history.pushState({}, '', url.toString());
     console.log('URL updated to:', url.toString());
+    
+    console.log('=== updateSearchType FUNCTION COMPLETED ===');
+    console.log('Final state - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
   }
 
   function getCurrentQuery(): string {
@@ -364,18 +376,48 @@
         console.log('Event triggered successfully');
         console.log('Current values:', { canSearchByCountry, userSubscription, searchType });
         
+        // Simple test first
+        alert('Country button clicked! Subscription: ' + userSubscription + ', Can search: ' + canSearchByCountry);
+        
         // Use the proper function to update search type
         console.log('Updating search type to country');
         updateSearchType('country');
         
         console.log('Search type changed to:', searchType);
       }}
+      on:mousedown={() => console.log('Country button mousedown event')}
+      on:mouseup={() => console.log('Country button mouseup event')}
+      on:focus={() => console.log('Country button focus event')}
+      on:blur={() => console.log('Country button blur event')}
+      on:keydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          console.log('Country button keydown event:', e.key);
+          e.preventDefault();
+          // Use the proper function to update search type
+          updateSearchType('country');
+        }
+      }}
       title="Search for companies by country"
+      tabindex="0"
+      role="button"
+      aria-label="Search by Country"
+      style="pointer-events: auto; cursor: pointer; position: relative; z-index: 1000; border: 3px solid red !important; background: yellow !important; color: black !important;"
     >
-      Search by Country
+      🔍 Search by Country 🔍
       {#if !canSearchByCountry}
         <span class="premium-badge">🔒 Premium</span>
       {/if}
+    </button>
+    
+    <!-- Separate test button -->
+    <button 
+      style="margin-left: 10px; padding: 10px 20px; background: orange; color: white; border: 2px solid black; border-radius: 5px; cursor: pointer; font-weight: bold;"
+      on:click={() => {
+        alert('Separate test button works!');
+        console.log('Separate test button clicked');
+      }}
+    >
+      🧪 TEST BUTTON
     </button>
     
     <!-- Debug info display -->
