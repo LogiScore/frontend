@@ -137,10 +137,7 @@
               showUserDropdown = !showUserDropdown;
               console.log('New dropdown state:', showUserDropdown);
             }}>
-              <span class="username">{authState.user.username}</span>
-              <span class="status-badge" class:premium={authState.user.subscription_tier !== 'free'}>
-                {authState.user.subscription_tier === 'free' ? 'Free' : authState.user.subscription_tier}
-              </span>
+              <span class="username">{authState.user.full_name || authState.user.username}</span>
               <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6,9 12,15 18,9"></polyline>
               </svg>
@@ -151,12 +148,6 @@
                 <div class="user-info">
                   <span class="user-name">{authState.user.full_name || authState.user.username}</span>
                   <span class="user-email">{authState.user.email}</span>
-                </div>
-                <div class="subscription-info">
-                  <span class="subscription-label">Plan:</span>
-                  <span class="subscription-value" class:premium={authState.user.subscription_tier !== 'free'}>
-                    {authState.user.subscription_tier === 'free' ? 'Free Plan' : authState.user.subscription_tier}
-                  </span>
                 </div>
               </div>
               
