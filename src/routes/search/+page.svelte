@@ -470,13 +470,7 @@
             <span class="icon">🌍</span>
             Search by Country
           </button>
-          <button 
-            class="search-type-btn {searchType === 'location' ? 'active' : ''}"
-            on:click={() => switchSearchType('location')}
-          >
-            <span class="icon">📍</span>
-            Search by Location
-          </button>
+
         {/if}
       </div>
 
