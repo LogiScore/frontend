@@ -109,15 +109,22 @@
   }
 
   async function selectCity(city: string) {
+    console.log('=== selectCity FUNCTION CALLED ===');
+    console.log('City selected:', city);
+    console.log('Country:', selectedCountry);
+    
     selectedCity = city;
     isCityLoading = true;
     error = null;
     
     try {
       // Get companies that have reviews in this city
+      console.log('Fetching reviews for city:', city);
       const reviews = await apiClient.getReviewsByCity(city, selectedCountry);
+      console.log('Reviews received for city:', reviews);
       
       if (reviews.length === 0) {
+        console.log('No reviews found for city:', city);
         companiesForLocation = [];
         searchResults = [];
         error = `No reviews found for ${city}, ${selectedCountry}`;
@@ -126,11 +133,14 @@
       
       // Extract unique freight forwarder IDs from the reviews
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
+      console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
+          console.log('Fetching company details for ID:', id);
           const company = await apiClient.getFreightForwarder(id);
+          console.log('Company details received:', company);
           return company;
         } catch (error) {
           console.error(`Failed to fetch company ${id}:`, error);
@@ -141,6 +151,9 @@
       const companies = await Promise.all(companiesPromises);
       companiesForLocation = companies.filter(company => company !== null);
       searchResults = companiesForLocation;
+      
+      console.log('Final companies for location:', companiesForLocation);
+      console.log('Companies array length:', companiesForLocation.length);
       
       if (companiesForLocation.length === 0) {
         error = `No companies found for ${city}, ${selectedCountry}`;
@@ -153,6 +166,14 @@
       searchResults = [];
     } finally {
       isCityLoading = false;
+      console.log('=== selectCity FUNCTION COMPLETED ===');
+      console.log('Final state:', {
+        selectedCity,
+        companiesForLocation: companiesForLocation.length,
+        searchResults: searchResults.length,
+        error,
+        isCityLoading
+      });
     }
   }
 
@@ -473,28 +494,39 @@
             <li>The city name might be spelled differently in our database</li>
             <li>Companies in this city haven't received any reviews</li>
           </ul>
-          <button on:click={goBackToCities} class="btn-primary">Try Another City</button>
+          <button on:click={goBackToCities} class="back-btn">← Back to Cities</button>
         </div>
       </div>
-    {:else if searchType === 'country' && selectedCity && error}
-      <!-- City Selected but Error Occurred -->
+    {:else if searchType === 'country' && selectedCity && isCityLoading}
+      <!-- City Loading State -->
       <div class="city-companies-section">
         <div class="city-header">
-          <h2>Companies with Reviews in {selectedCity}, {selectedCountry}</h2>
+          <h2>Loading Companies for {selectedCity}, {selectedCountry}</h2>
           <button on:click={goBackToCities} class="back-btn">← Back to Cities</button>
         </div>
         
-        <div class="error-display">
-          <div class="error-icon">⚠️</div>
-          <h3>Unable to Load Companies</h3>
-          <p>{error}</p>
-          <div class="error-actions">
-            <button on:click={() => selectCity(selectedCity)} class="btn-primary">Try Again</button>
-            <button on:click={goBackToCities} class="btn-secondary">Back to Cities</button>
-          </div>
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading companies...</p>
         </div>
       </div>
-    {:else if showCompanyDetails && selectedCompany}
+    {/if}
+    
+    <!-- Debug Info for City Selection -->
+    {#if searchType === 'country' && selectedCity}
+      <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 12px;">
+        <strong>Debug Info for City Selection:</strong><br>
+        selectedCity: {selectedCity}<br>
+        selectedCountry: {selectedCountry}<br>
+        companiesForLocation.length: {companiesForLocation.length}<br>
+        searchResults.length: {searchResults.length}<br>
+        isCityLoading: {isCityLoading}<br>
+        error: {error || 'none'}<br>
+        showCompanyDetails: {showCompanyDetails}
+      </div>
+    {/if}
+    
+    {#if showCompanyDetails && selectedCompany}
       <!-- Company Details with Category Scores -->
       <div class="company-details-section">
         <div class="company-details-header">
@@ -563,8 +595,6 @@
       <a href="/pricing" class="upgrade-btn">View Pricing Plans</a>
     </div>
   {/if}
-    </div>
-  </section>
 </main>
 
 <style>
