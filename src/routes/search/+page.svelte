@@ -196,11 +196,12 @@
   <meta name="description" content="Search for freight forwarders and logistics companies on LogiScore" />
 </svelte:head>
 
-<div class="search-container">
-  <div class="search-header">
-    <h1>Search</h1>
-    <p>Find freight forwarders and logistics companies</p>
-  </div>
+<main class="search-page">
+  <div class="search-container">
+    <div class="search-header">
+      <h1>Search</h1>
+      <p>Find freight forwarders and logistics companies</p>
+    </div>
 
   <!-- Search Type Selection -->
   <div class="search-type-selector">
@@ -348,12 +349,22 @@
     </div>
   {/if}
 </div>
+</main>
 
 <style>
+  .search-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 2rem 0;
+  }
+
   .search-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
 
   .search-header {
@@ -380,14 +391,16 @@
   }
 
   .search-type-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 2rem;
     border: 2px solid #3498db;
     background: transparent;
     color: #3498db;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     transition: all 0.3s ease;
+    min-width: 180px;
   }
 
   .search-type-btn:hover {
@@ -408,12 +421,13 @@
   }
 
   .search-input {
-    padding: 1rem;
+    padding: 1.2rem;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
     min-width: 400px;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   .search-input:focus {
@@ -422,18 +436,22 @@
   }
 
   .search-btn {
-    padding: 1rem 2rem;
+    padding: 1.2rem 2.5rem;
     background: #3498db;
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
   }
 
   .search-btn:hover:not(:disabled) {
     background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
   }
 
   .search-btn:disabled {
