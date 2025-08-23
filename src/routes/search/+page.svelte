@@ -68,6 +68,7 @@
 
   function canSearchByCountry(): boolean {
     // Only paid subscribers can search by country
+    console.log('canSearchByCountry called:', { userSubscription, result: userSubscription !== 'free' });
     return userSubscription !== 'free';
   }
 
@@ -455,7 +456,10 @@
             <span class="icon">🌍</span>
             Search by Country
           </button>
-
+        {:else}
+          <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
+            Debug: Country search hidden because canSearchByCountry() returned false
+          </div>
         {/if}
       </div>
 
