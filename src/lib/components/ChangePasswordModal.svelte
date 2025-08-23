@@ -25,8 +25,13 @@
     authState = state;
   });
 
+  // Watch for modal opening to reset form data
+  $: if (isOpen) {
+    resetForm();
+  }
+
   function closeModal() {
-    isOpen = false;
+    dispatch('close');
     resetForm();
   }
 
@@ -74,7 +79,7 @@
 </script>
 
 {#if isOpen}
-  <div class="modal-overlay" on:click={closeModal}>
+  <div class="modal-overlay" on:click|self={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Change Password</h2>

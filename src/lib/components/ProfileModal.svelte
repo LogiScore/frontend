@@ -36,13 +36,23 @@
     }
   });
 
+  // Watch for modal opening to refresh data
+  $: if (isOpen && authState.user) {
+    formData = {
+      full_name: authState.user.full_name || authState.user.username || '',
+      email: authState.user.email || '',
+      company_name: authState.user.company_name || '',
+      user_type: authState.user.user_type || 'shipper'
+    };
+  }
+
   function closeModal() {
-    isOpen = false;
+    dispatch('close');
   }
 </script>
 
 {#if isOpen}
-  <div class="modal-overlay" on:click={closeModal}>
+  <div class="modal-overlay" on:click|self={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
         <h2>View Profile</h2>
