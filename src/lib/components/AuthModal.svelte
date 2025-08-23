@@ -90,13 +90,22 @@
             console.log('👤 User not registered, redirecting to sign-up mode');
             errorMessage = 'Email is not registered. Please register instead.';
             
-            // Automatically switch to sign-up mode
+            // Automatically switch to sign-up mode after showing the error message
             setTimeout(() => {
               mode = 'signup';
-              resetForm();
+              // Don't reset the form immediately - let user see the error first
+              email = email; // Keep the email
               errorMessage = '';
               successMessage = 'Please complete your registration details below.';
-            }, 2000);
+              // Reset other fields but keep email
+              verificationCode = '';
+              confirmPassword = '';
+              fullName = '';
+              companyName = '';
+              userType = 'shipper';
+              codeRequested = false;
+              codeSent = false;
+            }, 3000); // Increased delay to 3 seconds so user can read the message
             
             isLoading = false;
             return;
@@ -302,6 +311,12 @@
               {isLoading ? 'Sending...' : 'Send Verification Code'}
             </button>
           </div>
+          
+          {#if errorMessage}
+            <div class="error-message">
+              {errorMessage}
+            </div>
+          {/if}
           
           {#if mode === 'signup' && (!companyName || !userType)}
             <div class="help-text" style="color: #856404; text-align: center; margin-top: 0.5rem;">
