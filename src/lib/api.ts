@@ -491,6 +491,40 @@ class ApiClient {
     }
   }
 
+  async getReviewsByLocation(locationId: string): Promise<ReviewResponse[]> {
+    try {
+      // Query reviews by location_id
+      return await this.request<ReviewResponse[]>(`/api/reviews/?location_id=${locationId}`);
+    } catch (error: any) {
+      console.error('Failed to fetch reviews for location:', error);
+      return [];
+    }
+  }
+
+  async getReviewsByCountry(country: string): Promise<ReviewResponse[]> {
+    try {
+      // Query reviews by country
+      return await this.request<ReviewResponse[]>(`/api/reviews/?country=${encodeURIComponent(country)}`);
+    } catch (error: any) {
+      console.error('Failed to fetch reviews for country:', error);
+      return [];
+    }
+  }
+
+  async getReviewsByCity(city: string, country?: string): Promise<ReviewResponse[]> {
+    try {
+      // Query reviews by city, optionally filtered by country
+      let url = `/api/reviews/?city=${encodeURIComponent(city)}`;
+      if (country) {
+        url += `&country=${encodeURIComponent(country)}`;
+      }
+      return await this.request<ReviewResponse[]>(url);
+    } catch (error: any) {
+      console.error('Failed to fetch reviews for city:', error);
+      return [];
+    }
+  }
+
   // Fallback review questions (if API fails) - Updated to match LogiScore Review Questions document
   private getFallbackReviewQuestions(): ReviewCategory[] {
     return [

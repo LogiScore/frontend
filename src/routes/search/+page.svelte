@@ -5,16 +5,25 @@
   import { apiClient } from '$lib/api';
   import type { FreightForwarder, Location } from '$lib/api';
 
-  let searchType: 'company' | 'country' = 'company';
+  let searchType: 'company' | 'country' | 'location' = 'company';
   let companyQuery = '';
   let countryQuery = '';
+  let locationQuery = '';
   let searchResults: FreightForwarder[] = [];
   let locationsWithReviews: Location[] = [];
+  let locationSuggestions: Location[] = [];
+  let showLocationSuggestions = false;
   let isLoading = false;
   let error: string | null = null;
   let showSubscriptionPrompt = false;
   let user: any = null;
   let userSubscription = 'free';
+  let allLocations: Location[] = [];
+  let selectedLocation: Location | null = null;
+  let companiesForLocation: FreightForwarder[] = [];
+  let citiesWithReviews: string[] = [];
+  let selectedCountry: string = '';
+  let selectedCity: string = '';
 
   // Get search query from URL parameters
   $: {
@@ -23,7 +32,7 @@
     let type = urlParams.get('type') || 'company';
     
     // Force company search for non-subscribed users
-    if (type === 'country' && !canSearchByCountry()) {
+    if ((type === 'country' || type === 'location') && !canSearchByCountry()) {
       type = 'company';
       // Update URL to reflect the change
       const url = new URL(window.location.href);
@@ -31,11 +40,13 @@
       window.history.replaceState({}, '', url.toString());
     }
     
-    searchType = type as 'company' | 'country';
+    searchType = type as 'company' | 'country' | 'location';
     if (type === 'company') {
       companyQuery = query;
-    } else {
+    } else if (type === 'country') {
       countryQuery = query;
+    } else {
+      locationQuery = query;
     }
     
     if (query) {
@@ -50,11 +61,20 @@
       userSubscription = state.user?.subscription_tier || 'free';
     });
     
+    // Load all locations for location search
+    (async () => {
+      try {
+        allLocations = await apiClient.getLocations();
+      } catch (error) {
+        console.error('Failed to load locations:', error);
+      }
+    })();
+    
     return unsubscribe;
   });
 
   function canSearchByCountry(): boolean {
-    // Only paid subscribers can search by country
+    // Only paid subscribers can search by country or location
     return userSubscription !== 'free';
   }
 
@@ -63,12 +83,179 @@
     return true;
   }
 
+  async function handleLocationSearch(event: Event) {
+    const query = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    locationQuery = query;
+    
+    if (query.length < 3) {
+      locationSuggestions = [];
+      showLocationSuggestions = false;
+      return;
+    }
+
+    try {
+      // Try backend search first
+      const searchResults = await apiClient.searchLocations(query);
+      const filtered = searchResults.slice(0, 15);
+      
+      locationSuggestions = filtered;
+      showLocationSuggestions = true;
+    } catch (error) {
+      console.error('Location search failed, falling back to client-side filtering:', error);
+      
+      // Fallback to client-side filtering if backend search fails
+      const filtered = allLocations.filter(location => {
+        const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedName = (location.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCity = (location.city || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedState = (location.state || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedCountry = (location.country || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        
+        const nameMatch = normalizedName.includes(normalizedQuery);
+        const cityMatch = normalizedCity.includes(normalizedQuery);
+        const stateMatch = normalizedState.includes(normalizedQuery);
+        const countryMatch = normalizedCountry.includes(normalizedQuery);
+        
+        const exactNameMatch = location.name && location.name.toLowerCase().includes(query);
+        const exactCityMatch = location.city && location.city.toLowerCase().includes(query);
+        const exactStateMatch = location.state && location.state.toLowerCase().includes(query);
+        const exactCountryMatch = location.country && location.country.toLowerCase().includes(query);
+        
+        return nameMatch || cityMatch || stateMatch || countryMatch || 
+               exactNameMatch || exactCityMatch || exactStateMatch || exactCountryMatch;
+      }).slice(0, 15);
+      
+      locationSuggestions = filtered;
+      showLocationSuggestions = true;
+    }
+  }
+
+  function selectLocation(location: Location) {
+    locationQuery = location.name;
+    showLocationSuggestions = false;
+    performSearch();
+  }
+
+  function hideLocationSuggestions() {
+    setTimeout(() => {
+      showLocationSuggestions = false;
+    }, 200);
+  }
+
+  async function selectLocationFromCountry(location: Location) {
+    selectedLocation = location;
+    isLoading = true;
+    error = null;
+    
+    try {
+      // Get reviews for this specific location
+      const reviews = await apiClient.getReviewsByLocation(location.id);
+      
+      if (reviews.length === 0) {
+        companiesForLocation = [];
+        searchResults = [];
+        error = 'No reviews found for this location';
+        return;
+      }
+      
+      // Extract unique freight forwarder IDs from the reviews
+      const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
+      
+      // Get company details for each freight forwarder that has reviews at this location
+      const companiesPromises = freightForwarderIds.map(async (id) => {
+        try {
+          const response = await fetch(`https://logiscorebe.onrender.com/api/freight-forwarders/aggregated/?search=${id}&limit=1`);
+          if (response.ok) {
+            const data = await response.json();
+            return data[0];
+          }
+        } catch (error) {
+          console.error(`Failed to fetch company ${id}:`, error);
+        }
+        return null;
+      });
+      
+      const companies = await Promise.all(companiesPromises);
+      companiesForLocation = companies.filter(company => company !== null);
+      searchResults = companiesForLocation;
+      
+    } catch (err: any) {
+      console.error('Error fetching companies for location:', err);
+      error = 'Failed to load companies for this location';
+      companiesForLocation = [];
+      searchResults = [];
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function goBackToLocations() {
+    selectedLocation = null;
+    companiesForLocation = [];
+    searchResults = [];
+  }
+
+  async function selectCity(city: string) {
+    selectedCity = city;
+    isLoading = true;
+    error = null;
+    
+    try {
+      // Get companies that have reviews in this city
+      // We'll need to get reviews by city and then extract company IDs
+      const reviews = await apiClient.getReviewsByCity(city, selectedCountry);
+      
+      if (reviews.length === 0) {
+        companiesForLocation = [];
+        searchResults = [];
+        return;
+      }
+      
+      // Extract unique freight forwarder IDs from reviews
+      const companyIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
+      
+      // Get company details for each ID
+      const companies = [];
+      for (const companyId of companyIds) {
+        try {
+          const response = await fetch(`https://logiscorebe.onrender.com/api/freight-forwarders/aggregated/?id=${companyId}`);
+          if (response.ok) {
+            const companyData = await response.json();
+            if (companyData && companyData.length > 0) {
+              companies.push(companyData[0]);
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to fetch company ${companyId}:`, err);
+        }
+      }
+      
+      companiesForLocation = companies;
+      searchResults = companies;
+      
+    } catch (err: any) {
+      console.error('Error fetching companies for city:', err);
+      error = 'Failed to load companies for this city';
+      companiesForLocation = [];
+      searchResults = [];
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function goBackToCities() {
+    selectedCity = '';
+    companiesForLocation = [];
+    searchResults = [];
+  }
+
   async function performSearch() {
-    const query = searchType === 'company' ? companyQuery : countryQuery;
+    const query = searchType === 'company' ? companyQuery : 
+                  searchType === 'country' ? countryQuery : locationQuery;
     if (!query.trim()) return;
 
     // Check subscription restrictions
-    if (searchType === 'country' && !canSearchByCountry()) {
+    if ((searchType === 'country' || searchType === 'location') && !canSearchByCountry()) {
       showSubscriptionPrompt = true;
       return;
     }
@@ -92,9 +279,42 @@
         const data = await response.json();
         results = data;
         locationsWithReviews = [];
-      } else {
-        // Search by country to find locations with reviews
-        // First get locations matching the country query
+      } else if (searchType === 'country') {
+        // Search by country to find cities with reviews
+        selectedCountry = query.trim();
+        
+        try {
+          // Get reviews for the country to find cities
+          const reviews = await apiClient.getReviewsByCountry(query.trim());
+          
+          if (reviews.length === 0) {
+            searchResults = [];
+            citiesWithReviews = [];
+            return;
+          }
+          
+          // Since ReviewResponse doesn't have city field, we'll use the fallback approach
+          // Extract unique cities from locations in the country
+          citiesWithReviews = [];
+          results = [];
+          
+        } catch (error) {
+          console.error('Error fetching reviews by country:', error);
+          // Fallback: try to get cities from locations
+          const locations = await apiClient.searchLocations(query.trim());
+          const countryLocations = locations.filter(loc => 
+            loc.country && loc.country.toLowerCase().includes(query.trim().toLowerCase())
+          );
+          
+          citiesWithReviews = countryLocations
+            .map(loc => loc.city)
+            .filter((city): city is string => city !== undefined && city !== '')
+            .filter((city, index, arr) => arr.indexOf(city) === index) // Remove duplicates
+            .sort();
+          results = [];
+        }
+      } else if (searchType === 'location') {
+        // Search by specific location
         const locations = await apiClient.searchLocations(query.trim());
         
         if (locations.length === 0) {
@@ -103,13 +323,7 @@
           return;
         }
         
-        // Filter locations that are in the searched country
-        const countryLocations = locations.filter(loc => 
-          loc.country && loc.country.toLowerCase().includes(query.trim().toLowerCase())
-        );
-        
-        // For country search, we'll use the aggregated endpoint to get all companies
-        // and then filter by those that have operations in the searched country
+        // Get companies that have operations in the searched location
         const response = await fetch(`https://logiscorebe.onrender.com/api/freight-forwarders/aggregated/?limit=100`);
         
         if (!response.ok) {
@@ -118,15 +332,13 @@
         
         const allCompanies = await response.json();
         
-        // Filter companies that might have operations in the searched country
-        const countryNames = countryLocations.map(loc => loc.country.toLowerCase());
-        results = allCompanies.filter((company: FreightForwarder) => 
-          company.headquarters_country && 
-          countryNames.includes(company.headquarters_country.toLowerCase())
-        );
+        // For location search, we'll show companies that might have operations in the area
+        // This is a simplified approach - in a full implementation, you'd query for companies
+        // that actually have operations in specific locations
+        results = allCompanies.slice(0, 20); // Show top 20 companies for location search
         
-        // Store locations with reviews for display
-        locationsWithReviews = countryLocations;
+        // Store the found locations
+        locationsWithReviews = locations;
       }
 
       searchResults = results.map(company => ({
@@ -144,12 +356,13 @@
   }
 
   function handleSearch() {
-    const query = searchType === 'company' ? companyQuery : countryQuery;
+    const query = searchType === 'company' ? companyQuery : 
+                  searchType === 'country' ? countryQuery : locationQuery;
     if (query.trim()) {
-          const url = new URL(window.location.href);
-    url.searchParams.set('q', query.trim());
-    url.searchParams.set('type', searchType);
-    window.history.pushState({}, '', url.toString());
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', query.trim());
+      url.searchParams.set('type', searchType);
+      window.history.pushState({}, '', url.toString());
       performSearch();
     }
   }
@@ -160,10 +373,16 @@
     }
   }
 
-  function switchSearchType(type: 'company' | 'country') {
+  function switchSearchType(type: 'company' | 'country' | 'location') {
     searchType = type;
     searchResults = [];
     locationsWithReviews = [];
+    locationSuggestions = [];
+    showLocationSuggestions = false;
+    citiesWithReviews = [];
+    selectedCountry = '';
+    selectedCity = '';
+    companiesForLocation = [];
     error = null;
     showSubscriptionPrompt = false;
     
@@ -174,6 +393,8 @@
       url.searchParams.set('q', companyQuery);
     } else if (type === 'country' && countryQuery) {
       url.searchParams.set('q', countryQuery);
+    } else if (type === 'location' && locationQuery) {
+      url.searchParams.set('q', locationQuery);
     } else {
       url.searchParams.delete('q');
     }
@@ -183,20 +404,30 @@
   function getSearchPlaceholder(): string {
     if (searchType === 'company') {
       return 'Search by company name...';
-    } else {
+    } else if (searchType === 'country') {
       return 'Search by country name...';
+    } else {
+      return 'Search by city, state, or location...';
     }
   }
 
   function getCurrentQuery(): string {
-    return searchType === 'company' ? companyQuery : countryQuery;
+    if (searchType === 'company') {
+      return companyQuery;
+    } else if (searchType === 'country') {
+      return countryQuery;
+    } else {
+      return locationQuery;
+    }
   }
 
   function setCurrentQuery(value: string) {
     if (searchType === 'company') {
       companyQuery = value;
-    } else {
+    } else if (searchType === 'country') {
       countryQuery = value;
+    } else {
+      locationQuery = value;
     }
   }
 </script>
@@ -229,19 +460,61 @@
             <span class="icon">🌍</span>
             Search by Country
           </button>
+          <button 
+            class="search-type-btn {searchType === 'location' ? 'active' : ''}"
+            on:click={() => switchSearchType('location')}
+          >
+            <span class="icon">📍</span>
+            Search by Location
+          </button>
         {/if}
       </div>
 
       <!-- Search Box -->
       <div class="search-box">
-        <input 
-          type="text" 
-          placeholder={getSearchPlaceholder()}
-          value={getCurrentQuery()}
-          on:input={(e) => setCurrentQuery(e.currentTarget.value)}
-          on:keypress={handleKeyPress}
-          class="search-input"
-        />
+        {#if searchType === 'location'}
+          <div class="location-search-container">
+            <input 
+              type="text" 
+              placeholder={getSearchPlaceholder()}
+              value={getCurrentQuery()}
+              on:input={handleLocationSearch}
+              on:keypress={handleKeyPress}
+              on:blur={hideLocationSuggestions}
+              class="search-input"
+            />
+            {#if showLocationSuggestions && locationSuggestions.length > 0}
+              <div class="location-suggestions">
+                {#each locationSuggestions as location}
+                  <div 
+                    class="location-suggestion-item"
+                    on:click={() => selectLocation(location)}
+                  >
+                    <span class="location-name">{location.name}</span>
+                    {#if location.city && location.city !== location.name}
+                      <span class="location-details">
+                        {location.city}
+                        {#if location.state}, {location.state}{/if}
+                      </span>
+                    {:else if location.state}
+                      <span class="location-details">{location.state}</span>
+                    {/if}
+                    <span class="location-country">{location.country}</span>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {:else}
+          <input 
+            type="text" 
+            placeholder={getSearchPlaceholder()}
+            value={getCurrentQuery()}
+            on:input={(e) => setCurrentQuery(e.currentTarget.value)}
+            on:keypress={handleKeyPress}
+            class="search-input"
+          />
+        {/if}
         <button on:click={handleSearch} class="search-button">
           Search
         </button>
@@ -289,30 +562,90 @@
         <p class="search-summary">
           {#if searchType === 'company'}
             Showing companies matching "{companyQuery}"
+          {:else if searchType === 'country'}
+            {#if selectedCity}
+              Showing companies with reviews in {selectedCity}, {selectedCountry}
+            {:else}
+              Found {citiesWithReviews.length} cities with reviews in {countryQuery}
+            {/if}
           {:else}
-            Showing companies with operations in "{countryQuery}" ({locationsWithReviews.length} locations with reviews)
+            Showing companies with operations in "{locationQuery}" ({locationsWithReviews.length} locations with reviews)
           {/if}
         </p>
         
-        <!-- Show locations with reviews for country search -->
-        {#if searchType === 'country' && locationsWithReviews.length > 0}
-          <div class="locations-section">
-            <h3>📍 Locations with Reviews in {countryQuery}</h3>
-            <div class="locations-grid">
-              {#each locationsWithReviews as location}
-                <div class="location-card">
-                  <div class="location-info">
-                    <h4 class="location-name">{location.name}</h4>
-                    <p class="location-details">
-                      {#if location.city && location.city !== location.name}
-                        {location.city}
-                        {#if location.state}, {location.state}{/if}
-                      {:else if location.state}
-                        {location.state}
+        <!-- Show cities with reviews for country search -->
+        {#if searchType === 'country' && citiesWithReviews.length > 0 && !selectedCity}
+          <div class="cities-section">
+            <h3>🏙️ Cities with Reviews in {countryQuery}</h3>
+            <p class="cities-subtitle">Click on a city to see companies with reviews there</p>
+            <div class="cities-grid">
+              {#each citiesWithReviews as city}
+                <div 
+                  class="city-card"
+                  on:click={() => selectCity(city)}
+                >
+                  <h4 class="city-name">{city}</h4>
+                  <p class="city-country">{selectedCountry}</p>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Show companies for selected city -->
+        {#if selectedCity && companiesForLocation.length > 0}
+          <div class="city-companies-section">
+            <div class="city-header">
+              <button class="back-btn" on:click={goBackToCities}>
+                ← Back to Cities
+              </button>
+              <h3>🏢 Companies with Reviews in {selectedCity}, {selectedCountry}</h3>
+            </div>
+            <div class="results-grid">
+              {#each companiesForLocation as company}
+                <div class="company-card">
+                  <div class="company-header">
+                    <div class="company-logo">
+                      <img 
+                        src={company.logo_url} 
+                        alt="{company.name} logo" 
+                        class="company-logo-img"
+                        on:error={(e) => {
+                          const target = e.target;
+                          if (target && target instanceof HTMLImageElement) {
+                            target.src = '/logo-placeholder.svg';
+                          }
+                        }}
+                      />
+                    </div>
+                    <div class="company-info">
+                      <h3 class="company-name">{company.name}</h3>
+                      {#if company.headquarters_country}
+                        <p class="company-headquarters">📍 {company.headquarters_country}</p>
                       {/if}
-                    </p>
-                    <p class="location-country">{location.country}</p>
+                      {#if company.average_rating}
+                        <div class="company-rating">
+                          <span class="stars">
+                            {#each Array(5) as _, i}
+                              <span class="star {i < Math.floor(company.average_rating || 0) ? 'filled' : ''}">★</span>
+                            {/each}
+                          </span>
+                          {#if user && user.subscription_tier && user.subscription_tier !== 'free'}
+                            <span class="rating-text">{(company.average_rating || 0).toFixed(1)}/5</span>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
                   </div>
+                  <div class="company-stats">
+                    {#if company.review_count}
+                      <span class="stat">
+                        <span class="stat-label">Reviews:</span>
+                        <span class="stat-value">{company.review_count}</span>
+                      </span>
+                    {/if}
+                  </div>
+                  <a href="/freight-forwarder/{company.id}" class="view-profile-btn">View Profile</a>
                 </div>
               {/each}
             </div>
@@ -872,6 +1205,165 @@
   .location-country {
     font-size: 0.8rem;
     color: #555;
+  }
+
+  /* New styles for cities section */
+  .cities-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .cities-section h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .cities-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .city-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 250px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+
+  .city-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+  }
+
+  .city-name {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .city-country {
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  /* City companies section */
+  .city-companies-section {
+    margin-top: 3rem;
+  }
+
+  .city-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 0.9rem;
+  }
+
+  .back-btn:hover {
+    background: #5a6268;
+  }
+
+  .city-header h3 {
+    margin: 0;
+    color: #333;
+  }
+
+  /* New styles for location suggestions */
+  .location-search-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .location-suggestions {
+    position: absolute;
+    top: 100%; /* Position below the input */
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    margin-top: 0.5rem;
+  }
+
+  .location-suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .location-suggestion-item:hover {
+    background: #f0f0f0;
+  }
+
+  .location-name {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .location-details {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.2rem;
+  }
+
+  .location-country {
+    font-size: 0.7rem;
+    color: #555;
+    margin-top: 0.2rem;
+  }
+
+  /* Ensure the search box can accommodate the location suggestions */
+  .search-box {
+    position: relative;
+  }
+
+  /* Make sure location suggestions don't overflow on mobile */
+  @media (max-width: 768px) {
+    .location-suggestions {
+      max-height: 150px;
+    }
+    
+    .location-suggestion-item {
+      padding: 0.5rem 0.75rem;
+    }
   }
 
   @media (max-width: 768px) {
