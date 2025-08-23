@@ -485,23 +485,6 @@
     
     <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
     {#if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
-      <!-- DEBUG: Show actual review data -->
-      <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; font-family: monospace; font-size: 12px;">
-        <h4 style="margin: 0 0 10px 0; color: #856404;">🔍 DEBUG: Review Data Investigation</h4>
-        <p style="margin: 5px 0; color: #856404;"><strong>Fix Applied:</strong> Backend now receives city/country parameters for correct filtering</p>
-        <p style="margin: 5px 0; color: #856404;"><strong>API Call:</strong> GET /api/freight-forwarders/[id]?city={selectedCity}&country={selectedCountry}</p>
-        <p style="margin: 5px 0; color: #856404;"><strong>Selected City:</strong> {selectedCity}, {selectedCountry}</p>
-        <p style="margin: 5px 0; color: #856404;"><strong>Companies Found:</strong> {companiesForLocation.length}</p>
-        {#each companiesForLocation as company}
-          <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 4px;">
-            <strong>{company.name}:</strong><br/>
-            <strong>Backend Review Counts (with city filter):</strong> {JSON.stringify(Object.entries((company as any).category_scores_summary || {}).map(([cat, data]: [string, any]) => `${cat}: ${data.total_reviews}`))}<br/>
-            <strong>Company average_rating:</strong> {company.average_rating}<br/>
-            <strong>Company review_count:</strong> {company.review_count}
-          </div>
-        {/each}
-      </div>
-      
       <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px;">
         <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
         <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
