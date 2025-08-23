@@ -474,36 +474,8 @@
       </div>
     {/if}
     
-    <!-- SIMPLE TEST DISPLAY - Show companies directly -->
+    <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
     {#if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
-      <div style="margin-top: 20px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
-        <h3 style="color: #856404; margin-bottom: 15px;">🧪 SIMPLE TEST - Companies in {selectedCity}:</h3>
-        <p style="color: #856404; margin-bottom: 15px;">Found {companiesForLocation.length} company(ies)</p>
-        
-        {#each companiesForLocation as company, index}
-          <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-            <h4 style="margin: 0 0 10px 0; color: #333;">Company {index + 1}: {company.name}</h4>
-            <p style="margin: 5px 0; color: #666;">ID: {company.id}</p>
-            {#if company.headquarters_country}
-              <p style="margin: 5px 0; color: #666;">📍 {company.headquarters_country}</p>
-            {/if}
-            {#if company.description}
-              <p style="margin: 5px 0; color: #555; font-size: 14px;">{company.description}</p>
-            {/if}
-            {#if company.average_rating}
-              <p style="margin: 5px 0; color: #f39c12; font-weight: bold;">Rating: {company.average_rating.toFixed(1)} ⭐</p>
-            {/if}
-            <button 
-              style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;"
-              on:click={() => selectCompany(company)}
-            >
-              View Details
-            </button>
-          </div>
-        {/each}
-      </div>
-      
-      <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
       <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px;">
         <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
         <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
