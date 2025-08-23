@@ -24,7 +24,7 @@
   let userManuallyChangedSearchType = false;
 
   // Get search query from URL parameters
-  $: {
+  $: if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams($page.url.search);
     const query = urlParams.get('q') || '';
     let type = urlParams.get('type') || 'company';
@@ -35,10 +35,12 @@
     if (type === 'country' && !canSearchByCountry && !userManuallyChangedSearchType) {
       console.log('Forcing company search for non-subscribed user (automatic)');
       type = 'company';
-      // Update URL to reflect the change
-      const url = new URL(window.location.href);
-      url.searchParams.set('type', 'company');
-      window.history.replaceState({}, '', url.toString());
+      // Update URL to reflect the change - only in browser
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('type', 'company');
+        window.history.replaceState({}, '', url.toString());
+      }
     }
     
     searchType = type as 'company' | 'country';
@@ -57,6 +59,9 @@
   }
 
   onMount(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     // Subscribe to auth store to get user info
     const unsubscribe = auth.subscribe(state => {
       user = state.user;
@@ -74,16 +79,18 @@
   });
 
   $: canSearchByCountry = userSubscription !== 'free';
-  $: console.log('Subscription state changed:', { 
-    userSubscription, 
-    canSearchByCountry, 
-    user: user,
-    userSubscriptionType: typeof userSubscription,
-    comparison: userSubscription !== 'free'
-  });
+  $: if (typeof window !== 'undefined') {
+    console.log('Subscription state changed:', { 
+      userSubscription, 
+      canSearchByCountry, 
+      user: user,
+      userSubscriptionType: typeof userSubscription,
+      comparison: userSubscription !== 'free'
+    });
+  }
   
   // Reset manual change flag when subscription changes (user might have upgraded)
-  $: if (canSearchByCountry && userManuallyChangedSearchType) {
+  $: if (typeof window !== 'undefined' && canSearchByCountry && userManuallyChangedSearchType) {
     console.log('User can now search by country, resetting manual change flag');
     userManuallyChangedSearchType = false;
   }
@@ -259,11 +266,13 @@
     console.log('Cleared all search data');
     
     // Update URL
-    const url = new URL(window.location.href);
-    url.searchParams.set('type', type);
-    url.searchParams.delete('q');
-    window.history.pushState({}, '', url.toString());
-    console.log('URL updated to:', url.toString());
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('type', type);
+      url.searchParams.delete('q');
+      window.history.pushState({}, '', url.toString());
+      console.log('URL updated to:', url.toString());
+    }
     
     console.log('=== updateSearchType FUNCTION COMPLETED ===');
     console.log('Final state - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
@@ -285,11 +294,13 @@
   }
 
   function updateURL() {
-    const url = new URL(window.location.href);
-    url.searchParams.set('type', searchType);
-    url.searchParams.set('q', getCurrentQuery());
-    window.history.pushState({}, '', url.toString());
-    console.log('URL updated to:', url.toString());
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('type', searchType);
+      url.searchParams.set('q', getCurrentQuery());
+      window.history.pushState({}, '', url.toString());
+      console.log('URL updated to:', url.toString());
+    }
   }
 
   // Get category name from ID
