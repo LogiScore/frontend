@@ -1743,15 +1743,71 @@ class ApiClient {
   // User management
   async getCurrentUser(token: string): Promise<User> {
     try {
-      return await this.request<User>('/api/users/me', {
+      return await this.requestWithAuth<User>('/api/users/me', {}, token);
+    } catch (error) {
+      console.error('Failed to get current user:', error);
+      // Don't return demo user - let the calling code handle the error
+      // This prevents real users from being replaced with demo data
+      throw error;
+    }
+  }
+
+  // ===== METHOD: refreshToken =====
+  // Refresh expired JWT token
+  async refreshToken(token: string): Promise<{ access_token: string }> {
+    try {
+      return await this.request<{ access_token: string }>('/api/auth/refresh', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
     } catch (error) {
-      console.error('Failed to get current user:', error);
-      // Don't return demo user - let the calling code handle the error
-      // This prevents real users from being replaced with demo data
+      console.error('Failed to refresh token:', error);
+      throw error;
+    }
+  }
+
+  // ===== METHOD: requestWithAuth =====
+  // Make an authenticated request with automatic token refresh
+  async requestWithAuth<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    token: string
+  ): Promise<T> {
+    try {
+      // First try with the current token
+      return await this.request<T>(endpoint, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    } catch (error: any) {
+      // If we get a 401, try to refresh the token and retry
+      if (error.message?.includes('401') || error.message?.includes('Could not validate credentials')) {
+        console.log('Token validation failed, attempting refresh...');
+        
+        try {
+          const refreshResponse = await this.refreshToken(token);
+          if (refreshResponse.access_token) {
+            console.log('Token refreshed, retrying request...');
+            // Retry the request with the new token
+            return await this.request<T>(endpoint, {
+              ...options,
+              headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${refreshResponse.access_token}`,
+              },
+            });
+          }
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+        }
+      }
+      
+      // Re-throw the original error if refresh failed or it's not a 401
       throw error;
     }
   }

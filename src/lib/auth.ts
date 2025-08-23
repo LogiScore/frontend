@@ -22,6 +22,8 @@ interface AuthState {
 function saveToken(token: string) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('logiscore_token', token);
+    // Also store token timestamp for expiration checking
+    localStorage.setItem('logiscore_token_timestamp', Date.now().toString());
   }
 }
 
@@ -32,10 +34,19 @@ function getStoredToken(): string | null {
   return null;
 }
 
+function getStoredTokenTimestamp(): number | null {
+  if (typeof window !== 'undefined') {
+    const timestamp = localStorage.getItem('logiscore_token_timestamp');
+    return timestamp ? parseInt(timestamp) : null;
+  }
+  return null;
+}
+
 function removeStoredToken() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('logiscore_token');
     localStorage.removeItem('logiscore_user');
+    localStorage.removeItem('logiscore_token_timestamp');
   }
 }
 
@@ -51,6 +62,44 @@ function getStoredUser(): any {
     return userStr ? JSON.parse(userStr) : null;
   }
   return null;
+}
+
+// JWT token utility functions
+function isTokenExpired(token: string): boolean {
+  try {
+    // Decode JWT token (without verification - just for expiration check)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    
+    // Check if token is expired or will expire in the next 5 minutes
+    const bufferTime = 5 * 60; // 5 minutes buffer
+    const isExpired = payload.exp && (payload.exp - bufferTime) < currentTime;
+    
+    if (isExpired) {
+      console.log('Token expiration check:', {
+        currentTime: new Date(currentTime * 1000).toISOString(),
+        tokenExpiry: new Date(payload.exp * 1000).toISOString(),
+        bufferTime: bufferTime / 60 + ' minutes',
+        timeUntilExpiry: payload.exp - currentTime
+      });
+    }
+    
+    return isExpired;
+  } catch (error) {
+    console.warn('Failed to decode token for expiration check:', error);
+    // If we can't decode the token, assume it's expired
+    return true;
+  }
+}
+
+function getTokenExpirationTime(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp ? payload.exp * 1000 : null; // Convert to milliseconds
+  } catch (error) {
+    console.warn('Failed to get token expiration time:', error);
+    return null;
+  }
 }
 
 // Inactivity tracking
@@ -282,7 +331,7 @@ export const authMethods = {
     }
   },
 
-  getCurrentUser: async (token?: string) => {
+  getCurrentUser: async (token?: string): Promise<void> => {
     try {
       const currentState = get<AuthState>(auth);
       const authToken = token || currentState.token;
@@ -291,6 +340,29 @@ export const authMethods = {
       
       if (!authToken) {
         throw new Error('No token available');
+      }
+      
+      // Check if token is expired before making API call
+      if (isTokenExpired(authToken)) {
+        console.log('Token is expired, attempting to refresh...');
+        
+        // Try to refresh the token
+        try {
+          const refreshResult = await authMethods.refreshToken();
+          if (refreshResult.success && refreshResult.newToken) {
+            console.log('Token refreshed successfully, retrying getCurrentUser');
+            // Recursively call getCurrentUser with the new token
+            return await authMethods.getCurrentUser(refreshResult.newToken);
+          } else {
+            console.log('Token refresh failed, logging out user');
+            authMethods.logout();
+            return;
+          }
+        } catch (refreshError) {
+          console.log('Token refresh error, logging out user:', refreshError);
+          authMethods.logout();
+          return;
+        }
       }
       
       // Try to get user from API
@@ -347,6 +419,7 @@ export const authMethods = {
     }
   },
 
+  // Check auth status
   checkAuth: async () => {
     try {
       console.log('checkAuth called');
@@ -362,6 +435,42 @@ export const authMethods = {
         
         if (storedToken && storedUser) {
           console.log('Found stored token and user, restoring to store');
+          
+          // Check if stored token is expired
+          if (isTokenExpired(storedToken)) {
+            console.log('Stored token is expired, attempting refresh...');
+            try {
+              const refreshResult = await authMethods.refreshToken();
+              if (refreshResult.success && refreshResult.newToken) {
+                console.log('Token refreshed during auth check');
+                auth.update(state => ({
+                  ...state,
+                  token: refreshResult.newToken!,
+                  user: storedUser
+                }));
+                return;
+              } else {
+                console.log('Token refresh failed during auth check');
+                removeStoredToken();
+                auth.update(state => ({
+                  ...state,
+                  user: null,
+                  token: null
+                }));
+                return;
+              }
+            } catch (refreshError) {
+              console.log('Token refresh error during auth check:', refreshError);
+              removeStoredToken();
+              auth.update(state => ({
+                ...state,
+                user: null,
+                token: null
+              }));
+              return;
+            }
+          }
+          
           auth.update(state => ({
             ...state,
             token: storedToken,
@@ -381,9 +490,34 @@ export const authMethods = {
         }
       }
       
-      // If we have both token and user in store, just ensure they're saved to localStorage
+      // If we have both token and user in store, check if token needs refresh
       if (currentState.token && currentState.user) {
         console.log('Using existing token and user from store');
+        
+        // Check if token is expired
+        if (isTokenExpired(currentState.token)) {
+          console.log('Existing token is expired, attempting refresh...');
+          try {
+            const refreshResult = await authMethods.refreshToken();
+            if (refreshResult.success && refreshResult.newToken) {
+              console.log('Token refreshed during auth check');
+              auth.update(state => ({
+                ...state,
+                token: refreshResult.newToken!
+              }));
+              return;
+            } else {
+              console.log('Token refresh failed during auth check');
+              authMethods.logout();
+              return;
+            }
+          } catch (refreshError) {
+            console.log('Token refresh error during auth check:', refreshError);
+            authMethods.logout();
+            return;
+          }
+        }
+        
         saveToken(currentState.token);
         saveUser(currentState.user);
         return;
@@ -778,7 +912,29 @@ export const authMethods = {
     }
   },
 
+  // Token refresh method
+  async refreshToken(): Promise<{ success: boolean; newToken?: string }> {
+    const currentToken = getStoredToken();
+    if (!currentToken) {
+      console.warn('No token to refresh.');
+      return { success: false };
+    }
 
+    try {
+      const response = await apiClient.refreshToken(currentToken);
+      if (response.access_token) {
+        saveToken(response.access_token);
+        console.log('Token refreshed successfully.');
+        return { success: true, newToken: response.access_token };
+      } else {
+        console.warn('Token refresh failed, invalid response from API.');
+        return { success: false };
+      }
+    } catch (error: any) {
+      console.error('Token refresh error:', error);
+      return { success: false };
+    }
+  },
 
   // Start inactivity tracking manually
   startInactivityTracking: () => {
@@ -790,6 +946,36 @@ export const authMethods = {
   stopInactivityTracking: () => {
     console.log('Manually stopping inactivity tracking');
     clearInactivityTracking();
+  },
+
+  // Check and refresh token if needed before making API calls
+  ensureValidToken: async (): Promise<string | null> => {
+    const currentState = get<AuthState>(auth);
+    if (!currentState.token) {
+      return null;
+    }
+    
+    // Check if token is expired or will expire soon
+    if (isTokenExpired(currentState.token)) {
+      console.log('Token expired, attempting refresh before API call...');
+      try {
+        const refreshResult = await authMethods.refreshToken();
+        if (refreshResult.success && refreshResult.newToken) {
+          console.log('Token refreshed before API call');
+          return refreshResult.newToken;
+        } else {
+          console.log('Token refresh failed before API call');
+          authMethods.logout();
+          return null;
+        }
+      } catch (refreshError) {
+        console.log('Token refresh error before API call:', refreshError);
+        authMethods.logout();
+        return null;
+      }
+    }
+    
+    return currentState.token;
   }
 };
 
@@ -819,10 +1005,20 @@ if (typeof window !== 'undefined') {
   setInterval(() => {
     const currentState = get<AuthState>(auth);
     if (currentState.token && currentState.user) {
-      authMethods.getCurrentUser(currentState.token).catch(() => {
-        // If token validation fails, logout user
-        authMethods.logout();
-      });
+      // Check if token will expire soon (within 10 minutes)
+      if (isTokenExpired(currentState.token)) {
+        console.log('Token expired, attempting refresh...');
+        authMethods.refreshToken().catch(() => {
+          // If refresh fails, logout user
+          authMethods.logout();
+        });
+      } else {
+        // Token is still valid, just validate it
+        authMethods.getCurrentUser(currentState.token).catch(() => {
+          // If validation fails, logout user
+          authMethods.logout();
+        });
+      }
     }
   }, 5 * 60 * 1000); // 5 minutes
 
