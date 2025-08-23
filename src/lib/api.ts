@@ -87,6 +87,8 @@ export interface ReviewResponse {
   id: string;
   freight_forwarder_id: string;
   location_id?: string; // Changed from branch_id to location_id
+  city?: string; // City from the review
+  country?: string; // Country from the review
   is_anonymous: boolean;
   review_weight: number;
   aggregate_rating: number;
@@ -504,7 +506,15 @@ class ApiClient {
   async getReviewsByCountry(country: string): Promise<ReviewResponse[]> {
     try {
       // Query reviews by country
-      return await this.request<ReviewResponse[]>(`/api/reviews/?country=${encodeURIComponent(country)}`);
+      const response = await this.request<{
+        reviews: ReviewResponse[];
+        total_count: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+        filters: { country?: string; city?: string };
+      }>(`/api/reviews/?country=${encodeURIComponent(country)}`);
+      return response.reviews;
     } catch (error: any) {
       console.error('Failed to fetch reviews for country:', error);
       return [];
@@ -518,7 +528,15 @@ class ApiClient {
       if (country) {
         url += `&country=${encodeURIComponent(country)}`;
       }
-      return await this.request<ReviewResponse[]>(url);
+      const response = await this.request<{
+        reviews: ReviewResponse[];
+        total_count: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+        filters: { country?: string; city?: string };
+      }>(url);
+      return response.reviews;
     } catch (error: any) {
       console.error('Failed to fetch reviews for city:', error);
       return [];
