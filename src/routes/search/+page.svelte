@@ -18,6 +18,8 @@
   let citiesWithReviews: string[] = [];
   let selectedCountry: string = '';
   let selectedCity: string = '';
+  let selectedCompany: FreightForwarder | null = null;
+  let showCompanyDetails = false;
 
   // Get search query from URL parameters
   $: {
@@ -72,6 +74,28 @@
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
+    selectedCompany = null;
+    showCompanyDetails = false;
+  }
+
+  function goBackToCompanies() {
+    selectedCompany = null;
+    showCompanyDetails = false;
+  }
+
+  async function selectCompany(company: FreightForwarder) {
+    selectedCompany = company;
+    showCompanyDetails = true;
+    
+    // Fetch detailed company information with category scores if not already present
+    if (!company.category_scores || company.category_scores.length === 0) {
+      try {
+        const detailedCompany = await apiClient.getFreightForwarder(company.id);
+        selectedCompany = detailedCompany;
+      } catch (error) {
+        console.error('Failed to fetch detailed company information:', error);
+      }
+    }
   }
 
   async function selectCity(city: string) {
@@ -127,6 +151,8 @@
     companiesForLocation = [];
     citiesWithReviews = [];
     selectedCity = '';
+    selectedCompany = null;
+    showCompanyDetails = false;
     
     try {
       if (searchType === 'company') {
@@ -159,6 +185,8 @@
     companiesForLocation = [];
     citiesWithReviews = [];
     selectedCity = '';
+    selectedCompany = null;
+    showCompanyDetails = false;
     error = null;
     
     // Update URL
@@ -186,6 +214,40 @@
     url.searchParams.set('q', getCurrentQuery());
     window.history.pushState({}, '', url.toString());
   }
+
+  // Get category name from ID
+  function getCategoryName(categoryId: string): string {
+    const categoryMap: Record<string, string> = {
+      'responsiveness': 'Responsiveness',
+      'shipment_management': 'Shipment Management',
+      'documentation': 'Documentation',
+      'customer_experience': 'Customer Experience',
+      'technology_process': 'Technology & Process',
+      'reliability_execution': 'Reliability & Execution',
+      'compliance_security': 'Compliance & Security',
+      'proactivity_insight': 'Proactivity & Insight',
+      'after_hours_support': 'After Hours Support'
+    };
+    return categoryMap[categoryId] || categoryId;
+  }
+
+  // Format score for display
+  function formatScore(score: number): string {
+    if (score === 0) return 'N/A';
+    if (score <= 1) return 'Poor';
+    if (score <= 2) return 'Fair';
+    if (score <= 3) return 'Good';
+    return 'Excellent';
+  }
+
+  // Get score color class
+  function getScoreColorClass(score: number): string {
+    if (score === 0) return 'score-na';
+    if (score <= 1) return 'score-poor';
+    if (score <= 2) return 'score-fair';
+    if (score <= 3) return 'score-good';
+    return 'score-excellent';
+  }
 </script>
 
 <svelte:head>
@@ -205,8 +267,6 @@
   <!-- Search Section -->
   <section class="search-section">
     <div class="container">
-
-
 
   <!-- Search Type Selection -->
   <div class="search-type-selector">
@@ -303,7 +363,7 @@
           {/each}
         </div>
       </div>
-    {:else if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
+    {:else if searchType === 'country' && selectedCity && companiesForLocation.length > 0 && !showCompanyDetails}
       <!-- City Search Results - Companies -->
       <div class="city-companies-section">
         <div class="city-header">
@@ -313,7 +373,7 @@
         
         <div class="companies-grid">
           {#each companiesForLocation as company}
-            <div class="company-card">
+            <div class="company-card clickable" on:click={() => selectCompany(company)}>
               <div class="company-info">
                 <h3>{company.name}</h3>
                 {#if company.headquarters_country}
@@ -330,10 +390,62 @@
                 {/if}
               </div>
               <div class="company-actions">
-                <a href="/freight-forwarder/{company.id}" class="view-details-btn">View Details</a>
+                <button class="view-scores-btn">View Scores</button>
               </div>
             </div>
           {/each}
+        </div>
+      </div>
+    {:else if showCompanyDetails && selectedCompany}
+      <!-- Company Details with Category Scores -->
+      <div class="company-details-section">
+        <div class="company-details-header">
+          <button on:click={goBackToCompanies} class="back-btn">← Back to Companies</button>
+          <h2>{selectedCompany.name}</h2>
+          <div class="company-summary">
+            {#if selectedCompany.headquarters_country}
+              <p class="company-location">📍 {selectedCompany.headquarters_country}</p>
+            {/if}
+            {#if selectedCompany.average_rating}
+              <div class="company-rating">
+                <span class="stars">{'★'.repeat(Math.round(selectedCompany.average_rating))}</span>
+                <span class="rating-text">{selectedCompany.average_rating.toFixed(1)}</span>
+              </div>
+            {/if}
+          </div>
+        </div>
+
+        {#if selectedCompany.category_scores && selectedCompany.category_scores.length > 0}
+          <div class="category-scores-section">
+            <h3>Category Performance Scores</h3>
+            <p class="scores-description">Performance ratings across 7 key categories based on customer reviews</p>
+            
+            <div class="category-scores-grid">
+              {#each selectedCompany.category_scores as score}
+                <div class="category-score-card">
+                  <div class="category-header">
+                    <h4>{getCategoryName(score.category_name)}</h4>
+                    <div class="score-badge {getScoreColorClass(score.average_score)}">
+                      {score.average_score.toFixed(1)}
+                    </div>
+                  </div>
+                  <div class="score-details">
+                    <div class="score-label">{formatScore(score.average_score)}</div>
+                    <div class="review-count">Based on {score.review_count} review{score.review_count !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {:else}
+          <div class="no-scores">
+            <p>No category scores available for this company yet.</p>
+            <p>Category scores are calculated from customer reviews and will appear once reviews are submitted.</p>
+          </div>
+        {/if}
+
+        <div class="company-actions-footer">
+          <a href="/freight-forwarder/{selectedCompany.id}" class="view-full-profile-btn">View Full Company Profile</a>
         </div>
       </div>
     {:else if !isLoading && getCurrentQuery() && searchResults.length === 0 && citiesWithReviews.length === 0}
@@ -392,8 +504,6 @@
     padding: 80px 0;
     background: #f8f9fa;
   }
-
-
 
   .search-type-selector {
     display: flex;
@@ -609,6 +719,15 @@
     transition: transform 0.3s ease;
   }
 
+  .company-card.clickable {
+    cursor: pointer;
+  }
+
+  .company-card.clickable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
   .company-card:hover {
     transform: translateY(-5px);
   }
@@ -664,6 +783,190 @@
 
   .view-details-btn:hover {
     background: #5a6fd8;
+  }
+
+  .view-scores-btn {
+    padding: 12px 24px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .view-scores-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+
+  /* Company Details Section */
+  .company-details-section {
+    margin-top: 2rem;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .company-details-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .company-details-header .back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .company-details-header h2 {
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .company-summary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .category-scores-section {
+    margin: 3rem 0;
+  }
+
+  .category-scores-section h3 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .scores-description {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .category-scores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .category-score-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .category-score-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .category-header h4 {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    margin: 0;
+  }
+
+  .score-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: white;
+  }
+
+  .score-na {
+    background: #6c757d;
+  }
+
+  .score-poor {
+    background: #dc3545;
+  }
+
+  .score-fair {
+    background: #ffc107;
+    color: #212529;
+  }
+
+  .score-good {
+    background: #28a745;
+  }
+
+  .score-excellent {
+    background: #20c997;
+  }
+
+  .score-details {
+    text-align: center;
+  }
+
+  .score-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .review-count {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+
+  .no-scores {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+  }
+
+  .no-scores p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .company-actions-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .view-full-profile-btn {
+    display: inline-block;
+    padding: 15px 30px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+  }
+
+  .view-full-profile-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   }
 
   .no-results {
@@ -736,6 +1039,21 @@
       flex-direction: column;
       gap: 1rem;
       text-align: center;
+    }
+
+    .company-details-header .back-btn {
+      position: static;
+      transform: none;
+      margin-bottom: 1rem;
+    }
+
+    .company-summary {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .category-scores-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
