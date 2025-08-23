@@ -190,7 +190,6 @@
       <form class="modal-body" on:submit|preventDefault={handleSubmit}>
         {#if mode === 'signup'}
           <div class="form-group">
-            <label for="fullName">Full Name</label>
             <input
               type="text"
               id="fullName"
@@ -202,7 +201,6 @@
           </div>
 
           <div class="form-group">
-            <label for="companyName">Company Name</label>
             <input
               type="text"
               id="companyName"
