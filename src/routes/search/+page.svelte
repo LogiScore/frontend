@@ -110,11 +110,6 @@
       const freightForwarderIds = [...new Set(reviews.map(review => review.freight_forwarder_id))];
       console.log('Unique freight forwarder IDs found:', freightForwarderIds);
       
-      // Get category scores for this city
-      console.log('Fetching category scores for city:', city);
-      const categoryScores = await apiClient.getCategoryScoresByCity(city, selectedCountry);
-      console.log('Category scores received:', categoryScores);
-      
       // Get company details for each freight forwarder that has reviews in this city
       const companiesPromises = freightForwarderIds.map(async (id) => {
         try {
@@ -122,12 +117,17 @@
           const company = await apiClient.getFreightForwarder(id);
           console.log('Company details received:', company);
           
-          // Add category scores to the company data
-          if (categoryScores[id]) {
-            company.category_scores = categoryScores[id];
-            console.log('Added category scores to company:', company.name, company.category_scores);
+          // Convert category_scores_summary to category_scores format for compatibility
+          if (company.category_scores_summary) {
+            console.log('Converting category_scores_summary to category_scores format');
+            company.category_scores = Object.entries(company.category_scores_summary).map(([categoryId, categoryData]: [string, any]) => ({
+              category_name: categoryId,
+              average_score: parseFloat(categoryData.average_rating) || 0,
+              review_count: parseInt(categoryData.total_reviews) || 0
+            }));
+            console.log('Converted category scores:', company.category_scores);
           } else {
-            console.log('No category scores found for company:', company.name);
+            console.log('No category scores summary found for company:', company.name);
             company.category_scores = [];
           }
           
