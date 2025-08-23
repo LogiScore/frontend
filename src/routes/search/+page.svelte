@@ -351,14 +351,13 @@
     {:else if searchType === 'country' && citiesWithReviews.length > 0}
       <!-- Country Search Results - Cities -->
       <div class="results-section">
-        <h2>Cities with Reviews in "{selectedCountry}" ({citiesWithReviews.length})</h2>
+        <h2>Cities with Reviews in "{selectedCountry}"</h2>
         <p class="cities-subtitle">Click on a city to see companies with reviews there</p>
         
         <div class="cities-grid">
           {#each citiesWithReviews as city}
             <div class="city-card" on:click={() => selectCity(city)}>
               <div class="city-name">{city}</div>
-              <div class="city-country">{selectedCountry}</div>
             </div>
           {/each}
         </div>
@@ -675,11 +674,6 @@
     font-weight: bold;
     color: #2c3e50;
     margin-bottom: 0.5rem;
-  }
-
-  .city-country {
-    color: #7f8c8d;
-    font-size: 0.9rem;
   }
 
   .city-companies-section {
