@@ -43,7 +43,14 @@
       }
     }
     
-    searchType = type as 'company' | 'country';
+    // Only update searchType if user hasn't manually changed it, or if it's a forced change
+    if (!userManuallyChangedSearchType || (type === 'company' && !canSearchByCountry)) {
+      searchType = type as 'company' | 'country';
+      console.log('Search type updated from URL:', searchType);
+    } else {
+      console.log('Respecting manual search type selection, not overriding with URL value');
+    }
+    
     if (type === 'company') {
       companyQuery = query;
     } else if (type === 'country') {
@@ -368,8 +375,10 @@
     <button 
       class="search-type-btn {searchType === 'company' ? 'active' : ''}"
       on:click={() => {
-        console.log('Company search type button clicked');
+        console.log('=== COMPANY BUTTON CLICKED ===');
+        console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
         updateSearchType('company');
+        console.log('After update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
       }}
     >
       Search by Company
@@ -379,14 +388,9 @@
       class="search-type-btn {searchType === 'country' ? 'active' : ''} {!canSearchByCountry ? 'disabled' : ''}"
       on:click={() => {
         console.log('=== COUNTRY BUTTON CLICKED ===');
-        console.log('Event triggered successfully');
-        console.log('Current values:', { canSearchByCountry, userSubscription, searchType });
-        
-        // Use the proper function to update search type
-        console.log('Updating search type to country');
+        console.log('Before update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
         updateSearchType('country');
-        
-        console.log('Search type changed to:', searchType);
+        console.log('After update - searchType:', searchType, 'userManuallyChangedSearchType:', userManuallyChangedSearchType);
       }}
       title="Search for companies by country"
     >
