@@ -24,7 +24,7 @@
   let userManuallyChangedSearchType = false;
 
   // Get search query from URL parameters
-  $: if (typeof window !== 'undefined') {
+  $: {
     const urlParams = new URLSearchParams($page.url.search);
     const query = urlParams.get('q') || '';
     let type = urlParams.get('type') || 'company';
@@ -59,9 +59,6 @@
   }
 
   onMount(() => {
-    // Only run in browser environment
-    if (typeof window === 'undefined') return;
-    
     // Subscribe to auth store to get user info
     const unsubscribe = auth.subscribe(state => {
       user = state.user;
@@ -79,18 +76,16 @@
   });
 
   $: canSearchByCountry = userSubscription !== 'free';
-  $: if (typeof window !== 'undefined') {
-    console.log('Subscription state changed:', { 
-      userSubscription, 
-      canSearchByCountry, 
-      user: user,
-      userSubscriptionType: typeof userSubscription,
-      comparison: userSubscription !== 'free'
-    });
-  }
+  $: console.log('Subscription state changed:', { 
+    userSubscription, 
+    canSearchByCountry, 
+    user: user,
+    userSubscriptionType: typeof userSubscription,
+    comparison: userSubscription !== 'free'
+  });
   
   // Reset manual change flag when subscription changes (user might have upgraded)
-  $: if (typeof window !== 'undefined' && canSearchByCountry && userManuallyChangedSearchType) {
+  $: if (canSearchByCountry && userManuallyChangedSearchType) {
     console.log('User can now search by country, resetting manual change flag');
     userManuallyChangedSearchType = false;
   }
@@ -387,48 +382,18 @@
         console.log('Event triggered successfully');
         console.log('Current values:', { canSearchByCountry, userSubscription, searchType });
         
-        // Simple test first
-        alert('Country button clicked! Subscription: ' + userSubscription + ', Can search: ' + canSearchByCountry);
-        
         // Use the proper function to update search type
         console.log('Updating search type to country');
         updateSearchType('country');
         
         console.log('Search type changed to:', searchType);
       }}
-      on:mousedown={() => console.log('Country button mousedown event')}
-      on:mouseup={() => console.log('Country button mouseup event')}
-      on:focus={() => console.log('Country button focus event')}
-      on:blur={() => console.log('Country button blur event')}
-      on:keydown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          console.log('Country button keydown event:', e.key);
-          e.preventDefault();
-          // Use the proper function to update search type
-          updateSearchType('country');
-        }
-      }}
       title="Search for companies by country"
-      tabindex="0"
-      role="button"
-      aria-label="Search by Country"
-      style="pointer-events: auto; cursor: pointer; position: relative; z-index: 1000; border: 3px solid red !important; background: yellow !important; color: black !important;"
     >
-      🔍 Search by Country 🔍
+      Search by Country
       {#if !canSearchByCountry}
         <span class="premium-badge">🔒 Premium</span>
       {/if}
-    </button>
-    
-    <!-- Separate test button -->
-    <button 
-      style="margin-left: 10px; padding: 10px 20px; background: orange; color: white; border: 2px solid black; border-radius: 5px; cursor: pointer; font-weight: bold;"
-      on:click={() => {
-        alert('Separate test button works!');
-        console.log('Separate test button clicked');
-      }}
-    >
-      🧪 TEST BUTTON
     </button>
     
     <!-- Debug info display -->
@@ -439,14 +404,6 @@
       Search Type: {searchType}<br>
       Manual Change Flag: {userManuallyChangedSearchType}
     </div>
-    
-    <!-- Test button -->
-    <button 
-      style="margin-top: 10px; padding: 10px; background: green; color: white; border: none; border-radius: 5px; cursor: pointer;"
-      on:click={() => alert('Test button works!')}
-    >
-      Test Button (Click me!)
-    </button>
   </div>
 
   <!-- Search Input -->
