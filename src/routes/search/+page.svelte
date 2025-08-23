@@ -196,12 +196,18 @@
   <meta name="description" content="Search for freight forwarders and logistics companies on LogiScore" />
 </svelte:head>
 
-<main class="search-page">
-  <div class="search-container">
-    <div class="search-header">
+<main>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
       <h1>Search</h1>
-      <p>Find freight forwarders and logistics companies</p>
+      <p class="hero-subtitle">Find freight forwarders and logistics companies</p>
     </div>
+  </section>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="container">
 
   <!-- Search Type Selection -->
   <div class="search-type-selector">
@@ -348,40 +354,47 @@
       <a href="/pricing" class="upgrade-btn">View Plans</a>
     </div>
   {/if}
-</div>
+    </div>
+  </section>
 </main>
 
 <style>
-  .search-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 2rem 0;
-  }
-
-  .search-container {
+  .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 0 20px;
   }
 
-  .search-header {
+  /* Hero Section */
+  .hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 80px 0;
     text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
     margin-bottom: 2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .search-header h1 {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
+  /* Search Section */
+  .search-section {
+    padding: 80px 0;
+    background: #f8f9fa;
   }
 
-  .search-header p {
-    font-size: 1.1rem;
-    color: #7f8c8d;
-  }
+
 
   .search-type-selector {
     display: flex;
@@ -390,12 +403,34 @@
     margin-bottom: 2rem;
   }
 
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
+  }
+
   .search-type-btn {
     padding: 1rem 2rem;
-    border: 2px solid #3498db;
+    border: 2px solid #667eea;
     background: transparent;
-    color: #3498db;
-    border-radius: 12px;
+    color: #667eea;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 1.1rem;
     font-weight: 600;
@@ -421,37 +456,34 @@
   }
 
   .search-input {
-    padding: 1.2rem;
+    padding: 1rem;
     border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    font-size: 1.1rem;
+    border-radius: 6px;
+    font-size: 1rem;
     min-width: 400px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease;
   }
 
   .search-input:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: #667eea;
   }
 
   .search-btn {
-    padding: 1.2rem 2.5rem;
-    background: #3498db;
+    padding: 12px 24px;
+    background: #ff6b35;
     color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
+    border-radius: 6px;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
   }
 
   .search-btn:hover:not(:disabled) {
-    background: #2980b9;
+    background: #e55a2b;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
   }
 
   .search-btn:disabled {
@@ -513,18 +545,17 @@
 
   .city-card {
     background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
   }
 
   .city-card:hover {
-    border-color: #3498db;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    transform: translateY(-5px);
   }
 
   .city-name {
@@ -551,8 +582,8 @@
   }
 
   .back-btn {
-    padding: 0.5rem 1rem;
-    background: #95a5a6;
+    padding: 12px 24px;
+    background: #6c757d;
     color: white;
     border: none;
     border-radius: 6px;
@@ -561,7 +592,7 @@
   }
 
   .back-btn:hover {
-    background: #7f8c8d;
+    background: #5a6268;
   }
 
   .companies-grid {
@@ -573,14 +604,14 @@
   .company-card {
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
   }
 
   .company-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
   }
 
   .company-info h3 {
@@ -624,8 +655,8 @@
 
   .view-details-btn {
     display: inline-block;
-    padding: 0.5rem 1rem;
-    background: #3498db;
+    padding: 12px 24px;
+    background: #667eea;
     color: white;
     text-decoration: none;
     border-radius: 6px;
@@ -633,7 +664,7 @@
   }
 
   .view-details-btn:hover {
-    background: #2980b9;
+    background: #5a6fd8;
   }
 
   .no-results {
@@ -644,8 +675,8 @@
 
   .subscription-prompt {
     background: #f8f9fa;
-    border: 2px solid #3498db;
-    border-radius: 12px;
+    border: 2px solid #667eea;
+    border-radius: 10px;
     padding: 2rem;
     text-align: center;
     margin-top: 2rem;
@@ -663,21 +694,25 @@
 
   .upgrade-btn {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #3498db;
+    padding: 12px 24px;
+    background: #ff6b35;
     color: white;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 6px;
     transition: background 0.3s ease;
   }
 
   .upgrade-btn:hover {
-    background: #2980b9;
+    background: #e55a2b;
   }
 
   @media (max-width: 768px) {
-    .search-container {
-      padding: 1rem;
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
     }
 
     .search-input-container {
