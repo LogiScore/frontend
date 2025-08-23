@@ -61,30 +61,30 @@
       
       <div class="modal-body">
         <div class="profile-info">
-          <div class="form-group">
+          <div class="profile-field">
             <label for="full_name">Full Name</label>
-            <div class="readonly-field" id="full_name">
+            <div class="profile-value" id="full_name">
               {formData.full_name}
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="profile-field">
             <label for="email">Email</label>
-            <div class="readonly-field" id="email">
+            <div class="profile-value" id="email">
               {formData.email}
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="profile-field">
             <label for="company_name">Company Name</label>
-            <div class="readonly-field" id="company_name">
+            <div class="profile-value" id="company_name">
               {formData.company_name || 'Not specified'}
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="profile-field">
             <label for="user_type">User Type</label>
-            <div class="readonly-field" id="user_type">
+            <div class="profile-value" id="user_type">
               {formData.user_type === 'shipper' ? 'Shipper' : 'Freight Forwarder'}
             </div>
           </div>
@@ -148,26 +148,23 @@
     padding: 20px;
   }
 
-  .form-group {
+  .profile-field {
     margin-bottom: 20px;
   }
 
-  .form-group label {
+  .profile-field label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
     color: #333;
   }
 
-  .readonly-field {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
+  .profile-value {
     font-size: 1rem;
-    background-color: #f8f9fa;
     color: #495057;
-    min-height: 44px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+    min-height: 24px;
     display: flex;
     align-items: center;
   }
