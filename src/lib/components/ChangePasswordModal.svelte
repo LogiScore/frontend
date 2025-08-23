@@ -88,22 +88,22 @@
       
       <form on:submit|preventDefault={handleSubmit} class="modal-body">
         <div class="form-group">
-          <label for="current-password">Current Password</label>
           <input 
             type="password" 
             id="current-password" 
             bind:value={currentPassword}
+            placeholder="Current Password"
             required
             disabled={isLoading}
           />
         </div>
         
         <div class="form-group">
-          <label for="new-password">New Password</label>
           <input 
             type="password" 
             id="new-password" 
             bind:value={newPassword}
+            placeholder="New Password"
             required
             disabled={isLoading}
             minlength="6"
@@ -111,11 +111,11 @@
         </div>
         
         <div class="form-group">
-          <label for="confirm-password">Confirm New Password</label>
           <input 
             type="password" 
             id="confirm-password" 
             bind:value={confirmPassword}
+            placeholder="Confirm New Password"
             required
             disabled={isLoading}
             minlength="6"
@@ -203,15 +203,8 @@
     margin-bottom: 20px;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-  }
-
   .form-group input {
-    width: 100%;
+    width: 60%;
     padding: 12px;
     border: 2px solid #e9ecef;
     border-radius: 6px;
