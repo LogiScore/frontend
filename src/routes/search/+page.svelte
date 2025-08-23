@@ -61,22 +61,13 @@
       userSubscription = state.user?.subscription_tier || 'free';
     });
     
-    // Load all locations for location search
-    (async () => {
-      try {
-        allLocations = await apiClient.getLocations();
-      } catch (error) {
-        console.error('Failed to load locations:', error);
-      }
-    })();
+
     
     return unsubscribe;
   });
 
   function canSearchByCountry(): boolean {
     // Only paid subscribers can search by country
-    console.log('User subscription:', userSubscription);
-    console.log('User:', user);
     return userSubscription !== 'free';
   }
 
