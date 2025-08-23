@@ -74,11 +74,10 @@
   });
 
   function canSearchByCountry(): boolean {
-    // Only paid subscribers can search by country or location
-    // Temporarily allow all users for testing
+    // Only paid subscribers can search by country
     console.log('User subscription:', userSubscription);
     console.log('User:', user);
-    return true; // userSubscription !== 'free';
+    return userSubscription !== 'free';
   }
 
   function canSearchByCompany(): boolean {
@@ -446,12 +445,7 @@
       <h1>Search Freight Forwarders</h1>
       <p>Find the perfect logistics partner for your business</p>
       
-      <!-- Debug info (remove in production) -->
-      <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
-        <strong>Debug:</strong> User: {user ? 'Logged in' : 'Not logged in'} | 
-        Subscription: {userSubscription} | 
-        Can search by country: {canSearchByCountry()}
-      </div>
+
       
       <!-- Search Type Selector -->
       <div class="search-type-selector">
