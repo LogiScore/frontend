@@ -411,20 +411,21 @@
   /* CTA Section */
   .cta {
     padding: 80px 0;
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    color: white;
+    background: #f8f9fa;
+    color: black;
     text-align: center;
   }
 
   .cta h2 {
     font-size: 2.5rem;
     margin-bottom: 1rem;
+    color: black;
   }
 
   .cta p {
     font-size: 1.2rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
+    color: black;
   }
 
   .cta-actions {
