@@ -486,7 +486,7 @@
     
     <!-- CATEGORY COMPARISON TABLE - Side by side comparison of 7 categories -->
     {#if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
-      <div style="margin-top: 20px; padding: 20px; background: white; border: 2px solid #2196f3; border-radius: 8px;">
+      <div class="category-comparison-container">
         <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
         <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">{selectedCity}</p>
         
@@ -661,7 +661,7 @@
     background: white;
   }
 
-  .search-type-selector {
+  .search-type-selection {
     display: flex;
     justify-content: center;
     gap: 1rem;
@@ -744,6 +744,9 @@
     gap: 1rem;
     margin-bottom: 2rem;
     justify-content: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .search-input {
@@ -788,12 +791,18 @@
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    text-align: left;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .loading {
-    text-align: left;
+    text-align: center;
     padding: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .spinner {
@@ -813,6 +822,9 @@
 
   .results-section {
     margin-top: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .results-section h2 {
@@ -861,6 +873,9 @@
 
   .city-companies-section {
     margin-top: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .city-header {
@@ -892,7 +907,7 @@
 
   .companies-list {
     max-width: 800px;
-    margin: 0;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -976,8 +991,6 @@
     font-weight: bold;
   }
 
-
-
   .view-scores-btn {
     padding: 12px 24px;
     background: #28a745;
@@ -1002,6 +1015,9 @@
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .company-details-header {
@@ -1166,6 +1182,9 @@
     text-align: center;
     padding: 3rem;
     color: #7f8c8d;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .subscription-prompt {
@@ -1175,6 +1194,9 @@
     padding: 2rem;
     text-align: center;
     margin-top: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .subscription-prompt h3 {
@@ -1215,6 +1237,9 @@
     text-align: center;
     padding: 3rem;
     color: #7f8c8d;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .no-companies-found .empty-icon {
@@ -1264,6 +1289,9 @@
     text-align: center;
     padding: 3rem;
     color: #7f8c8d;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .error-display .error-icon {
@@ -1317,6 +1345,17 @@
 
   .error-display .btn-secondary:hover {
     background: #d0d0d0;
+  }
+
+  .category-comparison-container {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   @media (max-width: 768px) {
