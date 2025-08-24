@@ -487,7 +487,7 @@
     {#if searchType === 'country' && selectedCity && companiesForLocation.length > 0}
       <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px;">
         <h3 style="color: #0d47a1; margin-bottom: 20px; text-align: center;">📊 CATEGORY PERFORMANCE COMPARISON</h3>
-        <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">Comparing {companiesForLocation.length} company(ies) in {selectedCity}, {selectedCountry}</p>
+        <p style="color: #0d47a1; margin-bottom: 20px; text-align: center;">{selectedCity}</p>
         
         <!-- Category Comparison Table -->
         <div style="overflow-x: auto;">
