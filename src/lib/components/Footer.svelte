@@ -10,7 +10,6 @@
         <ul>
           <li><a href="/about">About</a></li>
           <li><a href="/contact">Contact</a></li>
-          <li><a href="/how-it-works">How It Works</a></li>
         </ul>
       </div>
       
@@ -20,6 +19,7 @@
           <li><a href="/guidelines">Community Guidelines</a></li>
           <li><a href="/search">Search Companies</a></li>
           <li><a href="/reviews">Browse Reviews</a></li>
+          <li><a href="/how-it-works">How It Works</a></li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/faq">FAQ</a></li>
         </ul>
