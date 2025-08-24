@@ -372,7 +372,7 @@
     {#if searchType === 'company' && searchResults.length > 0}
       <!-- Company Search Results -->
       <div class="results-section">
-        <h2>Companies Found ({searchResults.length})</h2>
+        <h2>Companies Found</h2>
         <div class="companies-list">
           {#each searchResults as company}
             <div class="company-item">
@@ -818,7 +818,7 @@
   .results-section h2 {
     color: #2c3e50;
     margin-bottom: 1rem;
-    text-align: center;
+    text-align: left;
   }
 
   .cities-subtitle {
