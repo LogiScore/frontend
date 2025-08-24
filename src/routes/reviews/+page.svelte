@@ -520,9 +520,6 @@
       locationSuggestions = [];
       error = null; // Clear any previous errors
       
-      // Show success message
-      successMessage = `Location "${location.name}" selected successfully.`;
-      
       console.log('Location selection completed successfully');
       
     } catch (err: any) {
@@ -537,7 +534,6 @@
     showLocationSuggestions = false;
     locationSuggestions = [];
     error = null; // Clear any previous errors
-    successMessage = `Branch "${branch.name}" selected for the selected company.`;
   }
   
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
