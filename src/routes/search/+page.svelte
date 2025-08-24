@@ -818,7 +818,7 @@
   .results-section h2 {
     color: #2c3e50;
     margin-bottom: 1rem;
-    text-align: left;
+    text-align: center;
   }
 
   .cities-subtitle {
