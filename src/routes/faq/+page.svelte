@@ -82,6 +82,10 @@
     {
       question: "Will I know which shipper left a review?",
       answer: "No. Identities remain confidential, unless disclosure is required under applicable law."
+    },
+    {
+      question: "Can we request LogiScore to amend the company description?",
+      answer: "The descriptions are taken from searches in the internet. We understand that they may not meet your marketing guidelines. We are unable to amend the descriptions for you. We suggest subscribing to the \"Subscription Annual Plus\" package where you can take control of the company description."
     }
   ];
 
