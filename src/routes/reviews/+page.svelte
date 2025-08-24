@@ -132,29 +132,7 @@
     }
   }
 
-  // Test function to check if input field is working
-  function testInputField() {
-    console.log('🧪 Testing input field...');
-    const inputField = document.getElementById('location-input-field');
-    console.log('🧪 Input field element:', inputField);
-    if (inputField) {
-      console.log('🧪 Input field type:', inputField.getAttribute('type'));
-      console.log('🧪 Input field disabled:', inputField.hasAttribute('disabled'));
-      console.log('🧪 Input field readonly:', inputField.hasAttribute('readonly'));
-      console.log('🧪 Input field style:', inputField.style.cssText);
-      console.log('🧪 Input field computed style:', window.getComputedStyle(inputField));
-      
-      // Try to focus the input
-      try {
-        inputField.focus();
-        console.log('🧪 Input field focused successfully');
-      } catch (error) {
-        console.error('🧪 Failed to focus input field:', error);
-      }
-    } else {
-      console.error('🧪 Input field not found!');
-    }
-  }
+
 
   // Check if user can submit a review for this company/branch (6-month rule)
   async function checkReviewFrequency() {
@@ -1055,30 +1033,14 @@
               <!-- Location input field -->
               <div class="location-input-section">
                 
-                <!-- Debug button to test input field -->
-                <button type="button" on:click={testInputField} style="margin-bottom: 10px; padding: 5px; font-size: 12px; background: #ff6b6b; color: white; border: none; border-radius: 4px;">
-                  🧪 Test Input Field
-                </button>
-                
                 <input 
                   type="text" 
                   id="location-input-field" 
                   bind:value={selectedBranchDisplay}
                   placeholder="Start typing to search locations..."
                   on:input={handleLocationSearch}
-                  on:focus={() => {
-                    console.log('Location input focused');
-                    console.log('Input element:', document.getElementById('location-input-field'));
-                    console.log('Input value:', selectedBranchDisplay);
-                  }}
-                  on:click={() => {
-                    console.log('Location input clicked');
-                    console.log('Input element:', document.getElementById('location-input-field'));
-                  }}
-                  on:mousedown={() => console.log('Location input mousedown')}
                   class="location-input"
                   required
-                  style="pointer-events: auto; user-select: text; -webkit-user-select: text;"
                 />
                 <div class="search-tips">
                   <small>
@@ -1374,15 +1336,7 @@
     -ms-user-select: text !important;
   }
   
-  /* Debug styling to make input field more visible */
-  .location-input-section {
-    border: 2px solid transparent;
-    padding: 5px;
-  }
-  
-  .location-input-section:hover {
-    border-color: #ff0000;
-  }
+
   
   .location-suggestions {
     position: absolute;
