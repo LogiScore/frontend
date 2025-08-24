@@ -277,11 +277,16 @@
 </svelte:head>
 
 <main>
-  <!-- Hero Section -->
-  <section class="hero">
+  <!-- Modern Page Header -->
+  <section class="page-header">
     <div class="container">
-      <h1>Search</h1>
-      <p class="hero-subtitle">Find freight forwarders and logistics companies</p>
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">Home</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Search</span>
+      </div>
+      <h1 class="page-title">Search Freight Forwarders</h1>
+      <p class="page-description">Find and compare logistics companies by name or location</p>
     </div>
   </section>
 
@@ -604,27 +609,44 @@
     padding: 0 20px;
   }
 
-  /* Hero Section */
-  .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 80px 0;
-    text-align: center;
+  /* Page Header */
+  .page-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 40px 0;
+    margin-bottom: 0;
   }
 
-  .hero h1 {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .breadcrumb-separator {
+    color: #dee2e6;
+  }
+
+  .breadcrumb-item.active {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
     font-weight: 700;
+    color: #2c3e50;
   }
 
-  .hero-subtitle {
-    font-size: 1.3rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
+  .page-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   /* Search Section */
@@ -1275,12 +1297,12 @@
   }
 
   @media (max-width: 768px) {
-    .hero h1 {
-      font-size: 2.5rem;
+    .page-title {
+      font-size: 2rem;
     }
 
-    .hero-subtitle {
-      font-size: 1.1rem;
+    .page-description {
+      font-size: 1rem;
     }
 
     .search-input-container {
