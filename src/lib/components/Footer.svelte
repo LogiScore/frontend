@@ -6,17 +6,21 @@
   <div class="container">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>Company</h3>
+        <div class="section-header">
+          <h3>Company.</h3>
+          <a href="/about">About</a>
+        </div>
         <ul>
-          <li><a href="/about">About</a></li>
           <li><a href="/contact">Contact</a></li>
         </ul>
       </div>
       
       <div class="footer-section">
-        <h3>Platform</h3>
+        <div class="section-header">
+          <h3>Platform.</h3>
+          <a href="/guidelines">Community Guidelines</a>
+        </div>
         <ul>
-          <li><a href="/guidelines">Community Guidelines</a></li>
           <li><a href="/search">Search Companies</a></li>
           <li><a href="/reviews">Browse Reviews</a></li>
           <li><a href="/how-it-works">How It Works</a></li>
@@ -26,9 +30,11 @@
       </div>
       
       <div class="footer-section">
-        <h3>Legal</h3>
+        <div class="section-header">
+          <h3>Legal.</h3>
+          <a href="/privacy">Privacy Policy</a>
+        </div>
         <ul>
-          <li><a href="/privacy">Privacy Policy</a></li>
           <li><a href="/terms">Terms of Service</a></li>
           <li><a href="/legal">Legal FAQ</a></li>
           <li><a href="/cookies">Cookie Policy</a></li>
@@ -65,10 +71,28 @@
     margin-bottom: 40px;
   }
 
-  .footer-section h3 {
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 20px;
+  }
+
+  .section-header h3 {
+    margin: 0;
     color: #ffd700;
     font-weight: 600;
+  }
+
+  .section-header a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: 400;
+  }
+
+  .section-header a:hover {
+    color: white;
   }
 
   .footer-section ul {
