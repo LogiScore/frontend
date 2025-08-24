@@ -790,7 +790,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Submit Review</span>
       </div>
-      <h1 class="page-title">Submit Your Review</h1>
       <p class="page-description">Share your experience to help others make informed decisions</p>
     </div>
   </section>
