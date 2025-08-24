@@ -27,9 +27,16 @@
       isSubscribed,
       hasToken: !!$auth?.token,
       isLoadingScores,
-      locationScoresLength: locationScores.length
+      locationScoresLength: locationScores.length,
+      timestamp: new Date().toISOString()
     });
-    loadDetailedScores();
+    
+    // Prevent multiple simultaneous calls
+    if (!isLoadingScores) {
+      loadDetailedScores();
+    } else {
+      console.log('⚠️ Skipping loadDetailedScores call - already loading');
+    }
   }
   
   function openAuthModal(mode: 'signin' | 'signup') {
@@ -119,8 +126,16 @@
       hasToken: !!$auth?.token,
       token: $auth?.token ? `${$auth.token.substring(0, 20)}...` : 'none',
       isSubscribed,
-      user: $auth?.user
+      user: $auth?.user,
+      callTime: new Date().toISOString(),
+      isLoadingScores
     });
+    
+    // Prevent multiple simultaneous calls
+    if (isLoadingScores) {
+      console.log('⚠️ loadDetailedScores called while already loading, skipping...');
+      return;
+    }
     
     if (!freightForwarderId || !$auth?.token) {
       console.log('❌ Cannot load detailed scores: missing ID or token');
@@ -131,9 +146,20 @@
       isLoadingScores = true;
       console.log('🔄 Loading detailed scores for freight forwarder:', freightForwarderId);
       
-      const [locationData, countryData] = await Promise.all([
-        apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token),
-        apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token)
+      console.log('📡 Making API calls...');
+      const locationPromise = apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token);
+      const countryPromise = apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token);
+      
+      console.log('⏳ Waiting for API responses...');
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('API request timeout after 15 seconds')), 15000)
+      );
+      
+      const [locationData, countryData] = await Promise.race([
+        Promise.all([locationPromise, countryPromise]),
+        timeoutPromise
       ]);
       
       console.log('✅ Location scores received:', locationData);
@@ -149,7 +175,8 @@
       console.error('Error details:', {
         message: err.message,
         status: err.status,
-        response: err.response
+        response: err.response,
+        stack: err.stack
       });
     } finally {
       isLoadingScores = false;
