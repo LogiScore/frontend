@@ -16,7 +16,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">About</span>
       </div>
-      <h1 class="page-title">About LogiScore</h1>
       <p class="page-description">Driving Transparency in Global Logistics</p>
     </div>
   </section>
