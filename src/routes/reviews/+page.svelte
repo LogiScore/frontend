@@ -48,6 +48,11 @@
   // Review categories loaded from API
   let reviewCategories: ReviewCategory[] = [];
 
+  // Review frequency validation
+  let canSubmitReview = true;
+  let lastReviewDate: string | null = null;
+  let reviewFrequencyMessage = '';
+
   // Subscribe to auth store
   auth.subscribe(state => {
     authState = state;
@@ -59,6 +64,10 @@
     selectedBranch = '';
     selectedBranchDisplay = '';
     // Branches will be loaded in loadCompanyData
+    // Check review frequency when company changes
+    if (selectedCompany && authState.user) {
+      checkReviewFrequency();
+    }
   }
   
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
@@ -122,6 +131,56 @@
     } catch (err: any) {
       console.error('Failed to load company data:', err);
       branches = [];
+    }
+  }
+
+  // Check if user can submit a review for this company/branch (6-month rule)
+  async function checkReviewFrequency() {
+    if (!selectedCompany || !authState.user) {
+      canSubmitReview = true;
+      reviewFrequencyMessage = '';
+      return;
+    }
+
+    try {
+      // Get user's previous reviews for this company
+      const userReviews = await apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany);
+      
+      if (userReviews.length === 0) {
+        // No previous reviews, can submit
+        canSubmitReview = true;
+        reviewFrequencyMessage = '';
+        lastReviewDate = null;
+        return;
+      }
+
+      // Check the most recent review
+      const mostRecentReview = userReviews.sort((a: any, b: any) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+
+      const lastReviewTime = new Date(mostRecentReview.created_at);
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+      if (lastReviewTime > sixMonthsAgo) {
+        // Last review was within 6 months
+        canSubmitReview = false;
+        const timeRemaining = new Date(lastReviewTime.getTime() + (6 * 30 * 24 * 60 * 60 * 1000));
+        const daysRemaining = Math.ceil((timeRemaining.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+        reviewFrequencyMessage = `You can submit another review for this company in ${daysRemaining} days (one review per company every 6 months).`;
+        lastReviewDate = mostRecentReview.created_at;
+      } else {
+        // Last review was more than 6 months ago
+        canSubmitReview = true;
+        reviewFrequencyMessage = '';
+        lastReviewDate = mostRecentReview.created_at;
+      }
+    } catch (err: any) {
+      console.error('Failed to check review frequency:', err);
+      // If we can't check, allow submission but log the error
+      canSubmitReview = true;
+      reviewFrequencyMessage = '';
     }
   }
 
@@ -520,6 +579,11 @@
       locationSuggestions = [];
       error = null; // Clear any previous errors
       
+      // Check review frequency after branch selection
+      if (selectedCompany && authState.user) {
+        await checkReviewFrequency();
+      }
+      
       console.log('Location selection completed successfully');
       
     } catch (err: any) {
@@ -534,6 +598,11 @@
     showLocationSuggestions = false;
     locationSuggestions = [];
     error = null; // Clear any previous errors
+    
+    // Check review frequency after branch selection
+    if (selectedCompany && authState.user) {
+      await checkReviewFrequency();
+    }
   }
   
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
@@ -574,6 +643,12 @@
 
     if (ratedQuestions === 0) {
       error = 'Please provide ratings for at least one category';
+      return;
+    }
+
+    // Check review frequency (6-month rule)
+    if (!canSubmitReview) {
+      error = reviewFrequencyMessage || 'You cannot submit another review for this company at this time. Please wait 6 months between reviews.';
       return;
     }
 
@@ -994,6 +1069,18 @@
                 {/if}
               </div>
               
+              <!-- Review Frequency Check -->
+              {#if reviewFrequencyMessage && !canSubmitReview}
+                <div class="review-frequency-warning">
+                  <strong>⚠️ Review Frequency Limit:</strong> {reviewFrequencyMessage}
+                </div>
+              {/if}
+              
+              {#if lastReviewDate && canSubmitReview}
+                <div class="review-frequency-info">
+                  <strong>ℹ️ Last Review:</strong> You last reviewed this company on {new Date(lastReviewDate).toLocaleDateString()}. You can submit a new review now.
+                </div>
+              {/if}
 
             </div>
 
@@ -1085,8 +1172,12 @@
 
           <!-- Submit Button -->
           <div class="form-section">
-            <button type="submit" class="btn btn-primary" disabled={ratedQuestions === 0}>
-              Submit Review
+            <button type="submit" class="btn btn-primary" disabled={ratedQuestions === 0 || !canSubmitReview}>
+              {#if !canSubmitReview}
+                Cannot Submit - Review Frequency Limit
+              {:else}
+                Submit Review
+              {/if}
             </button>
           </div>
 
@@ -1458,7 +1549,24 @@
     color: #721c24;
   }
   
+  /* Review Frequency Messages */
+  .review-frequency-warning {
+    background: #fff3cd;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #ffeaa7;
+  }
 
+  .review-frequency-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #bee5eb;
+  }
 
   .loading {
     text-align: center;

@@ -2385,6 +2385,23 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getUserReviewsForCompany =====
+  // Get user's previous reviews for a specific company to check review frequency
+  async getUserReviewsForCompany(userId: string, companyId: string): Promise<any[]> {
+    try {
+      const url = `/api/reviews/user/${userId}/company/${companyId}`;
+      console.log(`🔍 Getting user reviews for company: ${companyId}`);
+      
+      const response = await this.request<any[]>(url);
+      console.log(`✅ Found ${response.length} previous reviews for user ${userId} and company ${companyId}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Failed to get user reviews for company: ${companyId}`, error);
+      // Return empty array if API fails
+      return [];
+    }
+  }
+
   // ===== METHOD: sendContactFormEmail =====
   // Send contact form email via SendGrid with routing and acknowledgment
   async sendContactFormEmail(contactData: {
