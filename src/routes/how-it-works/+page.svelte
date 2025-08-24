@@ -222,7 +222,7 @@
   .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 1rem;
   }
 
 
@@ -239,7 +239,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     font-size: 0.9rem;
     color: #6c757d;
   }
