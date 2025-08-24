@@ -55,7 +55,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Contact</span>
       </div>
-      <h1 class="page-title">Contact Us</h1>
       <p class="page-description">Get in touch with our team. We're here to help with any questions about LogiScore.</p>
     </div>
   </section>
