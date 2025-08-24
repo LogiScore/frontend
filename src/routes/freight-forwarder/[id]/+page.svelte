@@ -22,20 +22,9 @@
   
   // Reactive statement to load detailed scores when auth state changes
   $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
-    console.log('🚀 Reactive trigger: Loading detailed scores...', {
-      hasFreightForwarder: !!freightForwarder,
-      isSubscribed,
-      hasToken: !!$auth?.token,
-      isLoadingScores,
-      locationScoresLength: locationScores.length,
-      timestamp: new Date().toISOString()
-    });
-    
     // Prevent multiple simultaneous calls
     if (!isLoadingScores) {
       loadDetailedScores();
-    } else {
-      console.log('⚠️ Skipping loadDetailedScores call - already loading');
     }
   }
   
@@ -58,8 +47,6 @@
     
     try {
       isLoading = true;
-      console.log('Fetching freight forwarder details for ID:', freightForwarderId);
-      
       // Fetch freight forwarder details with timeout
       // Note: Data is fetched fresh each time to ensure up-to-date ratings
       const timeoutPromise = new Promise((_, reject) => 
@@ -70,7 +57,6 @@
         apiClient.getFreightForwarder(freightForwarderId),
         timeoutPromise
       ]);
-      console.log('Received freight forwarder details:', details);
       freightForwarder = details;
       
       // Convert category_scores_summary to category_scores format for compatibility
@@ -78,30 +64,19 @@
         freightForwarder.category_scores = Object.entries((freightForwarder as any).category_scores_summary).map(([categoryId, categoryData]: [string, any]) => {
           const score = parseFloat(categoryData.average_rating) || 0;
           const count = parseInt(categoryData.total_reviews) || 0;
-          console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Review count: ${count}`);
           return {
             category_name: categoryId,
             average_score: score,
             review_count: count
           };
         });
-        console.log('Final category_scores for', freightForwarder.name, ':', freightForwarder.category_scores);
       } else {
         freightForwarder.category_scores = [];
       }
       
       // If user is subscribed, fetch location and country scores
-      console.log('🔍 onMount: Checking if should load detailed scores:', {
-        isSubscribed,
-        hasToken: !!$auth?.token,
-        user: $auth?.user
-      });
-      
       if (isSubscribed && $auth?.token) {
-        console.log('✅ onMount: Loading detailed scores immediately');
         await loadDetailedScores();
-      } else {
-        console.log('⏳ onMount: Not loading detailed scores yet, waiting for auth state...');
       }
     } catch (err: any) {
       console.error('Error loading freight forwarder:', err);
@@ -121,36 +96,20 @@
   });
   
   async function loadDetailedScores() {
-    console.log('🔍 loadDetailedScores called with:', {
-      freightForwarderId,
-      hasToken: !!$auth?.token,
-      token: $auth?.token ? `${$auth.token.substring(0, 20)}...` : 'none',
-      isSubscribed,
-      user: $auth?.user,
-      callTime: new Date().toISOString(),
-      isLoadingScores
-    });
-    
     // Prevent multiple simultaneous calls
     if (isLoadingScores) {
-      console.log('⚠️ loadDetailedScores called while already loading, skipping...');
       return;
     }
     
     if (!freightForwarderId || !$auth?.token) {
-      console.log('❌ Cannot load detailed scores: missing ID or token');
       return;
     }
     
     try {
       isLoadingScores = true;
-      console.log('🔄 Loading detailed scores for freight forwarder:', freightForwarderId);
       
-      console.log('📡 Making API calls...');
       const locationPromise = apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token);
       const countryPromise = apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token);
-      
-      console.log('⏳ Waiting for API responses...');
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => 
@@ -162,25 +121,12 @@
         timeoutPromise
       ]);
       
-      console.log('✅ Location scores received:', locationData);
-      console.log('✅ Country scores received:', countryData);
-      
       locationScores = locationData || [];
       countryScores = countryData || [];
-      
-      console.log('📊 Updated locationScores:', locationScores);
-      console.log('📊 Updated countryScores:', countryScores);
     } catch (err: any) {
-      console.error('❌ Failed to load detailed scores:', err);
-      console.error('Error details:', {
-        message: err.message,
-        status: err.status,
-        response: err.response,
-        stack: err.stack
-      });
+      console.error('Failed to load detailed scores:', err);
     } finally {
       isLoadingScores = false;
-      console.log('🏁 loadDetailedScores completed, isLoadingScores set to false');
     }
   }
   
@@ -303,13 +249,7 @@
       <!-- Tabbed Navigation for Detailed Scores -->
       {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
         <section class="scores-tabs">
-          <div class="debug-info">
-            <p>Debug: User logged in = {isLoggedIn}</p>
-            <p>Debug: User subscribed = {isSubscribed}</p>
-            <p>Debug: User subscription tier = {user?.subscription_tier}</p>
-            <p>Debug: Auth token exists = {!!$auth?.token}</p>
-            <p>Debug: Active tab = {activeTab}</p>
-          </div>
+
           <div class="tab-navigation">
             <button 
               class="tab-button {activeTab === 'overview' ? 'active' : ''}" 
@@ -337,9 +277,7 @@
               <!-- Overview Tab - Show aggregate scores -->
               <section class="review-scores">
                 <h2>Review Category Scores</h2>
-                <div class="debug-info">
-                  <p>Debug: freightForwarder.category_scores = {JSON.stringify(freightForwarder.category_scores, null, 2)}</p>
-                </div>
+
                 {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
                   <div class="scores-grid">
                     {#each freightForwarder.category_scores as score}
@@ -368,9 +306,6 @@
                   <button class="btn btn-secondary" on:click={() => loadDetailedScores()}>
                     🔄 Reload Scores
                   </button>
-                  {#if locationScores.length > 0}
-                    <p class="info-note">✅ Location scores calculated from real review data using existing backend endpoints.</p>
-                  {/if}
                 </div>
                 {#if isLoadingScores}
                   <div class="loading-scores">Loading location scores...</div>
@@ -1118,15 +1053,7 @@
     margin-bottom: 1rem;
   }
   
-  .info-note {
-    background: #e8f5e8;
-    color: #2e7d32;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-    font-style: italic;
-    border-left: 3px solid #2e7d32;
-  }
+
 
   /* Subscription Prompt */
   .subscription-prompt {

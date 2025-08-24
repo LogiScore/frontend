@@ -75,14 +75,7 @@ function isTokenExpired(token: string): boolean {
     const bufferTime = 5 * 60; // 5 minutes buffer
     const isExpired = payload.exp && (payload.exp - bufferTime) < currentTime;
     
-    if (isExpired) {
-      console.log('Token expiration check:', {
-        currentTime: new Date(currentTime * 1000).toISOString(),
-        tokenExpiry: new Date(payload.exp * 1000).toISOString(),
-        bufferTime: bufferTime / 60 + ' minutes',
-        timeUntilExpiry: payload.exp - currentTime
-      });
-    }
+    // Token expiration check completed
     
     return isExpired;
   } catch (error) {
@@ -112,11 +105,11 @@ function resetInactivityTimer() {
   // Check if user is authenticated before setting timer
   const currentState = get<AuthState>(auth);
   if (!currentState.user || !currentState.token) {
-    console.log('User not authenticated, skipping inactivity timer');
+    // User not authenticated, skipping inactivity timer
     return;
   }
   
-  console.log('Resetting inactivity timer');
+  // Resetting inactivity timer
   
   // Clear existing timers
   if (inactivityTimer) {
@@ -133,17 +126,17 @@ function resetInactivityTimer() {
   
   // Set new inactivity timer
   inactivityTimer = setTimeout(() => {
-    console.log('User inactive for 10 minutes, showing prompt');
+          // User inactive for 10 minutes, showing prompt
     auth.update(state => ({ ...state, showInactivityPrompt: true }));
     
     // Set prompt timeout - if user doesn't respond in 1 minute, logout
     inactivityPromptTimer = setTimeout(() => {
-      console.log('Inactivity prompt timeout, logging out user');
+      // Inactivity prompt timeout, logging out user
       authMethods.logout();
     }, PROMPT_TIMEOUT);
   }, INACTIVITY_TIMEOUT);
   
-  console.log('New inactivity timer set for', INACTIVITY_TIMEOUT / 1000, 'seconds');
+  // New inactivity timer set
 }
 
 function setupInactivityTracking() {
@@ -152,11 +145,11 @@ function setupInactivityTracking() {
   // Check if user is authenticated before setting up tracking
   const currentState = get<AuthState>(auth);
   if (!currentState.user || !currentState.token) {
-    console.log('User not authenticated, skipping inactivity tracking setup');
+    // User not authenticated, skipping inactivity tracking setup
     return;
   }
   
-  console.log('Setting up inactivity tracking...');
+  // Setting up inactivity tracking
   
   // Events that indicate user activity
   const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
@@ -181,27 +174,22 @@ function setupInactivityTracking() {
   // Reset timer on any user activity
   activityEvents.forEach(event => {
     document.addEventListener(event, debouncedResetTimer, true);
-    console.log('Added event listener for:', event);
   });
   
   // Also listen for window focus/blur events
   window.addEventListener('focus', resetInactivityTimer);
   window.addEventListener('blur', () => {
-    console.log('Window lost focus, pausing inactivity timer');
+    // Window lost focus, pausing inactivity timer
   });
   
   // Start the initial timer
   resetInactivityTimer();
   
-  console.log('Inactivity tracking setup complete');
-  
-  // Log the current document state
-  console.log('Document ready state:', document.readyState);
-  console.log('Document body exists:', !!document.body);
+  // Inactivity tracking setup complete
 }
 
 function clearInactivityTracking() {
-  console.log('Clearing inactivity tracking');
+  // Clearing inactivity tracking
   
   // Clear existing timers
   if (inactivityTimer) {
@@ -227,7 +215,7 @@ function clearInactivityTracking() {
     window.removeEventListener('focus', resetInactivityTimer);
   }
   
-  console.log('Inactivity tracking cleared');
+  // Inactivity tracking cleared
 }
 
 // Create a writable store for authentication state
@@ -242,12 +230,7 @@ export const auth = writable<AuthState>({
 // Subscribe to auth changes for debugging
 if (typeof window !== 'undefined') {
   auth.subscribe(state => {
-    console.log('Auth state changed:', {
-      hasUser: !!state.user,
-      hasToken: !!state.token,
-      isLoading: state.isLoading,
-      error: state.error
-    });
+    // Auth state changed
   });
 }
 
@@ -336,7 +319,7 @@ export const authMethods = {
       const currentState = get<AuthState>(auth);
       const authToken = token || currentState.token;
       
-      console.log('getCurrentUser called with token:', authToken ? 'exists' : 'none');
+      // getCurrentUser called
       
       if (!authToken) {
         throw new Error('No token available');
@@ -344,22 +327,22 @@ export const authMethods = {
       
       // Check if token is expired before making API call
       if (isTokenExpired(authToken)) {
-        console.log('Token is expired, attempting to refresh...');
+        // Token is expired, attempting to refresh...
         
         // Try to refresh the token
         try {
           const refreshResult = await authMethods.refreshToken();
           if (refreshResult.success && refreshResult.newToken) {
-            console.log('Token refreshed successfully, retrying getCurrentUser');
+            // Token refreshed successfully, retrying getCurrentUser
             // Recursively call getCurrentUser with the new token
             return await authMethods.getCurrentUser(refreshResult.newToken);
           } else {
-            console.log('Token refresh failed, logging out user');
+            // Token refresh failed, logging out user
             authMethods.logout();
             return;
           }
         } catch (refreshError) {
-          console.log('Token refresh error, logging out user:', refreshError);
+          // Token refresh error, logging out user
           authMethods.logout();
           return;
         }
@@ -368,7 +351,7 @@ export const authMethods = {
       // Try to get user from API
       try {
         const user = await apiClient.getCurrentUser(authToken);
-        console.log('getCurrentUser API call successful, user:', user ? 'exists' : 'none');
+        // getCurrentUser API call successful
         
         // Ensure token and user are saved to localStorage
         saveToken(authToken);
@@ -385,7 +368,7 @@ export const authMethods = {
         // If we have a stored token but API fails, maintain the session locally
         // This prevents users from being logged out due to backend issues
         if (currentState.user) {
-          console.log('Maintaining existing user session despite API failure');
+          // Maintaining existing user session despite API failure
           saveToken(authToken);
           saveUser(currentState.user);
           auth.update(state => ({
@@ -404,7 +387,7 @@ export const authMethods = {
       
       // Only clear authentication for critical errors, not network issues
       if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
-        console.log('Network error detected, maintaining existing session');
+        // Network error detected, maintaining existing session
         return;
       }
       
@@ -422,27 +405,26 @@ export const authMethods = {
   // Check auth status
   checkAuth: async () => {
     try {
-      console.log('checkAuth called');
+      // checkAuth called
       const currentState = get<AuthState>(auth);
-      console.log('Current state token:', currentState.token ? 'exists' : 'none');
-      console.log('Current state user:', currentState.user ? 'exists' : 'none');
+      // Current state checked
       
       // First, try to restore from localStorage if store is empty
       if (!currentState.token || !currentState.user) {
-        console.log('Store incomplete, attempting to restore from localStorage');
+        // Store incomplete, attempting to restore from localStorage
         const storedToken = getStoredToken();
         const storedUser = getStoredUser();
         
         if (storedToken && storedUser) {
-          console.log('Found stored token and user, restoring to store');
+          // Found stored token and user, restoring to store
           
           // Check if stored token is expired
           if (isTokenExpired(storedToken)) {
-            console.log('Stored token is expired, attempting refresh...');
+            // Stored token is expired, attempting refresh...
             try {
               const refreshResult = await authMethods.refreshToken();
               if (refreshResult.success && refreshResult.newToken) {
-                console.log('Token refreshed during auth check');
+                // Token refreshed during auth check
                 auth.update(state => ({
                   ...state,
                   token: refreshResult.newToken!,
@@ -450,7 +432,7 @@ export const authMethods = {
                 }));
                 return;
               } else {
-                console.log('Token refresh failed during auth check');
+                // Token refresh failed during auth check
                 removeStoredToken();
                 auth.update(state => ({
                   ...state,
@@ -460,7 +442,7 @@ export const authMethods = {
                 return;
               }
             } catch (refreshError) {
-              console.log('Token refresh error during auth check:', refreshError);
+              // Token refresh error during auth check
               removeStoredToken();
               auth.update(state => ({
                 ...state,
@@ -480,7 +462,7 @@ export const authMethods = {
           // Now try to validate the token with the backend
           try {
             await authMethods.getCurrentUser(storedToken);
-            console.log('Token validation successful');
+            // Token validation successful
             return;
           } catch (validationError: any) {
             console.warn('Token validation failed, but maintaining local session:', validationError.message);
@@ -492,27 +474,27 @@ export const authMethods = {
       
       // If we have both token and user in store, check if token needs refresh
       if (currentState.token && currentState.user) {
-        console.log('Using existing token and user from store');
+        // Using existing token and user from store
         
         // Check if token is expired
         if (isTokenExpired(currentState.token)) {
-          console.log('Existing token is expired, attempting refresh...');
+          // Existing token is expired, attempting refresh...
           try {
             const refreshResult = await authMethods.refreshToken();
             if (refreshResult.success && refreshResult.newToken) {
-              console.log('Token refreshed during auth check');
+              // Token refreshed during auth check
               auth.update(state => ({
                 ...state,
                 token: refreshResult.newToken!
               }));
               return;
             } else {
-              console.log('Token refresh failed during auth check');
+              // Token refresh failed during auth check
               authMethods.logout();
               return;
             }
           } catch (refreshError) {
-            console.log('Token refresh error during auth check:', refreshError);
+            // Token refresh error during auth check
             authMethods.logout();
             return;
           }
@@ -525,7 +507,7 @@ export const authMethods = {
       
       // If we only have token, try to get user
       if (currentState.token && !currentState.user) {
-        console.log('Using existing token from store, attempting to get user');
+        // Using existing token from store, attempting to get user
         try {
           await authMethods.getCurrentUser(currentState.token);
           return;
@@ -536,12 +518,12 @@ export const authMethods = {
         }
       }
       
-      console.log('No valid authentication found');
+      // No valid authentication found
     } catch (error: any) {
       console.error('checkAuth failed:', error);
       // Only clear everything if it's a critical error, not just a network issue
       if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
-        console.log('Network error detected, maintaining existing session');
+        // Network error detected, maintaining existing session
         return;
       }
       
@@ -585,20 +567,8 @@ export const authMethods = {
     const storedToken = getStoredToken();
     const storedUser = getStoredUser();
     
-    console.log('=== AUTH DEBUG INFO ===');
-    console.log('Store state:', {
-      hasUser: !!currentState.user,
-      hasToken: !!currentState.token,
-      user: currentState.user,
-      token: currentState.token ? 'exists' : 'none'
-    });
-    console.log('localStorage state:', {
-      hasStoredToken: !!storedToken,
-      hasStoredUser: !!storedUser,
-      storedToken: storedToken ? 'exists' : 'none',
-      storedUser: storedUser
-    });
-    console.log('=======================');
+    // AUTH DEBUG INFO
+    // Store and localStorage state checked
     
     return {
       store: currentState,
@@ -608,18 +578,18 @@ export const authMethods = {
 
   // Handle inactivity prompt responses
   extendSession: () => {
-    console.log('User chose to extend session');
+    // User chose to extend session
     resetInactivityTimer();
   },
 
   endSession: () => {
-    console.log('User chose to end session');
+    // User chose to end session
     authMethods.logout();
   },
 
   // Development/testing method - manually trigger inactivity prompt
   testInactivityPrompt: () => {
-    console.log('Manually triggering inactivity prompt for testing');
+    // Manually triggering inactivity prompt for testing
     auth.update(state => ({ ...state, showInactivityPrompt: true }));
     
     // Set prompt timeout - if user doesn't respond in 1 minute, logout
@@ -627,14 +597,14 @@ export const authMethods = {
       clearTimeout(inactivityPromptTimer);
     }
     inactivityPromptTimer = setTimeout(() => {
-      console.log('Inactivity prompt timeout, logging out user');
+      // Inactivity prompt timeout, logging out user
       authMethods.logout();
     }, PROMPT_TIMEOUT);
   },
 
   // Test inactivity timer with shorter duration
   testInactivityTimer: (seconds: number = 30) => {
-    console.log(`Testing inactivity timer with ${seconds} second timeout`);
+    // Testing inactivity timer with shorter duration
     
     // Clear existing timers
     if (inactivityTimer) {
@@ -651,17 +621,17 @@ export const authMethods = {
     
     // Set test timer
     inactivityTimer = setTimeout(() => {
-      console.log(`Test: User inactive for ${seconds} seconds, showing prompt`);
+      // Test: User inactive for specified seconds, showing prompt
       auth.update(state => ({ ...state, showInactivityPrompt: true }));
       
       // Set prompt timeout - if user doesn't respond in 1 minute, logout
       inactivityPromptTimer = setTimeout(() => {
-        console.log('Test: Inactivity prompt timeout, logging out user');
+        // Test: Inactivity prompt timeout, logging out user
         authMethods.logout();
       }, PROMPT_TIMEOUT);
     }, seconds * 1000);
     
-    console.log(`Test timer set for ${seconds} seconds`);
+    // Test timer set
   },
 
   // Check inactivity timer status
@@ -678,16 +648,7 @@ export const authMethods = {
 
   // Debug inactivity tracking
   debugInactivityTracking: () => {
-    console.log('=== INACTIVITY TRACKING DEBUG ===');
-    console.log('Window object exists:', typeof window !== 'undefined');
-    console.log('Document object exists:', typeof document !== 'undefined');
-    console.log('Document ready state:', document?.readyState);
-    console.log('Document body exists:', !!document?.body);
-    console.log('Current timers:');
-    console.log('  - Inactivity timer:', inactivityTimer);
-    console.log('  - Prompt timer:', inactivityPromptTimer);
-    console.log('Auth state:', get<AuthState>(auth));
-    console.log('================================');
+    // Debug inactivity tracking function
     
     return {
       windowExists: typeof window !== 'undefined',
@@ -704,13 +665,13 @@ export const authMethods = {
 
   // Recovery method - restore original user session from localStorage
   recoverSession: () => {
-    console.log('Attempting to recover original user session...');
+    // Attempting to recover original user session...
     const storedToken = getStoredToken();
     const storedUser = getStoredUser();
     
     if (storedToken && storedUser) {
-      console.log('Found stored session, restoring...');
-      console.log('Stored user:', storedUser);
+      // Found stored session, restoring...
+      // Stored user retrieved
       
       // Restore the session
       auth.update(state => ({
@@ -722,7 +683,7 @@ export const authMethods = {
       
       return { success: true, message: 'Session recovered successfully' };
     } else {
-      console.log('No stored session found');
+      // No stored session found
       return { success: false, message: 'No stored session to recover' };
     }
   },
@@ -731,7 +692,7 @@ export const authMethods = {
   // Sign in using email verification code
   async signinWithCode(email: string, code: string): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('Signing in with verification code...');
+      // Signing in with verification code...
       
       const response = await apiClient.verifySigninCode(email, code);
       
@@ -754,7 +715,7 @@ export const authMethods = {
           authMethods.startInactivityTracking();
         }, 100);
         
-        console.log('Sign in successful with real JWT token');
+        // Sign in successful with real JWT token
         return { success: true };
       } else {
         throw new Error('Invalid response from server');
@@ -780,12 +741,12 @@ export const authMethods = {
   // Request verification code for existing user sign-in
   async requestSigninCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
     try {
-      console.log('🔍 AuthMethods.requestSigninCode called for email:', email);
+      // AuthMethods.requestSigninCode called
       
       const response = await apiClient.sendSigninCode(email);
-      console.log('📧 API response received:', response);
+      // API response received
       
-      console.log('✅ Verification code sent successfully for sign-in');
+      // Verification code sent successfully for sign-in
       return { 
         success: true, 
         expires_in: response.expires_in 
@@ -809,12 +770,12 @@ export const authMethods = {
   // Request verification code for new user sign-up
   async requestSignupCode(email: string, userType: string, companyName: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
     try {
-      console.log('🔍 AuthMethods.requestSignupCode called for email:', email, 'userType:', userType, 'companyName:', companyName);
+      // AuthMethods.requestSignupCode called
       
       const response = await apiClient.sendSignupCode(email, userType, companyName);
-      console.log('📧 API response received:', response);
+      // API response received
       
-      console.log('✅ Verification code sent successfully for sign-up');
+      // Verification code sent successfully for sign-up
       return { 
         success: true, 
         expires_in: response.expires_in 
@@ -838,7 +799,7 @@ export const authMethods = {
   // Verify sign-up code and complete new user registration
   async verifySignupCode(email: string, code: string, fullName: string, companyName: string, userType: string): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('🔍 AuthMethods.verifySignupCode called for email:', email, 'fullName:', fullName, 'companyName:', companyName, 'userType:', userType);
+      // AuthMethods.verifySignupCode called
       
       const response = await apiClient.verifySignupCode(email, code, fullName, companyName, userType);
       
@@ -861,7 +822,7 @@ export const authMethods = {
           authMethods.startInactivityTracking();
         }, 100);
         
-        console.log('Sign up successful with real JWT token');
+        // Sign up successful with real JWT token
         return { success: true };
       } else {
         throw new Error('Invalid response from server');
@@ -887,12 +848,12 @@ export const authMethods = {
   // Legacy method: Request verification code to be sent to email (for backward compatibility)
   async requestCode(email: string): Promise<{ success: boolean; error?: string; expires_in?: number }> {
     try {
-      console.log('🔍 AuthMethods.requestCode called for email:', email);
+      // AuthMethods.requestCode called
       
       const response = await apiClient.sendVerificationCode(email);
-      console.log('📧 API response received:', response);
+      // API response received
       
-      console.log('✅ Verification code sent successfully');
+      // Verification code sent successfully
       return { 
         success: true, 
         expires_in: response.expires_in 
@@ -924,7 +885,7 @@ export const authMethods = {
       const response = await apiClient.refreshToken(currentToken);
       if (response.access_token) {
         saveToken(response.access_token);
-        console.log('Token refreshed successfully.');
+        // Token refreshed successfully
         return { success: true, newToken: response.access_token };
       } else {
         console.warn('Token refresh failed, invalid response from API.');
@@ -938,13 +899,13 @@ export const authMethods = {
 
   // Start inactivity tracking manually
   startInactivityTracking: () => {
-    console.log('Manually starting inactivity tracking');
+    // Manually starting inactivity tracking
     setupInactivityTracking();
   },
 
   // Stop inactivity tracking manually
   stopInactivityTracking: () => {
-    console.log('Manually stopping inactivity tracking');
+    // Manually stopping inactivity tracking
     clearInactivityTracking();
   },
 
@@ -957,19 +918,19 @@ export const authMethods = {
     
     // Check if token is expired or will expire soon
     if (isTokenExpired(currentState.token)) {
-      console.log('Token expired, attempting refresh before API call...');
+      // Token expired, attempting refresh before API call...
       try {
         const refreshResult = await authMethods.refreshToken();
         if (refreshResult.success && refreshResult.newToken) {
-          console.log('Token refreshed before API call');
+          // Token refreshed before API call
           return refreshResult.newToken;
         } else {
-          console.log('Token refresh failed before API call');
+          // Token refresh failed before API call
           authMethods.logout();
           return null;
         }
       } catch (refreshError) {
-        console.log('Token refresh error before API call:', refreshError);
+        // Token refresh error before API call
         authMethods.logout();
         return null;
       }
@@ -981,16 +942,15 @@ export const authMethods = {
 
 // Initialize auth check on app start
 if (typeof window !== 'undefined') {
-  console.log('Auth system initializing...');
-  console.log('Stored token on init:', getStoredToken() ? 'exists' : 'none');
-  console.log('Stored user on init:', getStoredUser() ? 'exists' : 'none');
+  // Auth system initializing...
+  // Stored authentication checked
   
   // Ensure the store is properly initialized with stored values
   const storedToken = getStoredToken();
   const storedUser = getStoredUser();
   
   if (storedToken && storedUser) {
-    console.log('Restoring stored authentication on init');
+    // Restoring stored authentication on init
     auth.update(state => ({
       ...state,
       token: storedToken,
@@ -1007,7 +967,7 @@ if (typeof window !== 'undefined') {
     if (currentState.token && currentState.user) {
       // Check if token will expire soon (within 10 minutes)
       if (isTokenExpired(currentState.token)) {
-        console.log('Token expired, attempting refresh...');
+        // Token expired, attempting refresh...
         authMethods.refreshToken().catch(() => {
           // If refresh fails, logout user
           authMethods.logout();
@@ -1027,23 +987,23 @@ if (typeof window !== 'undefined') {
     // Check if user is authenticated before setting up tracking
     const currentState = get<AuthState>(auth);
     if (!currentState.user || !currentState.token) {
-      console.log('User not authenticated, skipping inactivity tracking initialization');
+      // User not authenticated, skipping inactivity tracking initialization
       return;
     }
     
     if (document.readyState === 'complete') {
-      console.log('Document ready, setting up inactivity tracking');
+      // Document ready, setting up inactivity tracking
       setupInactivityTracking();
     } else {
-      console.log('Document not ready, waiting for load event');
+      // Document not ready, waiting for load event
       window.addEventListener('load', () => {
-        console.log('Window load event fired, setting up inactivity tracking');
+        // Window load event fired, setting up inactivity tracking
         setupInactivityTracking();
       });
       
       // Also try on DOMContentLoaded as backup
       document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOMContentLoaded fired, setting up inactivity tracking');
+        // DOMContentLoaded fired, setting up inactivity tracking
         setupInactivityTracking();
       });
     }
