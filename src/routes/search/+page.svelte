@@ -298,7 +298,7 @@
   <div class="search-type-selection">
     
     <button 
-      class="search-type-btn {searchType === 'company' ? 'active' : ''}"
+      class="search-type-btn company-btn {searchType === 'company' ? 'active' : ''}"
       on:click={() => {
         updateSearchType('company');
       }}
@@ -729,6 +729,10 @@
     color: #95a5a6;
     transform: none;
     box-shadow: none;
+  }
+
+  .company-btn {
+    margin-top: 1rem;
   }
 
   .search-type-selection {
