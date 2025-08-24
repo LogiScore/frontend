@@ -32,7 +32,7 @@
       <p>We may collect the following categories of information:</p>
       <ul>
         <li><strong>Account Information:</strong> Business name, contact person, business email (corporate domains only), phone number.</li>
-        <li><strong>Verification Information:</strong> Proof of shipment (e.g., AWB, Bill of Lading). Sensitive shipment details are anonymized and not shared with forwarders.</li>
+        <li><strong>Verification Information:</strong> Proof of shipment (e.g. Shipment number, Shipment ID, Job no. etc). Sensitive shipment details are anonymized and not shared with forwarders.</li>
         <li><strong>Usage Data:</strong> Login times, IP address, device type, and browsing behavior on the platform.</li>
         <li><strong>Ratings Data:</strong> Your submitted ratings across service categories.</li>
         <li><strong>Payment Data:</strong> Subscription billing is processed securely by <strong>Stripe</strong>. We do not collect or store credit card numbers, CVV codes, or full payment details. We only retain limited billing metadata such as subscription type, invoice references, and payment status.</li>
@@ -74,7 +74,7 @@
       <h2>5. Data Retention</h2>
       <ul>
         <li>Account data is retained while your subscription is active and up to 24 months after termination.</li>
-        <li>Verification documents are stored securely for audit purposes and deleted after <strong>12 months</strong>.</li>
+        <li>Verification data (e.g. Shipment ID) are stored securely for audit purposes and deleted after <strong>12 months</strong>.</li>
         <li><strong>Payment records</strong> (e.g., invoices and receipts) are retained for accounting and compliance purposes as required by law.</li>
         <li>LogiScore does not store sensitive payment data (credit card numbers, CVV codes); these are handled exclusively by <strong>Stripe</strong> in accordance with their <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</li>
         <li>Anonymized ratings remain in the system to ensure platform integrity.</li>

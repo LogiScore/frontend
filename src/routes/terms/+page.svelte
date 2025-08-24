@@ -45,7 +45,7 @@
       <ul>
         <li>Submit ratings only if based on <strong>genuine service experiences</strong> within the past 6 months.</li>
         <li>Provide accurate forwarder/branch details.</li>
-        <li>Follow our <a href="/guidelines">Review Guidelines</a>.</li>
+        <li>Follow our <a href="/guidelines">Community Guidelines</a>.</li>
       </ul>
       <p>You must not:</p>
       <ul>
@@ -68,7 +68,7 @@
     <section class="tos-section">
       <h2>4. Verification of Ratings</h2>
       <ul>
-        <li>Users may be required to provide proof of shipment (e.g., AWB, Bill of Lading).</li>
+        <li>User may be required to provide proof of shipment (e.g. Shipment number, Shipment ID, Job no. etc).</li>
         <li>Verification may apply <strong>once per forwarder per subscription period</strong>.</li>
         <li>Identifying details are anonymized; documents are not shared with forwarders.</li>
         <li>Verified users receive a "Verified Shipper" badge.</li>
