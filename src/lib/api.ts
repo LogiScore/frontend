@@ -2494,6 +2494,165 @@ class ApiClient {
       throw new Error('Failed to update user. Please try again later.');
     }
   }
+
+  // ===== PROMOTION SYSTEM METHODS =====
+
+  // ===== METHOD: getPromotionConfig =====
+  // Get current promotion configuration
+  async getPromotionConfig(): Promise<any> {
+    try {
+      const response = await this.request('/api/promotions/config');
+      return response;
+    } catch (error: any) {
+      console.error('Failed to get promotion config:', error);
+      // Return default config if API fails
+      return {
+        isActive: true,
+        maxRewardsPerUser: 3,
+        rewardMonths: 1
+      };
+    }
+  }
+
+  // ===== METHOD: updatePromotionConfig =====
+  // Update promotion configuration (admin only)
+  async updatePromotionConfig(config: {
+    isActive: boolean;
+    maxRewardsPerUser: number;
+    rewardMonths: number;
+  }): Promise<any> {
+    try {
+      return await this.request('/api/promotions/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+    } catch (error: any) {
+      console.error('Failed to update promotion config:', error);
+      throw new Error('Failed to update promotion configuration');
+    }
+  }
+
+  // ===== METHOD: getUserRewards =====
+  // Get all user rewards for admin dashboard
+  async getUserRewards(): Promise<any[]> {
+    try {
+      const response = await this.request('/api/promotions/rewards');
+      return Array.isArray(response) ? response : [];
+    } catch (error: any) {
+      console.error('Failed to get user rewards:', error);
+      return [];
+    }
+  }
+
+  // ===== METHOD: getPromotionStats =====
+  // Get promotion statistics for admin dashboard
+  async getPromotionStats(): Promise<any> {
+    try {
+      const response = await this.request('/api/promotions/stats');
+      return response || {
+        totalRewardsGiven: 0,
+        activeUsers: 0,
+        totalMonthsAwarded: 0
+      };
+    } catch (error: any) {
+      console.error('Failed to get promotion stats:', error);
+      return {
+        totalRewardsGiven: 0,
+        activeUsers: 0,
+        totalMonthsAwarded: 0
+      };
+    }
+  }
+
+  // ===== METHOD: awardUserReward =====
+  // Award a user with subscription months for review submission
+  async awardUserReward(userId: string, reviewId: string, months: number): Promise<{success: boolean; message?: string}> {
+    try {
+      const response = await this.request('/api/promotions/award', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          review_id: reviewId,
+          months: months
+        })
+      });
+      
+      return { success: true, message: 'Reward awarded successfully' };
+    } catch (error: any) {
+      console.error('Failed to award user reward:', error);
+      return { 
+        success: false, 
+        message: error.message || 'Failed to award user reward' 
+      };
+    }
+  }
+
+  // ===== METHOD: checkUserRewardEligibility =====
+  // Check if a user is eligible for a reward
+  async checkUserRewardEligibility(userId: string): Promise<{
+    eligible: boolean;
+    currentRewards: number;
+    maxRewards: number;
+    message: string;
+  }> {
+    try {
+      const response = await this.request(`/api/promotions/eligibility/${userId}`);
+      if (response && typeof response === 'object' && 'eligible' in response) {
+        return response as {
+          eligible: boolean;
+          currentRewards: number;
+          maxRewards: number;
+          message: string;
+        };
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error('Failed to check user reward eligibility:', error);
+      return {
+        eligible: false,
+        currentRewards: 0,
+        maxRewards: 3,
+        message: 'Unable to check eligibility'
+      };
+    }
+  }
+
+  // ===== METHOD: sendRewardNotificationEmail =====
+  // Send email notification when user receives a reward
+  async sendRewardNotificationEmail(userEmail: string, userName: string, monthsAwarded: number, totalRewards: number, maxRewards: number): Promise<{success: boolean; message?: string}> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/email/reward-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          user_name: userName,
+          months_awarded: monthsAwarded,
+          total_rewards: totalRewards,
+          max_rewards: maxRewards
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Reward notification email API error:', response.status, errorText);
+        throw new Error(`Failed to send reward notification: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return { success: true, message: 'Reward notification email sent successfully' };
+    } catch (error: any) {
+      console.error('Reward notification email sending failed:', error);
+      return { 
+        success: false, 
+        message: `Failed to send reward notification: ${error.message}` 
+      };
+    }
+  }
 }
 
 // Export singleton instance

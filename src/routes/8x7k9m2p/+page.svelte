@@ -99,6 +99,20 @@
     duration: '1',
     isPaid: false
   };
+
+  // Promotion system state
+  let promotionConfig = {
+    isActive: true,
+    maxRewardsPerUser: 3,
+    rewardMonths: 1,
+    description: 'Get 1 month free subscription for each review submitted (max 3 months)'
+  };
+  let userRewards: any[] = [];
+  let promotionStats = {
+    totalRewardsGiven: 0,
+    activeUsers: 0,
+    totalMonthsAwarded: 0
+  };
   let editUserData = {
     full_name: '',
     email: '',
@@ -107,7 +121,7 @@
   };
 
   // Notification system
-  let notifications: Array<{id: string; type: 'success' | 'error' | 'info'; message: string; timestamp: Date}> = [];
+  let notifications: Array<{id: string; type: 'success' | 'error' | 'info' | 'warning'; message: string; timestamp: Date}> = [];
   let notificationId = 0;
 
   // Company update loading state
@@ -180,6 +194,8 @@
           loadCompanies();
         } else if (activeTab === 'analytics') {
           loadAnalytics();
+        } else if (activeTab === 'promotions') {
+          loadPromotionData();
         }
       }
     }, 30000); // 30 seconds
@@ -198,6 +214,97 @@
     if (!authState.token || authState.user?.user_type !== 'admin') return;
     
     lastRefreshTime = new Date();
+
+  // Promotion management functions
+  async function togglePromotion() {
+    if (!authState.token || authState.user?.user_type !== 'admin') return;
+    
+    try {
+      promotionConfig.isActive = !promotionConfig.isActive;
+      
+      // Update promotion status in backend
+      await apiClient.updatePromotionConfig({
+        isActive: promotionConfig.isActive,
+        maxRewardsPerUser: promotionConfig.maxRewardsPerUser,
+        rewardMonths: promotionConfig.rewardMonths
+      });
+      
+      addNotification('success', `Promotion ${promotionConfig.isActive ? 'activated' : 'deactivated'} successfully`);
+      
+      // Refresh promotion data
+      if (activeTab === 'promotions') {
+        loadPromotionData();
+      }
+    } catch (error) {
+      console.error('Failed to toggle promotion:', error);
+      addNotification('error', 'Failed to update promotion status');
+      // Revert the change
+      promotionConfig.isActive = !promotionConfig.isActive;
+    }
+  }
+
+  async function loadPromotionData() {
+    if (!authState.token || authState.user?.user_type !== 'admin') return;
+    
+    try {
+      // Load promotion configuration
+      const config = await apiClient.getPromotionConfig();
+      promotionConfig = { ...promotionConfig, ...config };
+      
+      // Load user rewards
+      userRewards = await apiClient.getUserRewards();
+      
+      // Load promotion statistics
+      promotionStats = await apiClient.getPromotionStats();
+    } catch (error) {
+      console.error('Failed to load promotion data:', error);
+      addNotification('error', 'Failed to load promotion data');
+    }
+  }
+
+  async function awardUserReward(userId: string, reviewId: string) {
+    if (!authState.token || authState.user?.user_type !== 'admin') return;
+    
+    try {
+      const result = await apiClient.awardUserReward(userId, reviewId, promotionConfig.rewardMonths);
+      
+      if (result.success) {
+        addNotification('success', `Awarded ${promotionConfig.rewardMonths} month(s) to user`);
+        
+        // Send reward notification email
+        try {
+          // Find user details for email
+          const user = users.find(u => u.id === userId);
+          if (user) {
+            const emailResult = await apiClient.sendRewardNotificationEmail(
+              user.email,
+              user.full_name || user.username,
+              promotionConfig.rewardMonths,
+              (userRewards.filter(r => r.user_id === userId).length || 0) + 1,
+              promotionConfig.maxRewardsPerUser
+            );
+            
+            if (emailResult.success) {
+              addNotification('success', 'Reward notification email sent to user');
+            } else {
+              addNotification('warning', `Reward awarded but email notification failed: ${emailResult.message}`);
+            }
+          }
+        } catch (emailError) {
+          console.error('Failed to send reward notification email:', emailError);
+          addNotification('warning', 'Reward awarded but email notification failed');
+        }
+        
+        // Refresh promotion data
+        await loadPromotionData();
+      } else {
+        addNotification('error', result.message || 'Failed to award user');
+      }
+    } catch (error) {
+      console.error('Failed to award user reward:', error);
+      addNotification('error', 'Failed to award user reward');
+    }
+  }
     
     // Clear any existing errors when refreshing
     dashboardError = null;
@@ -498,6 +605,11 @@
     console.log('Loading analytics data for admin user');
     loadAnalytics();
   }
+  
+  $: if (activeTab === 'promotions' && authState.token && authState.user?.user_type === 'admin') {
+    console.log('Loading promotions data for admin user');
+    loadPromotionData();
+  }
 
   // Watch for search changes
   $: if (userSearch !== undefined && activeTab === 'users') {
@@ -556,7 +668,7 @@
   }
 
   // Notification functions
-  function addNotification(type: 'success' | 'error' | 'info', message: string) {
+  function addNotification(type: 'success' | 'error' | 'info' | 'warning', message: string) {
     const id = `notification-${++notificationId}`;
     notifications = [...notifications, { id, type, message, timestamp: new Date() }];
     
@@ -817,6 +929,7 @@
               {#if notification.type === 'success'}✅{/if}
               {#if notification.type === 'error'}❌{/if}
               {#if notification.type === 'info'}ℹ️{/if}
+              {#if notification.type === 'warning'}⚠️{/if}
             </span>
             <span class="notification-message">{notification.message}</span>
             <button class="notification-close" on:click={() => removeNotification(notification.id)}>&times;</button>
@@ -863,6 +976,9 @@
         </button>
         <button class="tab-button {activeTab === 'analytics' ? 'active' : ''}" on:click={() => activeTab = 'analytics'}>
           📈 Analytics
+        </button>
+        <button class="tab-button {activeTab === 'promotions' ? 'active' : ''}" on:click={() => activeTab = 'promotions'}>
+          🎁 Promotions
         </button>
       </div>
 
@@ -1336,6 +1452,109 @@
               <p>Analytics data is not available at the moment. Please try refreshing later.</p>
             </div>
           {/if}
+        </div>
+      {/if}
+
+      <!-- Promotions Tab -->
+      {#if activeTab === 'promotions'}
+        <div class="promotions-content">
+          <div class="promotions-header">
+            <h2>Review Reward Promotion</h2>
+            <button class="btn-refresh" on:click={refreshCurrentTab}>🔄 Refresh</button>
+          </div>
+          
+          <!-- Promotion Configuration -->
+          <div class="promotion-config">
+            <h3>Promotion Settings</h3>
+            <div class="config-grid">
+              <div class="config-item">
+                <label>Status:</label>
+                <div class="toggle-container">
+                  <button 
+                    class="toggle-button {promotionConfig.isActive ? 'active' : ''}" 
+                    on:click={togglePromotion}
+                  >
+                    {promotionConfig.isActive ? '🟢 Active' : '🔴 Inactive'}
+                  </button>
+                </div>
+              </div>
+              <div class="config-item">
+                <label>Max Rewards per User:</label>
+                <span class="config-value">{promotionConfig.maxRewardsPerUser}</span>
+              </div>
+              <div class="config-item">
+                <label>Reward (Months):</label>
+                <span class="config-value">{promotionConfig.rewardMonths}</span>
+              </div>
+            </div>
+            <p class="promotion-description">{promotionConfig.description}</p>
+          </div>
+
+          <!-- Promotion Statistics -->
+          <div class="promotion-stats">
+            <h3>Promotion Statistics</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <h4>Total Rewards Given</h4>
+                <div class="stat-number">{promotionStats.totalRewardsGiven}</div>
+              </div>
+              <div class="stat-card">
+                <h4>Active Users</h4>
+                <div class="stat-number">{promotionStats.activeUsers}</div>
+              </div>
+              <div class="stat-card">
+                <h4>Total Months Awarded</h4>
+                <div class="stat-number">{promotionStats.totalMonthsAwarded}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Rewards Table -->
+          <div class="user-rewards">
+            <h3>User Rewards</h3>
+            {#if userRewards.length > 0}
+              <div class="rewards-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Review</th>
+                      <th>Rewards Earned</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each userRewards as reward}
+                      <tr>
+                        <td>{reward.user_name || 'Unknown'}</td>
+                        <td>{reward.user_email || 'N/A'}</td>
+                        <td>{reward.review_id || 'N/A'}</td>
+                        <td>{reward.months_awarded || 0} month(s)</td>
+                        <td>{reward.awarded_at ? new Date(reward.awarded_at).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                          <button 
+                            class="btn-award" 
+                            on:click={() => awardUserReward(reward.user_id, reward.review_id)}
+                            disabled={!promotionConfig.isActive}
+                          >
+                            🎁 Award
+                          </button>
+                        </td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {:else}
+              <div class="empty-state">
+                <div class="empty-icon">🎁</div>
+                <h3>No Rewards Yet</h3>
+                <p>No users have earned rewards yet. The promotion will automatically award users when they submit reviews.</p>
+              </div>
+            {/if}
+          </div>
         </div>
       {/if}
     {/if}
