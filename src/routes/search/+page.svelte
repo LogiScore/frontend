@@ -574,24 +574,7 @@
         
 
         
-        <div style="margin-top: 20px; text-align: center;">
-          <button 
-            style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 0 10px;"
-            on:click={() => {
-              if (companiesForLocation.length === 1) {
-                selectCompany(companiesForLocation[0]);
-              } else if (companiesForLocation.length > 1) {
-                // Scroll to the companies grid above
-                const companiesGrid = document.querySelector('.companies-grid');
-                if (companiesGrid) {
-                  companiesGrid.scrollIntoView({ behavior: 'smooth' });
-                }
-              }
-            }}
-          >
-            {companiesForLocation.length === 1 ? 'View Company Details' : 'Select a Company'}
-          </button>
-        </div>
+
       </div>
     {/if}
     
