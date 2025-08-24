@@ -900,10 +900,7 @@
             <div class="form-group">
               <label for="branch">Branch Location *</label>
               
-              <!-- Special Characters Warning -->
-              <div class="special-chars-warning">
-                <strong>⚠️ International Locations:</strong> For locations with special characters (like "Sélibaby", "São Paulo", "München"), type them exactly as they appear. The search will work with or without special characters.
-              </div>
+
               
               <!-- Show existing branches if available -->
               {#if branches && branches.length > 0}
@@ -997,7 +994,7 @@
                 {/if}
               </div>
               
-              <p class="help-text">Select a specific branch location for your review. Service quality can vary significantly between different branches, so we require a specific location for accurate reviews.</p>
+
             </div>
 
           <!-- Review Options -->
@@ -1019,10 +1016,10 @@
             <h2>Tips for Accurate Reviews</h2>
             <div class="tips-container">
               <ul class="tips-list">
-                <li>Base your review on recent experiences (within 12 months)</li>
+                <li>Base your review on recent experiences (within 6 months)</li>
                 <li>Consider multiple interactions, not just one shipment</li>
                 <li>Always select the specific branch/location you're reviewing - service quality varies by location</li>
-                <li>For international locations, type special characters exactly as they appear (e.g., "Sélibaby", "São Paulo")</li>
+
                 <li>Focus on objective criteria rather than personal preferences</li>
                 <li>Consider both positive and negative aspects</li>
               </ul>
