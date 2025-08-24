@@ -204,7 +204,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">FAQ</span>
       </div>
-      <h1 class="page-title">Frequently Asked Questions</h1>
       <p class="page-description">Find comprehensive answers to all your questions about LogiScore</p>
     </div>
   </section>
