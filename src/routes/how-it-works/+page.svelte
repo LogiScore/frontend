@@ -239,7 +239,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     font-size: 0.9rem;
     color: #6c757d;
   }
