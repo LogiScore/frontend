@@ -29,13 +29,12 @@
         <div class="step-number">1</div>
         <div class="step-content">
           <h3>Search & Discover</h3>
-          <p>Find freight forwarders by name, location, or service type. Browse detailed company profiles and ratings from real customers.</p>
+          <p>Find freight forwarders by name or location. Browse detailed company profiles and ratings from real customers.</p>
           <div class="step-features">
             <ul>
               <li>Search by company name or location</li>
-              <li>Filter by rating and services</li>
               <li>View detailed company profiles</li>
-              <li>Compare multiple companies</li>
+              <li>Compare multiple companies side-by-side</li>
             </ul>
           </div>
         </div>
