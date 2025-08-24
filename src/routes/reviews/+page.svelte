@@ -158,18 +158,24 @@
 
   // Check if user can submit a review for this company/branch (6-month rule)
   async function checkReviewFrequency() {
+    console.log('🔍 checkReviewFrequency called with selectedCompany:', selectedCompany);
+    
     if (!selectedCompany || !authState.user) {
+      console.log('🔍 No company selected or no user, allowing submission');
       canSubmitReview = true;
       reviewFrequencyMessage = '';
       return;
     }
 
     try {
+      console.log('🔍 Checking review frequency for company:', selectedCompany);
       // Get user's previous reviews for this company
       const userReviews = await apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany);
+      console.log('🔍 Found user reviews:', userReviews.length);
       
       if (userReviews.length === 0) {
         // No previous reviews, can submit
+        console.log('🔍 No previous reviews, allowing submission');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
@@ -185,8 +191,13 @@
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+      console.log('🔍 Last review time:', lastReviewTime);
+      console.log('🔍 Six months ago:', sixMonthsAgo);
+      console.log('🔍 Can submit review:', lastReviewTime <= sixMonthsAgo);
+
       if (lastReviewTime > sixMonthsAgo) {
         // Last review was within 6 months
+        console.log('🔍 Review within 6 months, preventing submission');
         canSubmitReview = false;
         const timeRemaining = new Date(lastReviewTime.getTime() + (6 * 30 * 24 * 60 * 60 * 1000));
         const daysRemaining = Math.ceil((timeRemaining.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
@@ -194,10 +205,14 @@
         lastReviewDate = mostRecentReview.created_at;
       } else {
         // Last review was more than 6 months ago
+        console.log('🔍 Review older than 6 months, allowing submission');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = mostRecentReview.created_at;
       }
+      
+      console.log('🔍 Final result - canSubmitReview:', canSubmitReview);
+      console.log('🔍 Review frequency message:', reviewFrequencyMessage);
     } catch (err: any) {
       console.error('Failed to check review frequency:', err);
       // If we can't check, allow submission but log the error
@@ -931,7 +946,10 @@
             <h2>Company Information</h2>
             <div class="form-group">
               <label for="company">Company *</label>
-              <select id="company" bind:value={selectedCompany} required>
+              <select id="company" bind:value={selectedCompany} on:change={() => {
+                console.log('🏢 Company selection changed to:', selectedCompany);
+                console.log('🏢 canSubmitReview will be checked...');
+              }} required>
                 <option value="">Select a company</option>
                 {#each freightForwarders as company}
                   <option value={company.id}>{company.name}</option>
