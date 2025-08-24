@@ -308,7 +308,7 @@
     
     {#if canSearchByCountry}
       <button 
-        class="search-type-btn {searchType === 'country' ? 'active' : ''}"
+        class="search-type-btn company-btn {searchType === 'country' ? 'active' : ''}"
         on:click={() => {
           updateSearchType('country');
         }}
