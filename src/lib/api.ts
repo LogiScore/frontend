@@ -941,10 +941,11 @@ class ApiClient {
             text: 'Shipped as promised (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom (25%)',
-              '2': 'Often (50%)',
-              '3': 'Mostly (75%)',
-              '4': 'Always (100%)'
+              '1': 'Not applicable',
+              '2': 'Seldom',
+              '3': 'Usually',
+              '4': 'Most of the time',
+              '5': 'Every time'
             }
           },
           {
