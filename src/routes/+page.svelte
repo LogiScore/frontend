@@ -150,7 +150,7 @@
       <p>Join thousands of businesses making better logistics decisions with LogiScore</p>
       <div class="cta-actions">
         <a href="/search" class="btn btn-primary">Start Searching</a>
-        <a href="/how-it-works" class="btn btn-secondary">Learn How It Works</a>
+        <a href="/how-it-works" class="btn btn-primary">Learn How It Works</a>
       </div>
     </div>
   </section>
