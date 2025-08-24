@@ -364,20 +364,12 @@
               <!-- Locations Tab -->
               <section class="location-scores">
                 <h2>Location-Based Scores</h2>
-                <div class="debug-info">
-                  <p>Debug: isLoadingScores = {isLoadingScores}</p>
-                  <p>Debug: locationScores.length = {locationScores.length}</p>
-                  <p>Debug: locationScores data = {JSON.stringify(locationScores, null, 2)}</p>
-                  <p>Debug: User logged in = {isLoggedIn}</p>
-                  <p>Debug: User subscribed = {isSubscribed}</p>
-                  <p>Debug: User subscription tier = {user?.subscription_tier || 'none'}</p>
-                  <p>Debug: Auth token exists = {!!$auth?.token}</p>
-                  <p>Debug: Active tab = {activeTab}</p>
+                <div class="cta-section">
                   <button class="btn btn-secondary" on:click={() => loadDetailedScores()}>
                     🔄 Reload Scores
                   </button>
                   {#if locationScores.length > 0}
-                    <p class="info-note">ℹ️ Note: Location scores are currently using fallback data as the backend endpoints are not yet implemented.</p>
+                    <p class="info-note">✅ Location scores calculated from real review data using existing backend endpoints.</p>
                   {/if}
                 </div>
                 {#if isLoadingScores}
@@ -1121,29 +1113,19 @@
     font-style: italic;
   }
 
-  .debug-info {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 1rem;
+  .cta-section {
+    text-align: center;
     margin-bottom: 1rem;
-    font-family: monospace;
-    font-size: 0.9rem;
-    color: #495057;
-  }
-
-  .debug-info p {
-    margin: 0.25rem 0;
   }
   
   .info-note {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: #e8f5e8;
+    color: #2e7d32;
     padding: 0.5rem;
     border-radius: 4px;
     margin-top: 0.5rem;
     font-style: italic;
-    border-left: 3px solid #1976d2;
+    border-left: 3px solid #2e7d32;
   }
 
   /* Subscription Prompt */
