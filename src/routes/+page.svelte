@@ -174,8 +174,8 @@
 
   /* Hero Section */
   .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: black;
     padding: 80px 0;
     text-align: center;
   }
@@ -184,12 +184,13 @@
     font-size: 3.5rem;
     margin-bottom: 1rem;
     font-weight: 700;
+    color: black;
   }
 
   .hero-subtitle {
     font-size: 1.3rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
+    color: black;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
