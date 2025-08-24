@@ -395,25 +395,47 @@ class ApiClient {
       console.log('🔄 Fetching reviews to calculate location scores for freight forwarder:', freightForwarderId);
       
       // Fetch all reviews for this freight forwarder
-      const reviews = await this.request<Array<{
-        id: string;
-        freight_forwarder_id: string;
-        location_id: string;
-        city: string;
-        country: string;
-        aggregate_rating: number;
-        weighted_rating: number;
-        review_weight: number;
-        created_at: string;
-      }>>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`, {
+      const reviewsResponse = await this.request<{
+        reviews?: Array<{
+          id: string;
+          freight_forwarder_id: string;
+          location_id: string;
+          city: string;
+          country: string;
+          aggregate_rating: number;
+          weighted_rating: number;
+          review_weight: number;
+          created_at: string;
+        }>;
+        total_count?: number;
+        page?: number;
+        page_size?: number;
+        total_pages?: number;
+        filters?: any;
+      }>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
       
-      console.log('📊 Reviews fetched for location scores:', reviews.length);
+      console.log('📊 Reviews response received:', reviewsResponse);
       
-      if (!reviews || reviews.length === 0) {
+      // Extract reviews array from response
+      const reviews = reviewsResponse.reviews || reviewsResponse as any;
+      
+      console.log('🔍 Reviews response type:', typeof reviews);
+      console.log('🔍 Reviews response keys:', Object.keys(reviewsResponse));
+      console.log('🔍 Reviews array check:', Array.isArray(reviews));
+      
+      if (!Array.isArray(reviews)) {
+        console.error('❌ Reviews response is not an array:', reviews);
+        console.error('❌ Reviews response structure:', reviewsResponse);
+        return [];
+      }
+      
+      console.log('📊 Reviews array extracted:', reviews.length);
+      
+      if (reviews.length === 0) {
         console.log('📭 No reviews found for this freight forwarder');
         return [];
       }
@@ -473,69 +495,49 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      console.log('🔄 Attempting to fetch country scores from backend...');
+      console.log('🔄 Calculating country scores from reviews for freight forwarder:', freightForwarderId);
       
-      // Try the backend endpoint first
-      const response = await this.request<Array<{
-        country: string;
-        aggregate_score: number;
-        review_count: number;
-        location_count: number;
-        category_scores: Array<{
-          category_name: string;
-          average_score: number;
-          review_count: number;
-        }>;
-      }>>(`/api/freight-forwarders/${freightForwarderId}/country-scores`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      // Get location scores first, then aggregate by country
+      const locationScores = await this.getFreightForwarderLocationScores(freightForwarderId, token);
+      
+      if (!locationScores || locationScores.length === 0) {
+        console.log('📭 No location scores available for country aggregation');
+        return [];
+      }
+      
+      // Group location scores by country
+      const countryGroups = new Map<string, Array<typeof locationScores[0]>>();
+      
+      locationScores.forEach(location => {
+        if (location.country) {
+          if (!countryGroups.has(location.country)) {
+            countryGroups.set(location.country, []);
+          }
+          countryGroups.get(location.country)!.push(location);
+        }
       });
       
-      console.log('✅ Backend country scores received:', response);
-      return response;
+      // Calculate country scores from location scores
+      const countryScores = Array.from(countryGroups.entries()).map(([country, locations]) => {
+        const totalScore = locations.reduce((sum, location) => sum + location.aggregate_score, 0);
+        const averageScore = totalScore / locations.length;
+        const totalReviews = locations.reduce((sum, location) => sum + location.review_count, 0);
+        
+        return {
+          country: country,
+          aggregate_score: Math.round(averageScore * 10) / 10, // Round to 1 decimal place
+          review_count: totalReviews,
+          location_count: locations.length,
+          category_scores: [] // Simplified - no category breakdown for now
+        };
+      });
+      
+      console.log('✅ Country scores calculated:', countryScores);
+      return countryScores;
+      
     } catch (error: any) {
-      console.warn('⚠️ Backend country scores endpoint not available, using fallback data:', error.message);
-      
-      // Fallback: Generate mock country scores
-      const fallbackCountries = [
-        {
-          country: 'United States',
-          aggregate_score: 4.2,
-          review_count: 25,
-          location_count: 3,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.3, review_count: 25 },
-            { category_name: 'Reliability', average_score: 4.1, review_count: 25 },
-            { category_name: 'Pricing', average_score: 4.0, review_count: 25 }
-          ]
-        },
-        {
-          country: 'Germany',
-          aggregate_score: 4.4,
-          review_count: 18,
-          location_count: 2,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.5, review_count: 18 },
-            { category_name: 'Reliability', average_score: 4.3, review_count: 18 },
-            { category_name: 'Pricing', average_score: 4.4, review_count: 18 }
-          ]
-        },
-        {
-          country: 'Singapore',
-          aggregate_score: 4.1,
-          review_count: 12,
-          location_count: 1,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.2, review_count: 12 },
-            { category_name: 'Reliability', average_score: 4.0, review_count: 12 },
-            { category_name: 'Pricing', average_score: 4.1, review_count: 12 }
-          ]
-        }
-      ];
-      
-      console.log('🔄 Using fallback country scores:', fallbackCountries);
-      return fallbackCountries;
+      console.error('❌ Failed to calculate country scores from reviews:', error);
+      return [];
     }
   }
 
