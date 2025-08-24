@@ -21,7 +21,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Community Guidelines</span>
       </div>
-      <h1 class="page-title">Community Guidelines</h1>
       <p class="page-description">Building a transparent, trusted community for shippers</p>
     </div>
   </section>
