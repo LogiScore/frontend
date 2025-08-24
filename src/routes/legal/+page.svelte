@@ -32,7 +32,7 @@
     <section class="faq-section">
       <h2>3. How does LogiScore verify reviews?</h2>
       <ul>
-        <li>Shippers may be required to provide <strong>proof of shipment</strong> (e.g., AWB, Bill of Lading).</li>
+        <li>Shippers may be required to provide <strong>proof of shipment</strong> (e.g. Shipment number, Shipment ID, Job no. etc).</li>
         <li>Verification is required <strong>once per forwarder per subscription period</strong>.</li>
         <li>Sensitive data is anonymized and never shared with forwarders.</li>
         <li>Verified shippers receive a <strong>"Verified Shipper" badge</strong>.</li>
