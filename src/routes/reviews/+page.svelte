@@ -1116,9 +1116,9 @@
 
 <style>
   .container {
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 2rem;
   }
 
   /* Page Header */
@@ -1127,6 +1127,12 @@
     border-bottom: 1px solid #e9ecef;
     padding: 40px 0;
     margin-bottom: 0;
+  }
+
+  .page-header .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
   }
 
   .breadcrumb {
