@@ -734,7 +734,7 @@
 
   .search-type-selection {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 1rem;
     margin-bottom: 2rem;
   }
@@ -743,7 +743,7 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .search-input {
@@ -788,11 +788,11 @@
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    text-align: center;
+    text-align: left;
   }
 
   .loading {
-    text-align: center;
+    text-align: left;
     padding: 2rem;
   }
 
@@ -892,7 +892,7 @@
 
   .companies-list {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
