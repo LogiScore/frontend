@@ -360,11 +360,13 @@
     border-bottom: 1px solid #e9ecef;
     padding: 40px 0;
     margin-bottom: 0;
+    text-align: center;
   }
 
   .breadcrumb {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin-bottom: 16px;
     font-size: 0.9rem;
@@ -400,7 +402,7 @@
   .page-description {
     font-size: 1.1rem;
     color: #6c757d;
-    margin: 0;
+    margin: 0 auto;
     max-width: 600px;
   }
 

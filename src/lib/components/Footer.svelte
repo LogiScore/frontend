@@ -11,7 +11,6 @@
           <li><a href="/about">About</a></li>
           <li><a href="/contact">Contact</a></li>
           <li><a href="/how-it-works">How It Works</a></li>
-          <li><a href="/pricing">Pricing</a></li>
         </ul>
       </div>
       
@@ -23,14 +22,6 @@
           <li><a href="/reviews">Browse Reviews</a></li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/faq">FAQ</a></li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>Support</h3>
-        <ul>
-          <li><a href="/faq">Help Center</a></li>
-          <li><a href="/contact">Contact Support</a></li>
         </ul>
       </div>
       
