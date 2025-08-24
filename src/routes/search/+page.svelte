@@ -285,7 +285,6 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Search</span>
       </div>
-      <h1 class="page-title">Search Freight Forwarders</h1>
       <p class="page-description">Find and compare logistics companies by name or location</p>
     </div>
   </section>
