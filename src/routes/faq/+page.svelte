@@ -354,6 +354,12 @@
 </main>
 
 <style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
   /* Page Header */
   .page-header {
     background: white;
