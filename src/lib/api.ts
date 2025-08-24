@@ -392,77 +392,68 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      console.log('🔄 Attempting to fetch location scores from backend...');
+      console.log('🔄 Fetching reviews to calculate location scores for freight forwarder:', freightForwarderId);
       
-      // Try the backend endpoint first
-      const response = await this.request<Array<{
+      // Fetch all reviews for this freight forwarder
+      const reviews = await this.request<Array<{
+        id: string;
+        freight_forwarder_id: string;
         location_id: string;
-        location_name: string;
+        city: string;
         country: string;
-        city?: string;
-        aggregate_score: number;
-        review_count: number;
-        category_scores: Array<{
-          category_name: string;
-          average_score: number;
-          review_count: number;
-        }>;
-      }>>(`/api/freight-forwarders/${freightForwarderId}/location-scores`, {
+        aggregate_rating: number;
+        weighted_rating: number;
+        review_weight: number;
+        created_at: string;
+      }>>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
       
-      console.log('✅ Backend location scores received:', response);
-      return response;
-    } catch (error: any) {
-      console.warn('⚠️ Backend location scores endpoint not available, using fallback data:', error.message);
+      console.log('📊 Reviews fetched for location scores:', reviews.length);
       
-      // Fallback: Generate mock location scores based on common locations
-      const fallbackLocations = [
-        {
-          location_id: 'main-office',
-          location_name: 'Main Office',
-          country: 'United States',
-          city: 'New York',
-          aggregate_score: 4.2,
-          review_count: 15,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.3, review_count: 15 },
-            { category_name: 'Reliability', average_score: 4.1, review_count: 15 },
-            { category_name: 'Pricing', average_score: 4.0, review_count: 15 }
-          ]
-        },
-        {
-          location_id: 'europe-hub',
-          location_name: 'European Hub',
-          country: 'Germany',
-          city: 'Hamburg',
-          aggregate_score: 4.4,
-          review_count: 12,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.5, review_count: 12 },
-            { category_name: 'Reliability', average_score: 4.3, review_count: 12 },
-            { category_name: 'Pricing', average_score: 4.4, review_count: 12 }
-          ]
-        },
-        {
-          location_id: 'asia-pacific',
-          location_name: 'Asia Pacific Office',
-          country: 'Singapore',
-          city: 'Singapore',
-          aggregate_score: 4.1,
-          review_count: 8,
-          category_scores: [
-            { category_name: 'Service Quality', average_score: 4.2, review_count: 8 },
-            { category_name: 'Reliability', average_score: 4.0, review_count: 8 },
-            { category_name: 'Pricing', average_score: 4.1, review_count: 8 }
-          ]
+      if (!reviews || reviews.length === 0) {
+        console.log('📭 No reviews found for this freight forwarder');
+        return [];
+      }
+      
+      // Group reviews by location (city + country combination)
+      const locationGroups = new Map<string, Array<typeof reviews[0]>>();
+      
+      reviews.forEach(review => {
+        if (review.city && review.country) {
+          const locationKey = `${review.city}-${review.country}`;
+          if (!locationGroups.has(locationKey)) {
+            locationGroups.set(locationKey, []);
+          }
+          locationGroups.get(locationKey)!.push(review);
         }
-      ];
+      });
       
-      console.log('🔄 Using fallback location scores:', fallbackLocations);
-      return fallbackLocations;
+      // Calculate scores for each location
+      const locationScores = Array.from(locationGroups.entries()).map(([locationKey, locationReviews]) => {
+        const [city, country] = locationKey.split('-');
+        const totalRating = locationReviews.reduce((sum, review) => sum + review.weighted_rating, 0);
+        const averageScore = totalRating / locationReviews.length;
+        
+        return {
+          location_id: locationKey,
+          location_name: city,
+          country: country,
+          city: city,
+          aggregate_score: Math.round(averageScore * 10) / 10, // Round to 1 decimal place
+          review_count: locationReviews.length,
+          category_scores: [] // Simplified - no category breakdown for now
+        };
+      });
+      
+      console.log('✅ Location scores calculated:', locationScores);
+      return locationScores;
+      
+    } catch (error: any) {
+      console.error('❌ Failed to calculate location scores from reviews:', error);
+      return [];
     }
   }
 
