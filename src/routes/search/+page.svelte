@@ -306,18 +306,17 @@
       Search by Company
     </button>
     
-    <button 
-      class="search-type-btn {searchType === 'country' ? 'active' : ''} {!canSearchByCountry ? 'disabled' : ''}"
-      on:click={() => {
-        updateSearchType('country');
-      }}
-      title="Search for companies by country"
-    >
-      Search by Country
-      {#if !canSearchByCountry}
-        <span class="premium-badge">🔒 Premium</span>
-      {/if}
-    </button>
+    {#if canSearchByCountry}
+      <button 
+        class="search-type-btn {searchType === 'country' ? 'active' : ''}"
+        on:click={() => {
+          updateSearchType('country');
+        }}
+        title="Search for companies by country"
+      >
+        Search by Country
+      </button>
+    {/if}
     
   </div>
 
@@ -762,7 +761,7 @@
 
   .search-btn {
     padding: 12px 24px;
-    background: #ff6b35;
+    background: #6c757d;
     color: white;
     border: none;
     border-radius: 6px;
@@ -773,7 +772,7 @@
   }
 
   .search-btn:hover:not(:disabled) {
-    background: #e55a2b;
+    background: #5a6268;
     transform: translateY(-2px);
   }
 
