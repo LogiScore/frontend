@@ -302,11 +302,6 @@
               <!-- Locations Tab -->
               <section class="location-scores">
                 <h2>Location-Based Scores</h2>
-                <div class="cta-section">
-                  <button class="btn btn-secondary" on:click={() => loadDetailedScores()}>
-                    🔄 Reload Scores
-                  </button>
-                </div>
                 {#if isLoadingScores}
                   <div class="loading-scores">Loading location scores...</div>
                 {:else if locationScores && locationScores.length > 0}
