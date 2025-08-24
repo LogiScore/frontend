@@ -54,6 +54,23 @@
       console.log('Received freight forwarder details:', details);
       freightForwarder = details;
       
+      // Convert category_scores_summary to category_scores format for compatibility
+      if ((freightForwarder as any).category_scores_summary) {
+        freightForwarder.category_scores = Object.entries((freightForwarder as any).category_scores_summary).map(([categoryId, categoryData]: [string, any]) => {
+          const score = parseFloat(categoryData.average_rating) || 0;
+          const count = parseInt(categoryData.total_reviews) || 0;
+          console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Review count: ${count}`);
+          return {
+            category_name: categoryId,
+            average_score: score,
+            review_count: count
+          };
+        });
+        console.log('Final category_scores for', freightForwarder.name, ':', freightForwarder.category_scores);
+      } else {
+        freightForwarder.category_scores = [];
+      }
+      
       // If user is subscribed, fetch location and country scores
       if (isSubscribed && $auth?.token) {
         await loadDetailedScores();
