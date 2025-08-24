@@ -17,7 +17,6 @@
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-item active">How It Works</span>
     </div>
-    <h1 class="page-title">How LogiScore Works</h1>
     <p class="page-description">A simple 3-step process to find the perfect freight forwarder for your business</p>
   </div>
 </section>
