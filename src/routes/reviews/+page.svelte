@@ -928,14 +928,7 @@
                 </div>
               {/if}
               
-              <!-- Branch Selection Status -->
-              {#if selectedBranch && selectedBranchDisplay}
-                <div class="branch-status existing">
-                  <span class="status-icon">✅</span>
-                  <strong>Location Selected:</strong> {selectedBranchDisplay}
-                  <br><small>Using existing location from database (ID: {selectedBranch})</small>
-                </div>
-              {/if}
+
               
               <!-- Create new branch section -->
               <div class="new-branch-section">
@@ -1903,21 +1896,7 @@
     gap: 0.5rem;
   }
 
-  .branch-status.temporary {
-    background: #fff3cd;
-    border-color: #ffeeba;
-    color: #856404;
-  }
 
-  .branch-status.existing {
-    background: #e8f5e9;
-    border-color: #a5d6a7;
-    color: #2e7d32;
-  }
-
-  .status-icon {
-    font-size: 1.1rem;
-  }
 
   /* Success View Styles */
   .success-view {
