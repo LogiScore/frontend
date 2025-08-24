@@ -281,7 +281,7 @@
   <section class="page-header">
     <div class="container">
       <div class="breadcrumb">
-        <span class="breadcrumb-item">Home</span>
+        <a href="/" class="breadcrumb-item">Home</a>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Search</span>
       </div>
@@ -633,6 +633,16 @@
   .breadcrumb-item.active {
     color: #667eea;
     font-weight: 600;
+  }
+
+  .breadcrumb-item {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item:hover {
+    color: #667eea;
   }
 
   .page-title {
