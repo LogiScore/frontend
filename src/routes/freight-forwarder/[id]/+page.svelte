@@ -20,6 +20,18 @@
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
   
+  // Reactive statement to load detailed scores when auth state changes
+  $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
+    console.log('🚀 Reactive trigger: Loading detailed scores...', {
+      hasFreightForwarder: !!freightForwarder,
+      isSubscribed,
+      hasToken: !!$auth?.token,
+      isLoadingScores,
+      locationScoresLength: locationScores.length
+    });
+    loadDetailedScores();
+  }
+  
   function openAuthModal(mode: 'signin' | 'signup') {
     authModalMode = mode;
     showAuthModal = true;
@@ -72,8 +84,17 @@
       }
       
       // If user is subscribed, fetch location and country scores
+      console.log('🔍 onMount: Checking if should load detailed scores:', {
+        isSubscribed,
+        hasToken: !!$auth?.token,
+        user: $auth?.user
+      });
+      
       if (isSubscribed && $auth?.token) {
+        console.log('✅ onMount: Loading detailed scores immediately');
         await loadDetailedScores();
+      } else {
+        console.log('⏳ onMount: Not loading detailed scores yet, waiting for auth state...');
       }
     } catch (err: any) {
       console.error('Error loading freight forwarder:', err);
@@ -93,30 +114,38 @@
   });
   
   async function loadDetailedScores() {
+    console.log('🔍 loadDetailedScores called with:', {
+      freightForwarderId,
+      hasToken: !!$auth?.token,
+      token: $auth?.token ? `${$auth.token.substring(0, 20)}...` : 'none',
+      isSubscribed,
+      user: $auth?.user
+    });
+    
     if (!freightForwarderId || !$auth?.token) {
-      console.log('Cannot load detailed scores: missing ID or token');
+      console.log('❌ Cannot load detailed scores: missing ID or token');
       return;
     }
     
     try {
       isLoadingScores = true;
-      console.log('Loading detailed scores for freight forwarder:', freightForwarderId);
+      console.log('🔄 Loading detailed scores for freight forwarder:', freightForwarderId);
       
       const [locationData, countryData] = await Promise.all([
         apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token),
         apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token)
       ]);
       
-      console.log('Location scores received:', locationData);
-      console.log('Country scores received:', countryData);
+      console.log('✅ Location scores received:', locationData);
+      console.log('✅ Country scores received:', countryData);
       
       locationScores = locationData || [];
       countryScores = countryData || [];
       
-      console.log('Updated locationScores:', locationScores);
-      console.log('Updated countryScores:', countryScores);
+      console.log('📊 Updated locationScores:', locationScores);
+      console.log('📊 Updated countryScores:', countryScores);
     } catch (err: any) {
-      console.error('Failed to load detailed scores:', err);
+      console.error('❌ Failed to load detailed scores:', err);
       console.error('Error details:', {
         message: err.message,
         status: err.status,
@@ -124,6 +153,7 @@
       });
     } finally {
       isLoadingScores = false;
+      console.log('🏁 loadDetailedScores completed, isLoadingScores set to false');
     }
   }
   
@@ -311,6 +341,14 @@
                   <p>Debug: isLoadingScores = {isLoadingScores}</p>
                   <p>Debug: locationScores.length = {locationScores.length}</p>
                   <p>Debug: locationScores data = {JSON.stringify(locationScores, null, 2)}</p>
+                  <p>Debug: User logged in = {isLoggedIn}</p>
+                  <p>Debug: User subscribed = {isSubscribed}</p>
+                  <p>Debug: User subscription tier = {user?.subscription_tier || 'none'}</p>
+                  <p>Debug: Auth token exists = {!!$auth?.token}</p>
+                  <p>Debug: Active tab = {activeTab}</p>
+                  <button class="btn btn-secondary" on:click={() => loadDetailedScores()}>
+                    🔄 Reload Scores
+                  </button>
                 </div>
                 {#if isLoadingScores}
                   <div class="loading-scores">Loading location scores...</div>
