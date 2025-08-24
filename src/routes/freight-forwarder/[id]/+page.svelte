@@ -227,6 +227,78 @@
         </div>
       </section>
 
+      <!-- Quick Score Overview Section -->
+      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
+        <section class="quick-score-overview">
+          <h2>Performance Overview</h2>
+          <div class="overview-grid">
+            <!-- Overview Ratings -->
+            <div class="overview-section">
+              <h3>Overall Ratings</h3>
+              {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
+                <div class="scores-summary">
+                  {#each freightForwarder.category_scores.slice(0, 3) as score}
+                    <div class="score-summary-item">
+                      <span class="category-name">{score.category_name}</span>
+                      <span class="score-value">{score.average_score.toFixed(1)}/5.0</span>
+                    </div>
+                  {/each}
+                  {#if freightForwarder.category_scores.length > 3}
+                    <div class="more-scores">+{freightForwarder.category_scores.length - 3} more categories</div>
+                  {/if}
+                </div>
+              {:else}
+                <p class="no-scores">No category scores available yet.</p>
+              {/if}
+            </div>
+
+            <!-- Country Scores Summary -->
+            <div class="overview-section">
+              <h3>Country Performance</h3>
+              {#if isLoadingScores}
+                <div class="loading-scores">Loading...</div>
+              {:else if countryScores.length > 0}
+                <div class="scores-summary">
+                  {#each countryScores.slice(0, 3) as country}
+                    <div class="score-summary-item">
+                      <span class="country-name">🇺🇳 {country.country}</span>
+                      <span class="score-value">{country.aggregate_score.toFixed(1)}/5.0</span>
+                    </div>
+                  {/each}
+                  {#if countryScores.length > 3}
+                    <div class="more-scores">+{countryScores.length - 3} more countries</div>
+                  {/if}
+                </div>
+              {:else}
+                <p class="no-scores">No country scores available yet.</p>
+              {/if}
+            </div>
+
+            <!-- Location Scores Summary -->
+            <div class="overview-section">
+              <h3>Location Performance</h3>
+              {#if isLoadingScores}
+                <div class="loading-scores">Loading...</div>
+              {:else if locationScores.length > 0}
+                <div class="scores-summary">
+                  {#each locationScores.slice(0, 3) as location}
+                    <div class="score-summary-item">
+                      <span class="location-name">📍 {location.location_name}</span>
+                      <span class="score-value">{location.aggregate_score.toFixed(1)}/5.0</span>
+                    </div>
+                  {/each}
+                  {#if locationScores.length > 3}
+                    <div class="more-scores">+{locationScores.length - 3} more locations</div>
+                  {/if}
+                </div>
+              {:else}
+                <p class="no-scores">No location scores available yet.</p>
+              {/if}
+            </div>
+          </div>
+        </section>
+      {/if}
+
       <!-- Tabbed Navigation for Detailed Scores -->
       {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
         <section class="scores-tabs">
@@ -1111,6 +1183,80 @@
     font-style: italic;
   }
 
+  /* Quick Score Overview */
+  .quick-score-overview {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .quick-score-overview h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .overview-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .overview-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .scores-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .score-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .category-name,
+  .country-name,
+  .location-name {
+    color: #333;
+    font-weight: 500;
+  }
+
+  .score-value {
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  .more-scores {
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+    font-style: italic;
+    padding: 0.5rem;
+    background: #e9ecef;
+    border-radius: 4px;
+  }
+
   /* Responsive Design */
   @media (max-width: 768px) {
     .company-header {
@@ -1148,6 +1294,10 @@
 
     .container {
       padding: 1rem;
+    }
+
+    .overview-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
