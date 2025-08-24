@@ -81,7 +81,7 @@
 <section class="rating-system">
   <div class="container">
     <h2>Our Rating System</h2>
-    <p class="section-subtitle">We use a comprehensive 7-category rating system to provide detailed insights</p>
+    <p class="section-subtitle">We use a comprehensive 8-category rating system to provide detailed insights</p>
     
     <div class="categories-grid">
       <div class="category">
@@ -125,6 +125,12 @@
         <h4>Proactivity & Insight</h4>
         <p>Market intelligence and advice</p>
       </div>
+      
+      <div class="category">
+        <div class="category-icon">🕐</div>
+        <h4>After-Hours Support</h4>
+        <p>24/7 availability and emergency assistance</p>
+      </div>
     </div>
   </div>
 </section>
@@ -137,7 +143,7 @@
       <div class="process-card">
         <div class="card-icon">✍️</div>
         <h3>Write Your Review</h3>
-        <p>Share your experience with a freight forwarder. Rate them across 7 categories and provide detailed feedback.</p>
+        <p>Share your experience with a freight forwarder. Rate them across 8 categories and provide detailed feedback.</p>
       </div>
       
       <div class="process-card">
