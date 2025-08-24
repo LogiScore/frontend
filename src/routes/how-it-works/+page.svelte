@@ -9,15 +9,16 @@
 
 
 
-<!-- Hero Section -->
-<section class="hero">
+<!-- Modern Page Header -->
+<section class="page-header">
   <div class="container">
-    <div class="hero-content">
-      <h1 class="hero-title">How LogiScore Works</h1>
-      <p class="hero-subtitle">
-        A simple 3-step process to find the perfect freight forwarder for your business
-      </p>
+    <div class="breadcrumb">
+      <a href="/" class="breadcrumb-item">Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-item active">How It Works</span>
     </div>
+    <h1 class="page-title">How LogiScore Works</h1>
+    <p class="page-description">A simple 3-step process to find the perfect freight forwarder for your business</p>
   </div>
 </section>
 
@@ -226,26 +227,54 @@
 
 
 
-  /* Hero Section */
-  .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 100px 0;
-    text-align: center;
+  /* Page Header */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 40px 0;
+    margin-bottom: 0;
   }
 
-  .hero-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin-bottom: 20px;
-    line-height: 1.2;
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #6c757d;
   }
 
-  .hero-subtitle {
-    font-size: 1.25rem;
+  .breadcrumb-separator {
+    color: #dee2e6;
+  }
+
+  .breadcrumb-item.active {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .breadcrumb-item {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item:hover {
+    color: #667eea;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
     max-width: 600px;
-    margin: 0 auto;
-    opacity: 0.9;
   }
 
   /* Process Steps */
@@ -513,8 +542,8 @@
       display: none;
     }
 
-    .hero-title {
-      font-size: 2.5rem;
+    .page-title {
+      font-size: 2rem;
     }
 
     .step {
