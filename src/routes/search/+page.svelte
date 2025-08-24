@@ -515,7 +515,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each ['responsiveness', 'shipment_management', 'documentation', 'customer_experience', 'technology_process', 'reliability_execution', 'compliance_security'] as category}
+              {#each ['responsiveness', 'shipment_management', 'documentation', 'customer_experience', 'technology_process', 'reliability_execution', 'proactivity_insight', 'after_hours_support'] as category}
                 <tr style="border-bottom: 1px solid #eee;">
                   <td style="padding: 12px; font-weight: 600; color: #555; background: #fafafa;">{getCategoryName(category)}</td>
                   {#each companiesForLocation as company}
