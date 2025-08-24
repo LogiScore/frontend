@@ -778,10 +778,16 @@
 </svelte:head>
 
 <main>
-  <section class="hero">
+  <!-- Modern Page Header -->
+  <section class="page-header">
     <div class="container">
-      <h1>Submit Your Review</h1>
-      <p class="hero-subtitle">Share your experience to help others make informed decisions</p>
+      <div class="breadcrumb">
+        <a href="/" class="breadcrumb-item">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Submit Review</span>
+      </div>
+      <h1 class="page-title">Submit Your Review</h1>
+      <p class="page-description">Share your experience to help others make informed decisions</p>
     </div>
   </section>
 
@@ -1115,21 +1121,54 @@
     padding: 2rem;
   }
 
-  .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 4rem 0;
-    text-align: center;
+  /* Page Header */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 40px 0;
+    margin-bottom: 0;
   }
 
-  .hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #6c757d;
   }
 
-  .hero-subtitle {
-    font-size: 1.2rem;
-    opacity: 0.9;
+  .breadcrumb-separator {
+    color: #dee2e6;
+  }
+
+  .breadcrumb-item.active {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .breadcrumb-item {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item:hover {
+    color: #667eea;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
+    max-width: 600px;
   }
 
   .review-form {
@@ -1791,7 +1830,7 @@
       padding: 1rem;
     }
     
-    .hero h1 {
+    .page-title {
       font-size: 2rem;
     }
     

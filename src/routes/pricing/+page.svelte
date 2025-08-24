@@ -57,25 +57,28 @@
   <meta name="description" content="Choose the perfect LogiScore plan for your business. Free and subscription plans available for shippers and freight forwarders." />
 </svelte:head>
 
-<!-- Hero Section -->
-<section class="hero">
+<!-- Modern Page Header -->
+<section class="page-header">
   <div class="container">
-    <div class="hero-content">
-      <h1 class="hero-title">
-        {#if authState.user}
-          {userType === 'shipper' ? 'Shipper' : 'Freight Forwarder'} Pricing Plans
-        {:else}
-          Simple, Transparent Pricing
-        {/if}
-      </h1>
-      <p class="hero-subtitle">
-        {#if authState.user}
-          Choose the perfect plan for your {userType === 'shipper' ? 'shipping' : 'freight forwarding'} business.
-        {:else}
-          Choose the plan that's right for your business. No hidden fees, no surprises.
-        {/if}
-      </p>
+    <div class="breadcrumb">
+      <a href="/" class="breadcrumb-item">Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-item active">Pricing</span>
     </div>
+    <h1 class="page-title">
+      {#if authState.user}
+        {userType === 'shipper' ? 'Shipper' : 'Freight Forwarder'} Pricing Plans
+      {:else}
+        Simple, Transparent Pricing
+      {/if}
+    </h1>
+    <p class="page-description">
+      {#if authState.user}
+        Choose the perfect plan for your {userType === 'shipper' ? 'shipping' : 'freight forwarding'} business.
+      {:else}
+        Choose the plan that's right for your business. No hidden fees, no surprises.
+      {/if}
+    </p>
   </div>
 </section>
 
@@ -305,26 +308,54 @@
 
 
 
-  /* Hero Section */
-  .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 100px 0;
-    text-align: center;
+  /* Page Header */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 40px 0;
+    margin-bottom: 0;
   }
 
-  .hero-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin-bottom: 20px;
-    line-height: 1.2;
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #6c757d;
   }
 
-  .hero-subtitle {
-    font-size: 1.25rem;
+  .breadcrumb-separator {
+    color: #dee2e6;
+  }
+
+  .breadcrumb-item.active {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .breadcrumb-item {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item:hover {
+    color: #667eea;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
     max-width: 600px;
-    margin: 0 auto;
-    opacity: 0.9;
   }
 
   /* Pricing Plans */
@@ -661,8 +692,8 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    .hero-title {
-      font-size: 2.5rem;
+    .page-title {
+      font-size: 2rem;
     }
 
     .plans-row {
