@@ -1096,11 +1096,7 @@
             </div>
           {/if}
           
-          {#if successMessage}
-            <div class="success-message">
-              {successMessage}
-            </div>
-          {/if}
+
         </form>
       {/if}
     </div>
@@ -1462,14 +1458,7 @@
     color: #721c24;
   }
   
-  .success-message {
-    background: #d4edda;
-    color: #155724;
-    padding: 1rem;
-    border-radius: 6px;
-    margin-top: 1rem;
-    border: 1px solid #c3e6cb;
-  }
+
 
   .loading {
     text-align: center;
