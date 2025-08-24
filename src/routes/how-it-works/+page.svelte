@@ -515,8 +515,8 @@
 
   /* CTA Section */
   .cta {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: black;
     padding: 80px 0;
     text-align: center;
   }
@@ -525,12 +525,13 @@
     font-size: 2.5rem;
     margin-bottom: 20px;
     font-weight: 700;
+    color: black;
   }
 
   .cta p {
     font-size: 1.2rem;
     margin-bottom: 40px;
-    opacity: 0.9;
+    color: black;
   }
 
   .cta-buttons {
