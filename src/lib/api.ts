@@ -355,14 +355,8 @@ class ApiClient {
     }
   }
 
-  async getBranchesByFreightForwarder(freightForwarderId: string): Promise<{ id: string; name: string; freight_forwarder_id: string; city?: string; country?: string }[]> {
-    try {
-      return await this.request<{ id: string; name: string; freight_forwarder_id: string; city?: string; country?: string }[]>(`/api/branches/?freight_forwarder_id=${freightForwarderId}`);
-    } catch (error: any) {
-      console.error('Failed to fetch branches for freight forwarder:', error);
-      return [];
-    }
-  }
+  // Note: getBranchesByFreightForwarder function removed - we use the reviews table instead
+  // to check for existing reviews and determine available locations
 
   async getLocations(): Promise<Location[]> {
     try {
@@ -612,7 +606,18 @@ class ApiClient {
 
   async getReviewsByFreightForwarder(freightForwarderId: string): Promise<ReviewResponse[]> {
     try {
-      return await this.request<ReviewResponse[]>(`/api/reviews/freight-forwarder/${freightForwarderId}`);
+      // Use the main reviews endpoint with freight_forwarder_id filter
+      const response = await this.request<{
+        reviews: ReviewResponse[];
+        total_count: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+        filters: { freight_forwarder_id?: string };
+      }>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
+      
+      console.log(`✅ Found ${response.reviews?.length || 0} reviews for freight forwarder: ${freightForwarderId}`);
+      return response.reviews || [];
     } catch (error: any) {
       console.error('Failed to fetch reviews for freight forwarder:', error);
       return [];
@@ -2389,12 +2394,19 @@ class ApiClient {
   // Get user's previous reviews for a specific company to check review frequency
   async getUserReviewsForCompany(userId: string, companyId: string): Promise<any[]> {
     try {
-      const url = `/api/reviews/user/${userId}/company/${companyId}`;
-      console.log(`🔍 Getting user reviews for company: ${companyId}`);
+      // Since the backend doesn't support user_id filtering, we get all reviews for the company
+      // and filter by user on the frontend. This is not ideal but works with current backend.
+      const url = `/api/reviews/?freight_forwarder_id=${companyId}`;
+      console.log(`🔍 Getting all reviews for company: ${companyId} to filter by user: ${userId}`);
       
-      const response = await this.request<any[]>(url);
-      console.log(`✅ Found ${response.length} previous reviews for user ${userId} and company ${companyId}`);
-      return response;
+      const response = await this.request<{reviews: any[], total_count: number}>(url);
+      const allCompanyReviews = response.reviews || [];
+      
+      // Filter reviews by user_id on the frontend
+      const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
+      
+      console.log(`✅ Found ${userReviews.length} previous reviews for user ${userId} and company ${companyId} out of ${allCompanyReviews.length} total company reviews`);
+      return userReviews;
     } catch (error: any) {
       console.error(`Failed to get user reviews for company: ${companyId}`, error);
       // Return empty array if API fails

@@ -125,9 +125,31 @@
   async function loadCompanyData(companyId: string) {
     try {
       const company = await apiClient.getFreightForwarder(companyId);
-      // Load existing branches for this company
-      branches = await apiClient.getBranchesByFreightForwarder(companyId);
-      console.log('Loaded branches for company:', branches);
+      // Since we don't use branches table, we'll get available locations from reviews
+      // This will show users what locations have been reviewed for this company
+      try {
+        const companyReviews = await apiClient.getReviewsByFreightForwarder(companyId);
+        // Extract unique locations from reviews
+        const locationMap = new Map();
+        companyReviews.forEach((review: any) => {
+          if (review.city && review.country) {
+            const locationKey = `${review.city}-${review.country}`;
+            if (!locationMap.has(locationKey)) {
+              locationMap.set(locationKey, {
+                id: review.location_id || locationKey,
+                name: `${review.city}, ${review.country}`,
+                city: review.city,
+                country: review.country
+              });
+            }
+          }
+        });
+        branches = Array.from(locationMap.values());
+        console.log('Loaded locations from reviews for company:', branches);
+      } catch (reviewErr) {
+        console.log('Could not load locations from reviews, using empty array');
+        branches = [];
+      }
     } catch (err: any) {
       console.error('Failed to load company data:', err);
       branches = [];
