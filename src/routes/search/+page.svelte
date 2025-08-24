@@ -611,7 +611,7 @@
 
   /* Page Header */
   .page-header {
-    background: #f8f9fa;
+    background: white;
     border-bottom: 1px solid #e9ecef;
     padding: 40px 0;
     margin-bottom: 0;
