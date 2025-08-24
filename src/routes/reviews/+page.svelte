@@ -630,9 +630,16 @@
       // Show success message
       alert('Review submitted successfully! A thank you email has been sent to your email address.');
       console.log('Review submitted:', response);
+      console.log('Review ID for email:', response.id);
       
       // Send thank you email
       try {
+        // Verify we have a valid review ID
+        if (!response.id) {
+          console.error('No review ID in response, cannot send email');
+          return;
+        }
+        
         // Get company and location names for the email
         const selectedCompanyData = freightForwarders.find(c => c.id === selectedCompany);
         const selectedLocationData = locations.find(l => l.id === selectedBranch);
@@ -653,6 +660,7 @@
         
         // Send thank you email
         await apiClient.sendReviewThankYouEmail(
+          response.id,
           authState.user?.email || 'user@example.com',
           authState.user?.full_name || authState.user?.username || 'User',
           selectedCompanyData?.name || 'Unknown Company',

@@ -1772,6 +1772,7 @@ class ApiClient {
   // ===== METHOD: sendReviewThankYouEmail =====
   // Send thank you email after review submission
   async sendReviewThankYouEmail(
+    reviewId: string,
     userEmail: string,
     userName: string,
     freightForwarderName: string,
@@ -1791,6 +1792,7 @@ class ApiClient {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          review_id: reviewId,
           user_email: userEmail,
           user_name: userName,
           freight_forwarder_name: freightForwarderName,
