@@ -93,19 +93,35 @@
   });
   
   async function loadDetailedScores() {
-    if (!freightForwarderId || !$auth?.token) return;
+    if (!freightForwarderId || !$auth?.token) {
+      console.log('Cannot load detailed scores: missing ID or token');
+      return;
+    }
     
     try {
       isLoadingScores = true;
+      console.log('Loading detailed scores for freight forwarder:', freightForwarderId);
+      
       const [locationData, countryData] = await Promise.all([
         apiClient.getFreightForwarderLocationScores(freightForwarderId, $auth.token),
         apiClient.getFreightForwarderCountryScores(freightForwarderId, $auth.token)
       ]);
       
-      locationScores = locationData;
-      countryScores = countryData;
+      console.log('Location scores received:', locationData);
+      console.log('Country scores received:', countryData);
+      
+      locationScores = locationData || [];
+      countryScores = countryData || [];
+      
+      console.log('Updated locationScores:', locationScores);
+      console.log('Updated countryScores:', countryScores);
     } catch (err: any) {
       console.error('Failed to load detailed scores:', err);
+      console.error('Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response
+      });
     } finally {
       isLoadingScores = false;
     }
@@ -119,10 +135,8 @@
     
     activeTab = tab;
     
-    // Load scores if switching to a tab that needs them and they haven't been loaded yet
-    if ((tab === 'locations' || tab === 'countries') && isSubscribed && $auth?.token && 
-        ((tab === 'locations' && locationScores.length === 0) || 
-         (tab === 'countries' && countryScores.length === 0))) {
+    // Always load scores when switching to locations or countries tabs for subscribed users
+    if ((tab === 'locations' || tab === 'countries') && isSubscribed && $auth?.token) {
       loadDetailedScores();
     }
   }
@@ -232,6 +246,13 @@
       <!-- Tabbed Navigation for Detailed Scores -->
       {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
         <section class="scores-tabs">
+          <div class="debug-info">
+            <p>Debug: User logged in = {isLoggedIn}</p>
+            <p>Debug: User subscribed = {isSubscribed}</p>
+            <p>Debug: User subscription tier = {user?.subscription_tier}</p>
+            <p>Debug: Auth token exists = {!!$auth?.token}</p>
+            <p>Debug: Active tab = {activeTab}</p>
+          </div>
           <div class="tab-navigation">
             <button 
               class="tab-button {activeTab === 'overview' ? 'active' : ''}" 
@@ -259,6 +280,9 @@
               <!-- Overview Tab - Show aggregate scores -->
               <section class="review-scores">
                 <h2>Review Category Scores</h2>
+                <div class="debug-info">
+                  <p>Debug: freightForwarder.category_scores = {JSON.stringify(freightForwarder.category_scores, null, 2)}</p>
+                </div>
                 {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
                   <div class="scores-grid">
                     {#each freightForwarder.category_scores as score}
@@ -283,9 +307,14 @@
               <!-- Locations Tab -->
               <section class="location-scores">
                 <h2>Location-Based Scores</h2>
+                <div class="debug-info">
+                  <p>Debug: isLoadingScores = {isLoadingScores}</p>
+                  <p>Debug: locationScores.length = {locationScores.length}</p>
+                  <p>Debug: locationScores data = {JSON.stringify(locationScores, null, 2)}</p>
+                </div>
                 {#if isLoadingScores}
                   <div class="loading-scores">Loading location scores...</div>
-                {:else if locationScores.length > 0}
+                {:else if locationScores && locationScores.length > 0}
                   <div class="location-scores-grid">
                     {#each locationScores as location}
                       <div class="location-score-card">
@@ -1022,6 +1051,21 @@
     padding: 2rem;
     color: #666;
     font-style: italic;
+  }
+
+  .debug-info {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: #495057;
+  }
+
+  .debug-info p {
+    margin: 0.25rem 0;
   }
 
   /* Subscription Prompt */
