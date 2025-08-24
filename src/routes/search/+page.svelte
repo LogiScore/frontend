@@ -373,11 +373,11 @@
       <!-- Company Search Results -->
       <div class="results-section">
         <h2>Companies Found ({searchResults.length})</h2>
-        <div class="companies-grid">
+        <div class="companies-list">
           {#each searchResults as company}
-            <div class="company-card">
+            <div class="company-item">
               <div class="company-info">
-                <h3>{company.name}</h3>
+                <h3><a href="/freight-forwarder/{company.id}" class="company-link">{company.name}</a></h3>
                 {#if company.headquarters_country}
                   <p class="company-location">📍 {company.headquarters_country}</p>
                 {/if}
@@ -390,9 +390,6 @@
                     <span class="rating-text">{company.average_rating.toFixed(1)}</span>
                   </div>
                 {/if}
-              </div>
-              <div class="company-actions">
-                <a href="/freight-forwarder/{company.id}" class="view-details-btn">View Details</a>
               </div>
             </div>
           {/each}
@@ -893,6 +890,24 @@
     gap: 1.5rem;
   }
 
+  .companies-list {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .company-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+  }
+
+  .company-item:hover {
+    background-color: #f8f9fa;
+  }
+
   .company-card {
     background: white;
     border: 1px solid #e0e0e0;
@@ -919,6 +934,17 @@
     color: #2c3e50;
     margin-bottom: 0.5rem;
     font-size: 1.3rem;
+  }
+
+  .company-link {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .company-link:hover {
+    color: #5a6fd8;
+    text-decoration: underline;
   }
 
   .company-location {
@@ -950,23 +976,7 @@
     font-weight: bold;
   }
 
-  .company-actions {
-    text-align: right;
-  }
 
-  .view-details-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #667eea;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background 0.3s ease;
-  }
-
-  .view-details-btn:hover {
-    background: #5a6fd8;
-  }
 
   .view-scores-btn {
     padding: 12px 24px;
