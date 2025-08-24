@@ -56,7 +56,7 @@
     <section class="guideline-section">
       <h2>3. Verification of Reviews</h2>
       <ul>
-        <li>To ensure authenticity, shippers may be required to provide <strong>proof of shipment</strong> (e.g., AWB, Bill of Lading, or equivalent).</li>
+        <li>To ensure authenticity, shippers may be required to provide <strong>proof of shipment</strong> (e.g. Shipment number, Shipment ID, Job no.).</li>
         <li>Verification is required <strong>once per forwarder per subscription period</strong>.</li>
         <li>Sensitive data (cargo details, consignee names, rates) is stripped and not shared with forwarders.</li>
         <li>Verified shippers receive a <strong>"Verified Shipper" badge</strong>.</li>
