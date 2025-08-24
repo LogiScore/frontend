@@ -65,13 +65,6 @@
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-item active">Pricing</span>
     </div>
-    <h1 class="page-title">
-      {#if authState.user}
-        {userType === 'shipper' ? 'Shipper' : 'Freight Forwarder'} Pricing Plans
-      {:else}
-        Simple, Transparent Pricing
-      {/if}
-    </h1>
     <p class="page-description">
       {#if authState.user}
         Choose the perfect plan for your {userType === 'shipper' ? 'shipping' : 'freight forwarding'} business.
