@@ -169,8 +169,18 @@
 
     try {
       console.log('🔍 Checking review frequency for company:', selectedCompany);
-      // Get user's previous reviews for this company
-      const userReviews = await apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany);
+      
+      // Add timeout to prevent API call from hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API timeout')), 5000)
+      );
+      
+      // Get user's previous reviews for this company with timeout
+      const userReviews = await Promise.race([
+        apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany),
+        timeoutPromise
+      ]) as any[];
+      
       console.log('🔍 Found user reviews:', userReviews.length);
       
       if (userReviews.length === 0) {
@@ -215,7 +225,29 @@
       console.log('🔍 Review frequency message:', reviewFrequencyMessage);
     } catch (err: any) {
       console.error('Failed to check review frequency:', err);
-      // If we can't check, allow submission but log the error
+      
+      // Check if it's a CORS error and handle it gracefully
+      if (err.message && (err.message.includes('Load failed') || err.message.includes('access control checks'))) {
+        console.log('🔍 CORS error detected, allowing submission and skipping review frequency check');
+        canSubmitReview = true;
+        reviewFrequencyMessage = '';
+        lastReviewDate = null;
+        
+        // Don't show error message to user for CORS issues
+        // Also, don't retry this check to avoid repeated CORS errors
+        return;
+      }
+      
+      // Check if it's a timeout error
+      if (err.message && err.message.includes('API timeout')) {
+        console.log('🔍 API timeout detected, allowing submission and skipping review frequency check');
+        canSubmitReview = true;
+        reviewFrequencyMessage = '';
+        lastReviewDate = null;
+        return;
+      }
+      
+      // For other errors, allow submission but log the error
       canSubmitReview = true;
       reviewFrequencyMessage = '';
     }
