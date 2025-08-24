@@ -496,7 +496,17 @@
               <tr style="background: #f5f5f5;">
                 <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd; font-weight: bold; color: #333; min-width: 200px;">Category</th>
                 {#each companiesForLocation as company}
-                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; font-weight: bold; color: #333; min-width: 150px;">{company.name}</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; font-weight: bold; color: #333; min-width: 150px;">
+                    <a 
+                      href="/freight-forwarder/{company.id}" 
+                      style="color: #333; text-decoration: none; cursor: pointer; transition: color 0.2s ease;"
+                      on:click|preventDefault={() => selectCompany(company)}
+                      on:mouseenter={(e) => e.currentTarget.style.color = '#667eea'}
+                      on:mouseleave={(e) => e.currentTarget.style.color = '#333'}
+                    >
+                      {company.name}
+                    </a>
+                  </th>
                 {/each}
               </tr>
             </thead>
@@ -566,16 +576,16 @@
         
         <div style="margin-top: 20px; text-align: center;">
           <button 
-            style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 0 10px;"
-            on:click={() => goBackToCities()}
-          >
-            ← Back to Cities
-          </button>
-          <button 
             style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 0 10px;"
             on:click={() => {
               if (companiesForLocation.length === 1) {
                 selectCompany(companiesForLocation[0]);
+              } else if (companiesForLocation.length > 1) {
+                // Scroll to the companies grid above
+                const companiesGrid = document.querySelector('.companies-grid');
+                if (companiesGrid) {
+                  companiesGrid.scrollIntoView({ behavior: 'smooth' });
+                }
               }
             }}
           >
