@@ -676,11 +676,11 @@
       selectedCompany = ''; // Reset company selection
       
       // Show brief success message before redirect
-      successMessage = `Review submitted successfully! Redirecting to freight forwarder page...`;
+      successMessage = `Review submitted successfully! Redirecting to browse reviews page...`;
       
-      // Redirect to freight-forwarder page after successful submission
+      // Redirect to search page to browse reviews after successful submission
       setTimeout(() => {
-        goto('/freight-forwarder');
+        goto('/search');
       }, 1500); // Give user 1.5 seconds to see the success message
       
     } catch (err: any) {
