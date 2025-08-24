@@ -734,7 +734,7 @@
 
   .search-type-selection {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 1rem;
     margin-bottom: 2rem;
   }
@@ -743,7 +743,7 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .search-input {
