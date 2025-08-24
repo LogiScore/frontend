@@ -376,6 +376,9 @@
                   <button class="btn btn-secondary" on:click={() => loadDetailedScores()}>
                     🔄 Reload Scores
                   </button>
+                  {#if locationScores.length > 0}
+                    <p class="info-note">ℹ️ Note: Location scores are currently using fallback data as the backend endpoints are not yet implemented.</p>
+                  {/if}
                 </div>
                 {#if isLoadingScores}
                   <div class="loading-scores">Loading location scores...</div>
@@ -1131,6 +1134,16 @@
 
   .debug-info p {
     margin: 0.25rem 0;
+  }
+  
+  .info-note {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-style: italic;
+    border-left: 3px solid #1976d2;
   }
 
   /* Subscription Prompt */
