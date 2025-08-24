@@ -11,7 +11,7 @@
   // UUIDs based on location identifiers to maintain consistency while meeting format requirements.
   
   let freightForwarders: any[] = [];
-  let branches: any[] = [];
+  // Removed branches array - we don't use the branches table
   let selectedCompany: string = '';
   let selectedBranch = '';
   let selectedBranchDisplay = '';
@@ -63,7 +63,7 @@
     // Clear previous branch selection when company changes
     selectedBranch = '';
     selectedBranchDisplay = '';
-    // Branches will be loaded in loadCompanyData
+    // Company data will be loaded in loadCompanyData
     // Check review frequency when company changes
     if (selectedCompany && authState.user) {
       checkReviewFrequency();
@@ -95,7 +95,7 @@
       
       if (companyId) {
         selectedCompany = companyId;
-        // Load company details and branches
+        // Load company details
         await loadCompanyData(companyId);
       }
       
@@ -125,34 +125,10 @@
   async function loadCompanyData(companyId: string) {
     try {
       const company = await apiClient.getFreightForwarder(companyId);
-      // Since we don't use branches table, we'll get available locations from reviews
-      // This will show users what locations have been reviewed for this company
-      try {
-        const companyReviews = await apiClient.getReviewsByFreightForwarder(companyId);
-        // Extract unique locations from reviews
-        const locationMap = new Map();
-        companyReviews.forEach((review: any) => {
-          if (review.city && review.country) {
-            const locationKey = `${review.city}-${review.country}`;
-            if (!locationMap.has(locationKey)) {
-              locationMap.set(locationKey, {
-                id: review.location_id || locationKey,
-                name: `${review.city}, ${review.country}`,
-                city: review.city,
-                country: review.country
-              });
-            }
-          }
-        });
-        branches = Array.from(locationMap.values());
-        console.log('Loaded locations from reviews for company:', branches);
-      } catch (reviewErr) {
-        console.log('Could not load locations from reviews, using empty array');
-        branches = [];
-      }
+      // No need to load branches since we don't use the branches table
+      console.log('Loaded company data:', company);
     } catch (err: any) {
       console.error('Failed to load company data:', err);
-      branches = [];
     }
   }
 
@@ -659,7 +635,7 @@
 
     // Branch selection is mandatory for valid service reviews
     if (!selectedBranch || selectedBranch.trim() === '') {
-      error = 'Please select a branch location. Service quality can vary significantly between different branches, so we require a specific location for accurate reviews.';
+      error = 'Please select a location. Service quality can vary significantly between different locations, so we require a specific location for accurate reviews.';
       return;
     }
 
@@ -993,43 +969,12 @@
               </div>
             {/if}
 
-            <!-- Branch Location Section -->
+            <!-- Location Section -->
             <div class="form-group">
-              <label for="branch">Branch Location *</label>
+              <label for="branch">Location *</label>
               
-
-              
-              <!-- Show existing branches if available -->
-              {#if branches && branches.length > 0}
-                <div class="existing-branches">
-                  <p class="help-text">Select from existing branches or create a new one:</p>
-                  <div class="branch-options">
-                    {#each branches as branch}
-                      <button 
-                        type="button" 
-                        class="branch-option {selectedBranch === branch.id ? 'selected' : ''}"
-                        on:click={() => selectExistingBranch(branch)}
-                      >
-                        <strong>{branch.name}</strong>
-                        {#if branch.city || branch.country}
-                          <span class="branch-details">
-                            {branch.city}{branch.city && branch.country ? ', ' : ''}{branch.country}
-                          </span>
-                        {/if}
-                      </button>
-                    {/each}
-                  </div>
-                  <div class="branch-divider">
-                    <span>or</span>
-                  </div>
-                </div>
-              {/if}
-              
-
-              
-              <!-- Create new branch section -->
-              <div class="new-branch-section">
-                <p class="help-text">{branches && branches.length > 0 ? 'Create a new branch:' : ''}</p>
+              <!-- Location input field -->
+              <div class="location-input-section">
                 
                 <input 
                   type="text" 
