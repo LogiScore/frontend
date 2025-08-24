@@ -9,11 +9,13 @@
 
 <div class="transparency-report">
   <div class="container">
-    <header class="page-header">
-      <h1>Transparency Report</h1>
-      <p class="subtitle">Our commitment to openness and accountability in logistics review services</p>
-      <p class="last-updated">Last updated: January 2025</p>
-    </header>
+    <div class="header">
+      <h1>📊 LogiScore Transparency Report</h1>
+      <div class="meta">
+        <span><strong>Effective Date:</strong> January 2025</span>
+        <span><strong>Last Updated:</strong> January 2025</span>
+      </div>
+    </div>
 
     <div class="content">
       <section class="report-section">
@@ -160,7 +162,7 @@
     padding: 0 20px;
   }
 
-  .page-header {
+  .header {
     text-align: center;
     margin-bottom: 60px;
     padding: 40px 0;
@@ -169,25 +171,23 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 
-  .page-header h1 {
+  .header h1 {
     font-size: 2.5rem;
     color: #333;
     margin-bottom: 20px;
     font-weight: 700;
   }
 
-  .subtitle {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 15px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+  .meta {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 20px;
   }
 
-  .last-updated {
-    color: #888;
-    font-style: italic;
+  .meta span {
+    color: #666;
     font-size: 0.9rem;
   }
 
@@ -298,7 +298,7 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    .page-header h1 {
+    .header h1 {
       font-size: 2rem;
     }
 

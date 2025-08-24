@@ -12,15 +12,21 @@
   <meta name="description" content="LogiScore Community Guidelines - Rules and standards for our shipper-only platform where importers, exporters, and BCOs can share structured ratings of freight forwarders." />
 </svelte:head>
 
-<div class="guidelines-container">
-  <div class="header">
-    <h1>📘 LogiScore Community Guidelines</h1>
-    <p class="subtitle">Building a transparent, trusted community for shippers</p>
-    <div class="meta">
-      <span><strong>Effective Date:</strong> August 2025</span>
-      <span><strong>Last Updated:</strong> August 2025</span>
+<main>
+  <!-- Modern Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/" class="breadcrumb-item">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Community Guidelines</span>
+      </div>
+      <h1 class="page-title">Community Guidelines</h1>
+      <p class="page-description">Building a transparent, trusted community for shippers</p>
     </div>
-  </div>
+  </section>
+
+  <div class="guidelines-container">
 
   <div class="content">
     <section class="guideline-section">
@@ -178,40 +184,70 @@
     <a href="/contact" class="btn btn-primary">Contact Support</a>
   </div>
 </div>
+</main>
 
 <style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 40px 0;
+    margin-bottom: 0;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .breadcrumb-separator {
+    color: #dee2e6;
+  }
+
+  .breadcrumb-item.active {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .breadcrumb-item {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item:hover {
+    color: #667eea;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 0;
+    max-width: 600px;
+  }
+
   .guidelines-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 40px 20px;
     line-height: 1.6;
-  }
-
-  .header {
-    text-align: center;
-    margin-bottom: 50px;
-    padding-bottom: 30px;
-    border-bottom: 2px solid #ffd700;
-  }
-
-  .header h1 {
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 15px;
-  }
-
-  .subtitle {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 20px;
-  }
-
-  .meta {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    font-size: 0.9rem;
-    color: #888;
   }
 
   .guideline-section {
@@ -330,13 +366,8 @@
       padding: 20px 15px;
     }
 
-    .header h1 {
+    .page-title {
       font-size: 2rem;
-    }
-
-    .meta {
-      flex-direction: column;
-      gap: 10px;
     }
 
     .guideline-section {
