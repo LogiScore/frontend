@@ -227,77 +227,7 @@
         </div>
       </section>
 
-      <!-- Quick Score Overview Section -->
-      {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
-        <section class="quick-score-overview">
-          <h2>Performance Overview</h2>
-          <div class="overview-grid">
-            <!-- Overview Ratings -->
-            <div class="overview-section">
-              <h3>Overall Ratings</h3>
-              {#if freightForwarder.category_scores && freightForwarder.category_scores.length > 0}
-                <div class="scores-summary">
-                  {#each freightForwarder.category_scores.slice(0, 3) as score}
-                    <div class="score-summary-item">
-                      <span class="category-name">{score.category_name}</span>
-                      <span class="score-value">{score.average_score.toFixed(1)}/5.0</span>
-                    </div>
-                  {/each}
-                  {#if freightForwarder.category_scores.length > 3}
-                    <div class="more-scores">+{freightForwarder.category_scores.length - 3} more categories</div>
-                  {/if}
-                </div>
-              {:else}
-                <p class="no-scores">No category scores available yet.</p>
-              {/if}
-            </div>
 
-            <!-- Country Scores Summary -->
-            <div class="overview-section">
-              <h3>Country Performance</h3>
-              {#if isLoadingScores}
-                <div class="loading-scores">Loading...</div>
-              {:else if countryScores.length > 0}
-                <div class="scores-summary">
-                  {#each countryScores.slice(0, 3) as country}
-                    <div class="score-summary-item">
-                      <span class="country-name">🇺🇳 {country.country}</span>
-                      <span class="score-value">{country.aggregate_score.toFixed(1)}/5.0</span>
-                    </div>
-                  {/each}
-                  {#if countryScores.length > 3}
-                    <div class="more-scores">+{countryScores.length - 3} more countries</div>
-                  {/if}
-                </div>
-              {:else}
-                <p class="no-scores">No country scores available yet.</p>
-              {/if}
-            </div>
-
-            <!-- Location Scores Summary -->
-            <div class="overview-section">
-              <h3>Location Performance</h3>
-              {#if isLoadingScores}
-                <div class="loading-scores">Loading...</div>
-              {:else if locationScores.length > 0}
-                <div class="scores-summary">
-                  {#each locationScores.slice(0, 3) as location}
-                    <div class="score-summary-item">
-                      <span class="location-name">📍 {location.location_name}</span>
-                      <span class="score-value">{location.aggregate_score.toFixed(1)}/5.0</span>
-                    </div>
-                  {/each}
-                  {#if locationScores.length > 3}
-                    <div class="more-scores">+{locationScores.length - 3} more locations</div>
-                  {/if}
-                </div>
-              {:else}
-                <p class="no-scores">No location scores available yet.</p>
-              {/if}
-            </div>
-          </div>
-        </section>
-      {/if}
 
       <!-- Tabbed Navigation for Detailed Scores -->
       {#if isSubscribed && user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free'}
