@@ -194,19 +194,41 @@
       
       // Debug: Filter reviews for this specific company-location combination
       const companyLocationReviews = userReviews.filter((review: any) => {
-        // Simple UUID matching - check if review's location_id matches selectedBranch
-        const uuidMatch = review.location_id === selectedBranch;
+        // Extract city and country from the selected location display
+        // Format: "Dubai, Dubai, UAE" -> city: "Dubai", country: "UAE"
+        const locationParts = selectedBranchDisplay.split(', ');
+        const selectedCity = locationParts[0]?.trim();
+        const selectedCountry = locationParts[locationParts.length - 1]?.trim();
         
-        console.log('🔍 Checking review UUID match:', {
+        // Match by user and company UUIDs (most reliable)
+        const userMatch = review.user_id === authState.user.id;
+        const companyMatch = review.freight_forwarder_id === selectedCompany;
+        
+        // Match by city and country names from the branches table
+        const cityMatch = review.city && review.city.toLowerCase() === selectedCity?.toLowerCase();
+        const countryMatch = review.country && review.country.toLowerCase() === selectedCountry?.toLowerCase();
+        const locationMatch = cityMatch && countryMatch;
+        
+        console.log('🔍 Checking review match:', {
           reviewId: review.id,
-          reviewLocationId: review.location_id,
-          selectedBranch,
-          uuidMatch,
+          reviewUserId: review.user_id,
+          reviewCompanyId: review.freight_forwarder_id,
+          reviewCity: review.city,
+          reviewCountry: review.country,
+          selectedUserId: authState.user.id,
+          selectedCompanyId: selectedCompany,
+          selectedCity,
+          selectedCountry,
+          userMatch,
+          companyMatch,
+          cityMatch,
+          countryMatch,
+          locationMatch,
           locationDisplay: selectedBranchDisplay
         });
         
-        // A review matches if the location_id UUID matches
-        return uuidMatch;
+        // A review matches if user+company match AND location matches
+        return userMatch && companyMatch && locationMatch;
       });
       
       console.log('🔍 Reviews for this company-location combination:', companyLocationReviews.length);
@@ -1287,22 +1309,26 @@
             </div>
             {#if selectedBranchDisplay}
               <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-                <strong>UUID Matching:</strong><br>
+                <strong>Location Matching:</strong><br>
                 • Location Display: {selectedBranchDisplay}<br>
-                • Location UUID: {selectedBranch}<br>
-                • Matching Logic: Reviews must match location_id UUID
+                • City: {selectedBranchDisplay.split(', ')[0]?.trim() || 'N/A'}<br>
+                • Country: {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
+                • Matching Logic: User UUID + Company UUID + City + Country match
               </div>
             {/if}
             
             <!-- Debug: Show all API reviews with city/country -->
             {#if selectedCompany && selectedBranch && authState.user}
               <div style="margin-top: 10px; padding: 8px; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 4px; font-family: monospace; font-size: 9px; max-height: 200px; overflow-y: auto;">
-                <strong>🔍 DEBUG - UUID Matching for Reviews:</strong><br>
+                <strong>🔍 DEBUG - Review Matching Logic:</strong><br>
                 <strong>Total Reviews from API:</strong> {userReviewCount > 0 ? 'Check console for full data' : '0 reviews found'}<br>
-                <strong>Matching Method:</strong> UUID only (branch_id or location_id)<br>
-                <strong>Selected Location UUID:</strong> {selectedBranch}<br>
-                <strong>Expected:</strong> Should find review with matching UUID<br>
-                <strong>Console Check:</strong> Look for "Checking review UUID match" logs
+                <strong>Matching Method:</strong> User UUID + Company UUID + City + Country<br>
+                <strong>Selected User ID:</strong> {authState.user.id}<br>
+                <strong>Selected Company ID:</strong> {selectedCompany}<br>
+                <strong>Selected City:</strong> {selectedBranchDisplay.split(', ')[0]?.trim() || 'N/A'}<br>
+                <strong>Selected Country:</strong> {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
+                <strong>Expected:</strong> Should find review with matching user+company+city+country<br>
+                <strong>Console Check:</strong> Look for "Checking review match" logs
               </div>
             {/if}
             {#if userReviewDetails.length > 0}
