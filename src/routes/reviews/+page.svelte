@@ -192,25 +192,30 @@
       
       // Debug: Filter reviews for this specific company-location combination
       const companyLocationReviews = userReviews.filter((review: any) => {
-        // The database uses 'branch_id', not 'location_id'
-        // We need to check both fields for compatibility
-        const locationMatch = review.location_id === selectedBranch;
-        const branchMatch = review.branch_id === selectedBranch;
+        // Extract city and country from the selected location display
+        // Format: "Dubai, Dubai, UAE" -> city: "Dubai", country: "UAE"
+        const locationParts = selectedBranchDisplay.split(', ');
+        const selectedCity = locationParts[0]?.trim();
+        const selectedCountry = locationParts[locationParts.length - 1]?.trim();
         
-        console.log('🔍 Checking review:', {
+        // Check if this review matches the selected city and country
+        const cityMatch = review.city && review.city.toLowerCase() === selectedCity?.toLowerCase();
+        const countryMatch = review.country && review.country.toLowerCase() === selectedCountry?.toLowerCase();
+        
+        console.log('🔍 Checking review location match:', {
           reviewId: review.id,
-          reviewLocationId: review.location_id,
-          reviewBranchId: review.branch_id,
-          selectedBranch: selectedBranch,
-          locationMatch,
-          branchMatch,
+          reviewCity: review.city,
+          reviewCountry: review.country,
+          selectedCity,
+          selectedCountry,
+          cityMatch,
+          countryMatch,
+          locationDisplay: selectedBranchDisplay,
           reviewData: review
         });
         
-        // Check if this review matches the selected location/branch
-        // The database stores branch_id, but we're using location_id in the frontend
-        // So we need to check both fields
-        return locationMatch || branchMatch;
+        // A review matches if both city and country match
+        return cityMatch && countryMatch;
       });
       
       // Update debug variables
@@ -1266,36 +1271,21 @@
                 • Aggregate Rating: {aggregateRating.toFixed(2)}
               </div>
             </div>
+            {#if selectedBranchDisplay}
+              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <strong>Location Matching:</strong><br>
+                • Full Display: {selectedBranchDisplay}<br>
+                • City: {selectedBranchDisplay.split(', ')[0]?.trim() || 'N/A'}<br>
+                • Country: {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
+                • Matching Logic: Reviews must match both city AND country
+              </div>
+            {/if}
             {#if userReviewDetails.length > 0}
               <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
                 <strong>User Review Details:</strong><br>
                 {#each userReviewDetails as review, i}
-                  • Review {i + 1}: ID {review.id}, Date: {new Date(review.created_at).toLocaleDateString()}<br>
+                  • Review {i + 1}: ID {review.id}, Date: {new Date(review.created_at).toLocaleDateString()}, City: {review.city || 'N/A'}, Country: {review.country || 'N/A'}<br>
                 {/each}
-              </div>
-            {/if}
-            
-            <!-- Debug: Show raw review data structure -->
-            {#if selectedCompany && selectedBranch && userReviewCount > 0}
-              <div style="margin-top: 10px; padding: 8px; background: #e6f3ff; border: 1px solid #99ccff; border-radius: 4px; font-family: monospace; font-size: 9px; max-height: 150px; overflow-y: auto;">
-                <strong>🔍 DEBUG - Raw Review Data Structure:</strong><br>
-                <strong>Sample Review Fields:</strong><br>
-                {#if userReviewDetails.length > 0}
-                  <pre style="white-space: pre-wrap; word-break: break-all;">{JSON.stringify(userReviewDetails[0], null, 2)}</pre>
-                {/if}
-              </div>
-            {/if}
-            
-            <!-- Debug: Show API response summary -->
-            {#if selectedCompany && selectedBranch && authState.user}
-              <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-family: monospace; font-size: 10px;">
-                <strong>🔍 DEBUG - API Response Summary:</strong><br>
-                <strong>Company ID:</strong> {selectedCompany}<br>
-                <strong>Location ID:</strong> {selectedBranch}<br>
-                <strong>Location Display:</strong> {selectedBranchDisplay}<br>
-                <strong>Total Reviews for Company:</strong> {userReviewCount}<br>
-                <strong>Field Mapping Note:</strong> Frontend uses 'location_id', Database uses 'branch_id'<br>
-                <strong>Filtering Issue:</strong> Check console logs for detailed review structure
               </div>
             {/if}
             {#if reviewFrequencyMessage}
