@@ -52,6 +52,7 @@
   let canSubmitReview = true;
   let lastReviewDate: string | null = null;
   let reviewFrequencyMessage = '';
+  let isCheckingReviewFrequency = false;
   
   // Debug: Track user reviews for company-location combination
   let userReviewCount = 0;
@@ -62,24 +63,36 @@
     authState = state;
   });
 
-  // Watch for company changes to reset branch selection
+  // Track review frequency check status to ensure it only happens once per company-location
+  // This prevents repeated API calls when users are filling out the review form
+  let reviewFrequencyChecked = false;
+  let lastCheckedCompanyLocation = '';
+  
+  // Watch for company changes to reset branch selection and review frequency status
   $: if (selectedCompany) {
     // Clear previous branch selection when company changes
     selectedBranch = '';
     selectedBranchDisplay = '';
+    // Reset review frequency check status for new company
+    reviewFrequencyChecked = false;
     // Company data will be loaded in loadCompanyData
-    // Don't check review frequency yet - wait for both company AND location
   }
   
-  // Watch for both company AND location selection to check review frequency
-  $: if (selectedCompany && selectedBranch && authState.user) {
-    // Both company and location are selected, now check review frequency
-    setTimeout(() => {
+  // Watch for both company AND location selection to check review frequency ONCE
+  $: if (selectedCompany && selectedBranch && authState.user && !reviewFrequencyChecked) {
+    const currentCombination = `${selectedCompany}-${selectedBranch}`;
+    
+    // Only check review frequency if this is a new company-location combination
+    if (currentCombination !== lastCheckedCompanyLocation) {
+      lastCheckedCompanyLocation = currentCombination;
+      reviewFrequencyChecked = true; // Mark as checked to prevent repeated calls
+      
+      // Perform the check immediately (no debounce needed since it's one-time)
       checkReviewFrequency().catch(err => {
         console.error('Review frequency check failed (non-blocking):', err);
         // Don't let this error affect the UI - allow form to work
       });
-    }, 100);
+    }
   }
   
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
@@ -148,24 +161,51 @@
 
   // Check if user can submit a review for this company/branch (6-month rule)
   async function checkReviewFrequency() {
-          if (!selectedCompany || !authState.user) {
-        canSubmitReview = true;
-        reviewFrequencyMessage = '';
-        lastReviewDate = null;
-        return;
-      }
+    if (!selectedCompany || !authState.user) {
+      canSubmitReview = true;
+      reviewFrequencyMessage = '';
+      lastReviewDate = null;
+      return;
+    }
+
+    // Set loading state
+    isCheckingReviewFrequency = true;
+    reviewFrequencyMessage = 'Checking review eligibility...';
 
     try {
-      // Add timeout to prevent API call from hanging
+      // Add timeout to prevent API call from hanging - increased to 20 seconds for complex queries
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('API timeout')), 5000)
+        setTimeout(() => reject(new Error('API timeout')), 20000)
       );
       
       // Get user's previous reviews for this company with timeout
-      const userReviews = await Promise.race([
-        apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany),
-        timeoutPromise
-      ]) as any[];
+      let userReviews: any[] = [];
+      try {
+        userReviews = await Promise.race([
+          apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany),
+          timeoutPromise
+        ]) as any[];
+      } catch (timeoutError) {
+        // If the main call times out, try a quick fallback check
+        console.warn('Primary review frequency check timed out, trying fallback...');
+        try {
+          // Quick fallback: just check if we can get basic company data
+          const fallbackPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Fallback timeout')), 5000)
+          );
+          
+          userReviews = await Promise.race([
+            apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany),
+            fallbackPromise
+          ]) as any[];
+        } catch (fallbackError) {
+          console.warn('Fallback review frequency check also failed:', fallbackError);
+          // If both attempts fail, allow submission to prevent user blocking
+          userReviews = [];
+          // Set a user-friendly message
+          reviewFrequencyMessage = 'Review frequency check is temporarily unavailable. You may proceed with your review submission.';
+        }
+      }
       
       // Debug: Filter reviews for this specific company-location combination
       const companyLocationReviews = userReviews.filter((review: any) => {
@@ -240,8 +280,9 @@
       
       // Check if it's a timeout error
       if (err.message && err.message.includes('API timeout')) {
+        console.warn('Review frequency check timed out - allowing submission to prevent user blocking');
         canSubmitReview = true;
-        reviewFrequencyMessage = '';
+        reviewFrequencyMessage = 'Review frequency check is temporarily unavailable. You may proceed with your review submission.';
         lastReviewDate = null;
         return;
       }
@@ -250,6 +291,9 @@
       canSubmitReview = true;
       reviewFrequencyMessage = '';
       lastReviewDate = null;
+    } finally {
+      // Always reset loading state
+      isCheckingReviewFrequency = false;
     }
   }
 
@@ -1091,12 +1135,44 @@
               {#if reviewFrequencyMessage && !canSubmitReview}
                 <div class="review-frequency-warning">
                   <strong>⚠️ Review Frequency Limit:</strong> {reviewFrequencyMessage}
+                  <button 
+                    type="button" 
+                    class="refresh-check-btn"
+                    on:click={() => {
+                      reviewFrequencyChecked = false; // Allow re-check
+                      checkReviewFrequency();
+                    }}
+                    disabled={isCheckingReviewFrequency}
+                    title="Re-check your review eligibility (useful if you've waited 6 months)"
+                  >
+                    {isCheckingReviewFrequency ? 'Checking...' : 'Refresh Check'}
+                  </button>
                 </div>
               {/if}
               
               {#if lastReviewDate && canSubmitReview}
                 <div class="review-frequency-info">
                   <strong>ℹ️ Last Review:</strong> You last reviewed this company on {new Date(lastReviewDate).toLocaleDateString()}. You can submit a new review now.
+                  <button 
+                    type="button" 
+                    class="refresh-check-btn"
+                    on:click={() => {
+                      reviewFrequencyChecked = false; // Allow re-check
+                      checkReviewFrequency();
+                    }}
+                    disabled={isCheckingReviewFrequency}
+                    title="Re-check your review eligibility (useful if you've waited 6 months)"
+                  >
+                    {isCheckingReviewFrequency ? 'Checking...' : 'Refresh Check'}
+                  </button>
+                </div>
+              {/if}
+              
+              <!-- Show loading state when checking review frequency -->
+              {#if isCheckingReviewFrequency}
+                <div class="review-frequency-loading">
+                  <strong>⏳ Checking Review Eligibility...</strong>
+                  <p>Please wait while we verify your review submission eligibility.</p>
                 </div>
               {/if}
 
@@ -1614,6 +1690,37 @@
     border-radius: 6px;
     margin-top: 1rem;
     border: 1px solid #bee5eb;
+  }
+
+  .review-frequency-loading {
+    background: #e2e3e5;
+    color: #495057;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #c6c8ca;
+    text-align: center;
+  }
+
+  .refresh-check-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .refresh-check-btn:hover:not(:disabled) {
+    background: #0056b3;
+  }
+
+  .refresh-check-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
   }
 
   .loading {
