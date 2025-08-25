@@ -791,7 +791,7 @@ class ApiClient {
           },
           {
             id: 'invoice_matches_quotation',
-            text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct)',
+            text: 'Final invoice matches quotation (no hidden costs and all calculations and volumes are correct and as per shipping documents)',
             ratingDefinitions: {
               '0': 'Not applicable',
               '1': 'Seldom',
@@ -833,10 +833,10 @@ class ApiClient {
             text: 'Provides named contact person(s) for operations and customer service',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'No',
+              '2': 'Seldon',
+              '3': 'Usually',
+              '4': 'Always'
             }
           },
           {
@@ -844,10 +844,10 @@ class ApiClient {
             text: 'Offers single point of contact for issue escalation',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Seldom',
-              '2': 'Usually',
-              '3': 'Most of the time',
-              '4': 'Every time'
+              '1': 'No',
+              '2': 'Seldom',
+              '3': 'Usually',
+              '4': 'Always'
             }
           },
           {
@@ -944,11 +944,10 @@ class ApiClient {
             text: 'Shipped as promised (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'Not applicable',
-              '2': 'Seldom',
-              '3': 'Usually',
-              '4': 'Most of the time',
-              '5': 'Every time'
+              '1': 'Seldom',
+              '2': 'Usually',
+              '3': 'Most of the time',
+              '4': 'Every time'
             }
           },
           {
@@ -967,7 +966,7 @@ class ApiClient {
             text: 'Compliance with clients\' SOP (%)',
             ratingDefinitions: {
               '0': 'Not applicable',
-              '1': 'No SOP defined (25%)',
+              '1': 'No SOP defined, rely on ISO',
               '2': 'Seldom (50%)',
               '3': 'Usually (75%)',
               '4': 'Always (100%)'
