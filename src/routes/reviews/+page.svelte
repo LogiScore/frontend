@@ -173,11 +173,45 @@
       ]) as any[];
       
       console.log('🔍 Found user reviews:', userReviews.length);
+      console.log('🔍 All user reviews for company:', userReviews);
+      console.log('🔍 Current selectedBranch value:', selectedBranch);
+      console.log('🔍 Current selectedBranchDisplay value:', selectedBranchDisplay);
+      
+      // Debug: Show the structure of each review
+      userReviews.forEach((review, index) => {
+        console.log(`🔍 Review ${index + 1} structure:`, {
+          id: review.id,
+          freight_forwarder_id: review.freight_forwarder_id,
+          location_id: review.location_id,
+          branch_id: review.branch_id,
+          user_id: review.user_id,
+          created_at: review.created_at,
+          fullReview: review
+        });
+      });
       
       // Debug: Filter reviews for this specific company-location combination
-      const companyLocationReviews = userReviews.filter((review: any) => 
-        review.location_id === selectedBranch || review.branch_id === selectedBranch
-      );
+      const companyLocationReviews = userReviews.filter((review: any) => {
+        // The database uses 'branch_id', not 'location_id'
+        // We need to check both fields for compatibility
+        const locationMatch = review.location_id === selectedBranch;
+        const branchMatch = review.branch_id === selectedBranch;
+        
+        console.log('🔍 Checking review:', {
+          reviewId: review.id,
+          reviewLocationId: review.location_id,
+          reviewBranchId: review.branch_id,
+          selectedBranch: selectedBranch,
+          locationMatch,
+          branchMatch,
+          reviewData: review
+        });
+        
+        // Check if this review matches the selected location/branch
+        // The database stores branch_id, but we're using location_id in the frontend
+        // So we need to check both fields
+        return locationMatch || branchMatch;
+      });
       
       // Update debug variables
       userReviewCount = companyLocationReviews.length;
@@ -191,7 +225,14 @@
         locationDisplay: selectedBranchDisplay,
         reviewCount: userReviewCount,
         reviewDetails: userReviewDetails,
-        canSubmit: canSubmitReview
+        canSubmit: canSubmitReview,
+        allUserReviews: userReviews,
+        filteringLogic: {
+          selectedBranch,
+          selectedBranchType: typeof selectedBranch,
+          locationField: 'location_id',
+          branchField: 'branch_id'
+        }
       });
       
       if (userReviews.length === 0) {
@@ -1231,6 +1272,30 @@
                 {#each userReviewDetails as review, i}
                   • Review {i + 1}: ID {review.id}, Date: {new Date(review.created_at).toLocaleDateString()}<br>
                 {/each}
+              </div>
+            {/if}
+            
+            <!-- Debug: Show raw review data structure -->
+            {#if selectedCompany && selectedBranch && userReviewCount > 0}
+              <div style="margin-top: 10px; padding: 8px; background: #e6f3ff; border: 1px solid #99ccff; border-radius: 4px; font-family: monospace; font-size: 9px; max-height: 150px; overflow-y: auto;">
+                <strong>🔍 DEBUG - Raw Review Data Structure:</strong><br>
+                <strong>Sample Review Fields:</strong><br>
+                {#if userReviewDetails.length > 0}
+                  <pre style="white-space: pre-wrap; word-break: break-all;">{JSON.stringify(userReviewDetails[0], null, 2)}</pre>
+                {/if}
+              </div>
+            {/if}
+            
+            <!-- Debug: Show API response summary -->
+            {#if selectedCompany && selectedBranch && authState.user}
+              <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-family: monospace; font-size: 10px;">
+                <strong>🔍 DEBUG - API Response Summary:</strong><br>
+                <strong>Company ID:</strong> {selectedCompany}<br>
+                <strong>Location ID:</strong> {selectedBranch}<br>
+                <strong>Location Display:</strong> {selectedBranchDisplay}<br>
+                <strong>Total Reviews for Company:</strong> {userReviewCount}<br>
+                <strong>Field Mapping Note:</strong> Frontend uses 'location_id', Database uses 'branch_id'<br>
+                <strong>Filtering Issue:</strong> Check console logs for detailed review structure
               </div>
             {/if}
             {#if reviewFrequencyMessage}
