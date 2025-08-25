@@ -172,10 +172,24 @@
         timeoutPromise
       ]) as any[];
       
+      console.log('🔍 API Call Details:');
+      console.log('🔍 User ID:', authState.user.id);
+      console.log('🔍 Company ID:', selectedCompany);
+      console.log('🔍 API Response:', userReviews);
       console.log('🔍 Found user reviews:', userReviews.length);
       console.log('🔍 All user reviews for company:', userReviews);
       console.log('🔍 Current selectedBranch value:', selectedBranch);
       console.log('🔍 Current selectedBranchDisplay value:', selectedBranchDisplay);
+      
+      // Debug: Check if the API call is working at all
+      if (userReviews.length === 0) {
+        console.log('🔍 WARNING: API returned 0 reviews - this suggests an API issue, not a filtering issue');
+        console.log('🔍 Possible causes:');
+        console.log('🔍 1. No reviews exist for this company');
+        console.log('🔍 2. API endpoint is not working');
+        console.log('🔍 3. Database has no reviews');
+        console.log('🔍 4. User ID or Company ID mismatch');
+      }
       
       // Debug: Show the structure of each review
       userReviews.forEach((review, index) => {
@@ -1329,6 +1343,17 @@
                 <strong>Selected Country:</strong> {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
                 <strong>Expected:</strong> Should find review with matching user+company+city+country<br>
                 <strong>Console Check:</strong> Look for "Checking review match" logs
+              </div>
+              
+              <!-- Debug: API Call Details -->
+              <div style="margin-top: 10px; padding: 8px; background: #ffebee; border: 1px solid #f44336; border-radius: 4px; font-family: monospace; font-size: 9px;">
+                <strong>🔍 DEBUG - API Call Analysis:</strong><br>
+                <strong>API Endpoint:</strong> /api/reviews/?freight_forwarder_id={selectedCompany}<br>
+                <strong>User ID:</strong> {authState.user.id}<br>
+                <strong>Company ID:</strong> {selectedCompany}<br>
+                <strong>API Response:</strong> {userReviewCount > 0 ? 'Reviews found' : '0 reviews returned'}<br>
+                <strong>Issue:</strong> API is returning 0 reviews - check backend logs<br>
+                <strong>Next Steps:</strong> Verify reviews exist in database for this company
               </div>
             {/if}
             {#if userReviewDetails.length > 0}
