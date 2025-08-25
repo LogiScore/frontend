@@ -1018,26 +1018,7 @@
               </div>
             {/if}
 
-            <!-- Debug Information for Company Selection -->
-            {#if selectedCompany && !selectedBranch}
-              <div class="debug-info" style="background: #fff8dc; border: 1px solid #daa520; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                <strong>🐛 DEBUG - Company Selected:</strong><br>
-                <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
-                <strong>Company ID:</strong> {selectedCompany}<br>
-                <strong>Location:</strong> Not selected yet<br>
-                <strong>Status:</strong> Waiting for location selection to check review frequency
-              </div>
-            {/if}
 
-            <!-- Debug Information for No Selection -->
-            {#if !selectedCompany && !selectedBranch}
-              <div class="debug-info" style="background: #ffe6e6; border: 1px solid #ff9999; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                <strong>🐛 DEBUG - No Selection:</strong><br>
-                <strong>Company:</strong> Not selected yet<br>
-                <strong>Location:</strong> Not selected yet<br>
-                <strong>Status:</strong> Waiting for company and location selection
-              </div>
-            {/if}
 
             <!-- Location Section -->
             <div class="form-group">
@@ -1119,30 +1100,9 @@
                 </div>
               {/if}
 
-              <!-- Debug Information -->
-              {#if selectedCompany && selectedBranch && userReviewCount > 0}
-                <div class="debug-info" style="background: #f0f8ff; border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                  <strong>🐛 DEBUG - User Review Count:</strong><br>
-                  <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
-                  <strong>Location:</strong> {selectedBranchDisplay}<br>
-                  <strong>Reviews submitted:</strong> {userReviewCount}<br>
-                  <strong>Last review date:</strong> {userReviewDetails.length > 0 ? new Date(userReviewDetails[0].created_at).toLocaleDateString() : 'N/A'}<br>
-                  <strong>Can submit now:</strong> {canSubmitReview ? '✅ YES' : '❌ NO'}<br>
-                  {#if userReviewDetails.length > 0}
-                    <strong>Review IDs:</strong> {userReviewDetails.map(r => r.id).join(', ')}
-                  {/if}
-                </div>
-              {/if}
+
               
-              {#if selectedCompany && selectedBranch && userReviewCount === 0}
-                <div class="debug-info" style="background: #f0fff0; border: 1px solid #90ee90; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                  <strong>🐛 DEBUG - User Review Count:</strong><br>
-                  <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
-                  <strong>Location:</strong> {selectedBranchDisplay}<br>
-                  <strong>Reviews submitted:</strong> 0 (First time reviewing this company-location)<br>
-                  <strong>Can submit now:</strong> ✅ YES
-                </div>
-              {/if}
+
 
             </div>
 
@@ -1173,88 +1133,7 @@
             </div>
           </div>
 
-          <!-- Comprehensive Debug Information -->
-          <div class="debug-section" style="background: #f8f8f8; border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 6px; font-family: monospace; font-size: 11px;">
-            <h4 style="margin: 0 0 10px 0; color: #666;">🐛 COMPREHENSIVE DEBUG INFO</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>
-                <strong>Form State:</strong><br>
-                • Company: {selectedCompany || 'None'}<br>
-                • Location: {selectedBranch || 'None'}<br>
-                • Location Display: {selectedBranchDisplay || 'None'}<br>
-                • Is Anonymous: {isAnonymous ? 'Yes' : 'No'}<br>
-                • Can Submit: {canSubmitReview ? 'Yes' : 'No'}
-              </div>
-              <div>
-                <strong>Review Data:</strong><br>
-                • User Review Count: {userReviewCount}<br>
-                • Last Review Date: {lastReviewDate ? new Date(lastReviewDate).toLocaleDateString() : 'N/A'}<br>
-                • Review Categories: {reviewCategories.length}<br>
-                • Rated Questions: {ratedQuestions}/{totalQuestions}<br>
-                • Aggregate Rating: {aggregateRating.toFixed(2)}
-              </div>
-            </div>
-            {#if selectedBranchDisplay}
-              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-                <strong>Location Matching:</strong><br>
-                • Location Display: {selectedBranchDisplay}<br>
-                • City: {selectedBranchDisplay.split(', ')[0]?.trim() || 'N/A'}<br>
-                • Country: {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
-                • Matching Logic: User UUID + Company UUID + City + Country match
-              </div>
-            {/if}
-            
-            <!-- Debug: Show all API reviews with city/country -->
-            {#if selectedCompany && selectedBranch && authState.user}
-              <div style="margin-top: 10px; padding: 8px; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 4px; font-family: monospace; font-size: 9px; max-height: 200px; overflow-y: auto;">
-                <strong>🔍 DEBUG - Review Matching Logic:</strong><br>
-                <strong>Total Reviews from API:</strong> {userReviewCount > 0 ? 'Check console for full data' : '0 reviews found'}<br>
-                <strong>Matching Method:</strong> User UUID + Company UUID + City + Country<br>
-                <strong>Selected User ID:</strong> {authState.user.id}<br>
-                <strong>Selected Company ID:</strong> {selectedCompany}<br>
-                <strong>Selected City:</strong> {selectedBranchDisplay.split(', ')[0]?.trim() || 'N/A'}<br>
-                <strong>Selected Country:</strong> {selectedBranchDisplay.split(', ').slice(-1)[0]?.trim() || 'N/A'}<br>
-                <strong>Expected:</strong> Should find review with matching user+company+city+country<br>
-                <strong>Console Check:</strong> Look for "Checking review match" logs
-              </div>
-              
-              <!-- Debug: API Call Details -->
-              <div style="margin-top: 10px; padding: 8px; background: #ffebee; border: 1px solid #f44336; border-radius: 4px; font-family: monospace; font-size: 9px;">
-                <strong>🔍 DEBUG - API Call Analysis:</strong><br>
-                <strong>API Endpoint:</strong> /api/reviews/?freight_forwarder_id={selectedCompany}<br>
-                <strong>User ID:</strong> {authState.user.id}<br>
-                <strong>Company ID:</strong> {selectedCompany}<br>
-                <strong>API Response:</strong> {userReviewCount > 0 ? 'Reviews found' : '0 reviews returned'}<br>
-                <strong>Issue:</strong> API is returning 0 reviews - check backend logs<br>
-                <strong>Next Steps:</strong> Verify reviews exist in database for this company
-              </div>
-              
-              <!-- Debug: Raw API Response Data -->
-              {#if selectedCompany && selectedBranch && authState.user}
-                <div style="margin-top: 10px; padding: 8px; background: #e8f5e8; border: 1px solid #4caf50; border-radius: 4px; font-family: monospace; font-size: 8px; max-height: 150px; overflow-y: auto;">
-                  <strong>🔍 DEBUG - Raw API Response Data:</strong><br>
-                  <strong>API Response Status:</strong> Check console for detailed response data<br>
-                  <strong>Console Logs:</strong> Look for "Raw API Response" and "Response Structure Analysis"<br>
-                  <strong>Filtering Results:</strong> Look for "Filtering Results" logs<br>
-                  <strong>Expected:</strong> Backend returns 9 reviews, frontend should process them
-                </div>
-              {/if}
-            {/if}
-            {#if userReviewDetails.length > 0}
-              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-                <strong>User Review Details:</strong><br>
-                {#each userReviewDetails as review, i}
-                  • Review {i + 1}: ID {review.id}, Date: {new Date(review.created_at).toLocaleDateString()}, City: {review.city || 'N/A'}, Country: {review.country || 'N/A'}<br>
-                {/each}
-              </div>
-            {/if}
-            {#if reviewFrequencyMessage}
-              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-                <strong>Review Frequency Message:</strong><br>
-                {reviewFrequencyMessage}
-              </div>
-            {/if}
-          </div>
+
 
                     <!-- Rating Categories -->
           <div class="form-section">
