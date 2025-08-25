@@ -963,7 +963,7 @@
   .location-scores-grid,
   .country-scores-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
     gap: 2rem;
   }
 
@@ -1247,7 +1247,7 @@
 
     .location-scores-grid,
     .country-scores-grid {
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 1rem;
     }
 
@@ -1342,7 +1342,7 @@
 
     .location-scores-grid,
     .country-scores-grid {
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 2.5rem;
     }
 
