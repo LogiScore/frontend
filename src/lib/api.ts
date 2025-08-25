@@ -2251,6 +2251,19 @@ class ApiClient {
         return [];
       }
       
+      // Debug: Show the user_id field from each review
+      console.log('🔍 API CLIENT - Review user IDs:');
+      allCompanyReviews.forEach((review, index) => {
+        console.log(`🔍 API CLIENT - Review ${index + 1}:`, {
+          reviewId: review.id,
+          reviewUserId: review.user_id,
+          reviewUserIdType: typeof review.user_id,
+          currentUserId: userId,
+          currentUserIdType: typeof userId,
+          match: review.user_id === userId
+        });
+      });
+      
       const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
       console.log('🔍 API CLIENT - User reviews after filtering:', userReviews);
       
