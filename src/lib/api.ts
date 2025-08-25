@@ -2214,7 +2214,55 @@ class ApiClient {
       // Filter reviews by user_id on the frontend
       const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
       
-      return userReviews;
+      // Now we need to get additional information for each review
+      // The reviews table only has UUIDs, so we need to extract actual names
+      const enhancedUserReviews = await Promise.all(userReviews.map(async (review) => {
+        try {
+          // Get user information
+          const userResponse = await this.request<any>(`/api/users/${review.user_id}`);
+          const user = userResponse.user || userResponse;
+          
+          // Get company information (we already have this, but let's be explicit)
+          const companyResponse = await this.request<any>(`/api/freight-forwarders/${review.freight_forwarder_id}`);
+          const company = companyResponse.freight_forwarder || companyResponse;
+          
+          // Get location/branch information if available
+          let locationInfo = null;
+          if (review.branch_id) {
+            try {
+              const branchResponse = await this.request<any>(`/api/branches/${review.branch_id}`);
+              locationInfo = branchResponse.branch || branchResponse;
+            } catch (branchError) {
+              console.log('Branch info not available for review:', review.id);
+            }
+          }
+          
+          // Return enhanced review with actual names and location data
+          return {
+            ...review,
+            user_name: user?.full_name || user?.username || 'Unknown User',
+            user_email: user?.email || 'Unknown Email',
+            company_name: company?.name || 'Unknown Company',
+            location_name: locationInfo?.name || 'Unknown Location',
+            location_city: locationInfo?.city || review.city || 'Unknown City',
+            location_country: locationInfo?.country || review.country || 'Unknown Country'
+          };
+        } catch (error) {
+          console.error('Failed to enhance review data:', error);
+          // Return review with basic info if enhancement fails
+          return {
+            ...review,
+            user_name: 'Unknown User',
+            user_email: 'Unknown Email',
+            company_name: 'Unknown Company',
+            location_name: 'Unknown Location',
+            location_city: review.city || 'Unknown City',
+            location_country: review.country || 'Unknown Country'
+          };
+        }
+      }));
+      
+      return enhancedUserReviews;
     } catch (error: any) {
       console.error(`Failed to get user reviews for company: ${companyId}`, error);
       // Return empty array if API fails
