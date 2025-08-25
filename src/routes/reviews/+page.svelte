@@ -216,7 +216,7 @@
         canSubmitReview = false;
         const timeRemaining = new Date(lastReviewTime.getTime() + (6 * 30 * 24 * 60 * 60 * 1000));
         const daysRemaining = Math.ceil((timeRemaining.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
-        reviewFrequencyMessage = `You can submit another review for this company in ${daysRemaining} days (one review per company every 6 months).`;
+        reviewFrequencyMessage = `Users are only allowed to review specific branches of Freight Forwarders once every six months. You can submit another review for this branch in ${daysRemaining} days. You may submit a review of another branch, unless you have already done so.`;
         lastReviewDate = mostRecentReview.created_at;
       } else {
         // Last review was more than 6 months ago
