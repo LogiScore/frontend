@@ -148,19 +148,14 @@
 
   // Check if user can submit a review for this company/branch (6-month rule)
   async function checkReviewFrequency() {
-    console.log('🔍 checkReviewFrequency called with selectedCompany:', selectedCompany);
-    
-    if (!selectedCompany || !authState.user) {
-      console.log('🔍 No company selected or no user, allowing submission');
-      canSubmitReview = true;
-      reviewFrequencyMessage = '';
-      lastReviewDate = null;
-      return;
-    }
+          if (!selectedCompany || !authState.user) {
+        canSubmitReview = true;
+        reviewFrequencyMessage = '';
+        lastReviewDate = null;
+        return;
+      }
 
     try {
-      console.log('🔍 Checking review frequency for company:', selectedCompany);
-      
       // Add timeout to prevent API call from hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('API timeout')), 5000)
@@ -171,66 +166,6 @@
         apiClient.getUserReviewsForCompany(authState.user.id, selectedCompany),
         timeoutPromise
       ]) as any[];
-      
-      console.log('🔍 API Call Details:');
-      console.log('🔍 User ID:', authState.user.id);
-      console.log('🔍 Company ID:', selectedCompany);
-      console.log('🔍 Raw API Response:', userReviews);
-      console.log('🔍 API Response Type:', typeof userReviews);
-      console.log('🔍 API Response Length:', userReviews?.length);
-      console.log('🔍 API Response Keys:', userReviews ? Object.keys(userReviews) : 'No response');
-      
-      // Check if the response has the expected structure
-      if (userReviews && typeof userReviews === 'object') {
-        console.log('🔍 Response Structure Analysis:');
-        if (Array.isArray(userReviews)) {
-          console.log('🔍 Response is an array with', userReviews.length, 'items');
-          if (userReviews.length > 0) {
-            console.log('🔍 First item structure:', userReviews[0]);
-            console.log('🔍 First item keys:', Object.keys(userReviews[0]));
-          }
-        } else if (userReviews && typeof userReviews === 'object' && 'reviews' in userReviews) {
-          console.log('🔍 Response has reviews property:', (userReviews as any).reviews);
-          console.log('🔍 Reviews array length:', (userReviews as any).reviews?.length);
-        } else {
-          console.log('🔍 Response structure:', userReviews);
-        }
-      }
-      
-      console.log('🔍 Found user reviews:', userReviews.length);
-      console.log('🔍 All user reviews for company:', userReviews);
-      console.log('🔍 Current selectedBranch value:', selectedBranch);
-      console.log('🔍 Current selectedBranchDisplay value:', selectedBranchDisplay);
-      
-      // Debug: Check if the API call is working at all
-      if (userReviews.length === 0) {
-        console.log('🔍 WARNING: API returned 0 reviews - this suggests an API issue, not a filtering issue');
-        console.log('🔍 Possible causes:');
-        console.log('🔍 1. No reviews exist for this company');
-        console.log('🔍 2. API endpoint is not working');
-        console.log('🔍 3. Database has no reviews');
-        console.log('🔍 4. User ID or Company ID mismatch');
-        console.log('🔍 5. Frontend data processing issue');
-        console.log('🔍 6. API response structure mismatch');
-      } else {
-        console.log('🔍 SUCCESS: API returned', userReviews.length, 'reviews');
-        console.log('🔍 Now proceeding to frontend filtering...');
-      }
-      
-      // Debug: Show the structure of each review
-      userReviews.forEach((review, index) => {
-        console.log(`🔍 Review ${index + 1} structure:`, {
-          id: review.id,
-          freight_forwarder_id: review.freight_forwarder_id,
-          location_id: review.location_id,
-          branch_id: review.branch_id,
-          city: review.city,
-          country: review.country,
-          user_id: review.user_id,
-          created_at: review.created_at,
-          fullReview: review
-        });
-      });
       
       // Debug: Filter reviews for this specific company-location combination
       const companyLocationReviews = userReviews.filter((review: any) => {
@@ -249,87 +184,18 @@
         const countryMatch = review.country && review.country.toLowerCase() === selectedCountry?.toLowerCase();
         const locationMatch = cityMatch && countryMatch;
         
-        console.log('🔍 Checking review match:', {
-          reviewId: review.id,
-          reviewUserId: review.user_id,
-          reviewCompanyId: review.freight_forwarder_id,
-          reviewCity: review.city,
-          reviewCountry: review.country,
-          selectedUserId: authState.user.id,
-          selectedCompanyId: selectedCompany,
-          selectedCity,
-          selectedCountry,
-          userMatch,
-          companyMatch,
-          cityMatch,
-          countryMatch,
-          locationMatch,
-          locationDisplay: selectedBranchDisplay,
-          finalMatch: userMatch && companyMatch && locationMatch
-        });
+
         
         // A review matches if user+company match AND location matches
         return userMatch && companyMatch && locationMatch;
       });
       
-      console.log('🔍 Filtering Results:');
-      console.log('🔍 Total reviews from API:', userReviews.length);
-      console.log('🔍 Reviews after filtering:', companyLocationReviews.length);
-      console.log('🔍 Filtered reviews:', companyLocationReviews);
-      
-      if (userReviews.length > 0 && companyLocationReviews.length === 0) {
-        console.log('🔍 FILTERING ISSUE: API returned reviews but filtering removed them all');
-        console.log('🔍 Check the filtering criteria above for the issue');
-      }
-      
-      console.log('🔍 Reviews for this company-location combination:', companyLocationReviews.length);
-      console.log('🔍 Review details:', companyLocationReviews);
-      console.log('🔍 Filtering summary:', {
-        totalReviews: userReviews.length,
-        filteredReviews: companyLocationReviews.length,
-        selectedCity: selectedBranchDisplay.split(', ')[0]?.trim(),
-        selectedCountry: selectedBranchDisplay.split(', ').slice(-1)[0]?.trim(),
-        allReviewCities: userReviews.map(r => r.city).filter(Boolean),
-        allReviewCountries: userReviews.map(r => r.country).filter(Boolean)
-      });
-      
-      // Debug: Check if the issue is with the API response structure
-      if (userReviews.length > 0) {
-        console.log('🔍 API Response Structure Analysis:');
-        console.log('🔍 Sample review fields:', Object.keys(userReviews[0]));
-        console.log('🔍 All review cities found:', [...new Set(userReviews.map(r => r.city).filter(Boolean))]);
-        console.log('🔍 All review countries found:', [...new Set(userReviews.map(r => r.country).filter(Boolean))]);
-        console.log('🔍 Reviews with city data:', userReviews.filter(r => r.city).length);
-        console.log('🔍 Reviews with country data:', userReviews.filter(r => r.country).length);
-      } else {
-        console.log('🔍 No reviews returned from API - this might be the issue');
-      }
-      
       // Update debug variables
       userReviewCount = companyLocationReviews.length;
       userReviewDetails = companyLocationReviews;
       
-      console.log('🔍 Reviews for this company-location combination:', userReviewCount);
-      console.log('🔍 Review details:', userReviewDetails);
-      console.log('🐛 DEBUG - User Review Count Updated:', {
-        company: selectedCompany,
-        location: selectedBranch,
-        locationDisplay: selectedBranchDisplay,
-        reviewCount: userReviewCount,
-        reviewDetails: userReviewDetails,
-        canSubmit: canSubmitReview,
-        allUserReviews: userReviews,
-        filteringLogic: {
-          selectedBranch,
-          selectedBranchType: typeof selectedBranch,
-          locationField: 'location_id',
-          branchField: 'branch_id'
-        }
-      });
-      
       if (userReviews.length === 0) {
         // No previous reviews, can submit
-        console.log('🔍 No previous reviews, allowing submission');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
@@ -345,13 +211,8 @@
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      console.log('🔍 Last review time:', lastReviewTime);
-      console.log('🔍 Six months ago:', sixMonthsAgo);
-      console.log('🔍 Can submit review:', lastReviewTime <= sixMonthsAgo);
-
       if (lastReviewTime > sixMonthsAgo) {
         // Last review was within 6 months
-        console.log('🔍 Review within 6 months, preventing submission');
         canSubmitReview = false;
         const timeRemaining = new Date(lastReviewTime.getTime() + (6 * 30 * 24 * 60 * 60 * 1000));
         const daysRemaining = Math.ceil((timeRemaining.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
@@ -359,20 +220,15 @@
         lastReviewDate = mostRecentReview.created_at;
       } else {
         // Last review was more than 6 months ago
-        console.log('🔍 Review older than 6 months, allowing submission');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = mostRecentReview.created_at;
       }
-      
-      console.log('🔍 Final result - canSubmitReview:', canSubmitReview);
-      console.log('🔍 Review frequency message:', reviewFrequencyMessage);
     } catch (err: any) {
       console.error('Failed to check review frequency:', err);
       
       // Check if it's a CORS error and handle it gracefully
       if (err.message && (err.message.includes('Load failed') || err.message.includes('access control checks') || err.message.includes('CORS') || err.message.includes('NetworkError'))) {
-        console.log('🔍 CORS/Network error detected, allowing submission and skipping review frequency check');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
@@ -384,7 +240,6 @@
       
       // Check if it's a timeout error
       if (err.message && err.message.includes('API timeout')) {
-        console.log('🔍 API timeout detected, allowing submission and skipping review frequency check');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
@@ -392,7 +247,6 @@
       }
       
       // For other errors, allow submission but log the error
-      console.log('🔍 Other error detected, allowing submission to prevent UI blocking');
       canSubmitReview = true;
       reviewFrequencyMessage = '';
       lastReviewDate = null;
@@ -423,18 +277,13 @@
       paddedId.slice(20, 32)
     ].join('-');
     
-    console.log(`Converted location ID "${locationId}" to UUID: ${uuid}`);
     return uuid;
   }
 
   async function loadLocations() {
     try {
-      console.log('🔄 Loading locations...');
-      
       // Use the new dynamic location loading method from database
       const databaseLocations = await apiClient.getLocationsFromDatabase();
-      console.log('📊 Raw database locations:', databaseLocations.length);
-      console.log('📊 Sample raw location:', databaseLocations[0]);
       
       // Convert to the expected format for the existing code
       const processedLocations = databaseLocations.map(loc => ({
@@ -456,19 +305,6 @@
       
       // Combine backend locations with test data
       locations = [...processedLocations, ...testLocations];
-      
-      console.log('✅ Processed locations:', processedLocations.length);
-      console.log('✅ Test locations added:', testLocations.length);
-      console.log('✅ Total locations available:', locations.length);
-      console.log('✅ Sample processed location:', processedLocations[0]);
-      console.log('✅ Sample test location:', testLocations[0]);
-      
-      // Warn if we have limited data due to backend restrictions
-      if (processedLocations.length <= 50) {
-        console.warn('⚠️ BACKEND LIMITATION: Only loaded', processedLocations.length, 'locations');
-        console.warn('⚠️ This severely limits search functionality - backend needs to be updated');
-        console.warn('⚠️ Users cannot search for locations beyond the first', processedLocations.length, 'records');
-      }
     } catch (err: any) {
       console.error('❌ Failed to load dynamic locations:', err);
       // Keep existing fallback logic as a safety net

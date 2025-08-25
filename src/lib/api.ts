@@ -2209,63 +2209,29 @@ class ApiClient {
       const url = `/api/reviews/?freight_forwarder_id=${companyId}`;
       
       const response = await this.request<any>(url);
-      console.log('🔍 API CLIENT - Raw response:', response);
-      console.log('🔍 API CLIENT - Response type:', typeof response);
-      console.log('🔍 API CLIENT - Response keys:', response ? Object.keys(response) : 'No response');
       
       // Handle different possible response structures
       let allCompanyReviews: any[] = [];
       if (Array.isArray(response)) {
         // Direct array response
         allCompanyReviews = response;
-        console.log('🔍 API CLIENT - Response is direct array with', response.length, 'items');
       } else if (response && typeof response === 'object') {
         // Object response - check for common property names
         if (response.reviews && Array.isArray(response.reviews)) {
           allCompanyReviews = response.reviews;
-          console.log('🔍 API CLIENT - Found reviews in response.reviews with', response.reviews.length, 'items');
         } else if (response.data && Array.isArray(response.data)) {
           allCompanyReviews = response.data;
-          console.log('🔍 API CLIENT - Found reviews in response.data with', response.data.length, 'items');
         } else if (response.items && Array.isArray(response.items)) {
           allCompanyReviews = response.items;
-          console.log('🔍 API CLIENT - Found reviews in response.items with', response.items.length, 'items');
-        } else {
-          console.log('🔍 API CLIENT - Response object structure:', response);
-          console.log('🔍 API CLIENT - No recognizable reviews array found');
         }
       }
       
-      console.log('🔍 API CLIENT - Final allCompanyReviews:', allCompanyReviews);
-      console.log('🔍 API CLIENT - allCompanyReviews type:', typeof allCompanyReviews);
-      console.log('🔍 API CLIENT - allCompanyReviews isArray:', Array.isArray(allCompanyReviews));
-      
-      // Filter reviews by user_id on the frontend
-      console.log('🔍 API CLIENT - All company reviews:', allCompanyReviews);
-      console.log('🔍 API CLIENT - Looking for user ID:', userId);
-      
       // Safety check: ensure allCompanyReviews is an array
       if (!Array.isArray(allCompanyReviews)) {
-        console.error('🔍 API CLIENT - ERROR: allCompanyReviews is not an array:', allCompanyReviews);
-        console.error('🔍 API CLIENT - ERROR: Type:', typeof allCompanyReviews);
         return [];
       }
       
-      // Debug: Show the user_id field from each review
-      console.log('🔍 API CLIENT - Review user IDs:');
-      allCompanyReviews.forEach((review, index) => {
-        console.log(`🔍 API CLIENT - Review ${index + 1}:`, {
-          reviewId: review.id,
-          reviewUserId: review.user_id,
-          reviewUserIdType: typeof review.user_id,
-          currentUserId: userId,
-          currentUserIdType: typeof userId,
-          match: review.user_id === userId
-        });
-      });
-      
       const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
-      console.log('🔍 API CLIENT - User reviews after filtering:', userReviews);
       
       // Now we need to get additional information for each review
       // The reviews table only has UUIDs, so we need to extract actual names
