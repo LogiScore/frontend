@@ -37,6 +37,16 @@
     showAuthModal = false;
   }
 
+  // Function to format category names from snake_case to Title Case
+  function formatCategoryName(categoryName: string): string {
+    if (!categoryName) return '';
+    
+    return categoryName
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
   
   onMount(async () => {
     if (!freightForwarderId) {
@@ -282,7 +292,7 @@
                   <div class="scores-grid">
                     {#each freightForwarder.category_scores as score}
                       <div class="score-item">
-                        <h3>{score.category_name}</h3>
+                        <h3>{formatCategoryName(score.category_name)}</h3>
                         <div class="score-display">
                           <span class="score-value">{score.average_score.toFixed(1)}</span>
                           <span class="score-max">/ 5.0</span>
@@ -332,7 +342,7 @@
                             <div class="category-scores">
                               {#each location.category_scores as category}
                                 <div class="category-score">
-                                  <span class="category-name">{category.category_name}</span>
+                                  <span class="category-name">{formatCategoryName(category.category_name)}</span>
                                   <span class="category-value">{category.average_score.toFixed(1)}</span>
                                 </div>
                               {/each}
@@ -375,7 +385,7 @@
                             <div class="category-scores">
                               {#each country.category_scores as category}
                                 <div class="category-score">
-                                  <span class="category-name">{category.category_name}</span>
+                                  <span class="category-name">{formatCategoryName(category.category_name)}</span>
                                   <span class="category-value">{category.average_score.toFixed(1)}</span>
                                 </div>
                               {/each}
@@ -1231,12 +1241,14 @@
     }
 
     .scores-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
     }
 
     .location-scores-grid,
     .country-scores-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
     }
 
     .tab-navigation {
@@ -1254,6 +1266,96 @@
 
     .overview-grid {
       grid-template-columns: 1fr;
+    }
+
+    .score-item {
+      padding: 1rem;
+    }
+
+    .score-item h3 {
+      font-size: 1.1rem;
+    }
+
+    .score-value {
+      font-size: 1.5rem;
+    }
+
+    .location-score-card,
+    .country-score-card {
+      padding: 1.25rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .scores-grid {
+      gap: 0.75rem;
+    }
+
+    .score-item {
+      padding: 0.75rem;
+    }
+
+    .score-item h3 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .score-value {
+      font-size: 1.25rem;
+    }
+
+    .score-count {
+      font-size: 0.8rem;
+    }
+
+    .location-scores-grid,
+    .country-scores-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .location-score-card,
+    .country-score-card {
+      padding: 1rem;
+    }
+
+    .category-breakdown {
+      padding-top: 0.75rem;
+    }
+
+    .category-breakdown h4 {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .category-score {
+      padding: 0.4rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .scores-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .location-scores-grid,
+    .country-scores-grid {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .score-item {
+      padding: 2rem;
+    }
+
+    .score-item h3 {
+      font-size: 1.4rem;
+    }
+
+    .score-value {
+      font-size: 2.5rem;
     }
   }
 </style>
