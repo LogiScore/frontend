@@ -52,6 +52,10 @@
   let canSubmitReview = true;
   let lastReviewDate: string | null = null;
   let reviewFrequencyMessage = '';
+  
+  // Debug: Track user reviews for company-location combination
+  let userReviewCount = 0;
+  let userReviewDetails: any[] = [];
 
   // Subscribe to auth store
   auth.subscribe(state => {
@@ -150,6 +154,7 @@
       console.log('🔍 No company selected or no user, allowing submission');
       canSubmitReview = true;
       reviewFrequencyMessage = '';
+      lastReviewDate = null;
       return;
     }
 
@@ -168,6 +173,26 @@
       ]) as any[];
       
       console.log('🔍 Found user reviews:', userReviews.length);
+      
+      // Debug: Filter reviews for this specific company-location combination
+      const companyLocationReviews = userReviews.filter((review: any) => 
+        review.location_id === selectedBranch || review.branch_id === selectedBranch
+      );
+      
+      // Update debug variables
+      userReviewCount = companyLocationReviews.length;
+      userReviewDetails = companyLocationReviews;
+      
+      console.log('🔍 Reviews for this company-location combination:', userReviewCount);
+      console.log('🔍 Review details:', userReviewDetails);
+      console.log('🐛 DEBUG - User Review Count Updated:', {
+        company: selectedCompany,
+        location: selectedBranch,
+        locationDisplay: selectedBranchDisplay,
+        reviewCount: userReviewCount,
+        reviewDetails: userReviewDetails,
+        canSubmit: canSubmitReview
+      });
       
       if (userReviews.length === 0) {
         // No previous reviews, can submit
@@ -987,48 +1012,61 @@
             <!-- New Company Form -->
             {#if showNewForwarderForm}
               <div class="new-company-form">
-                <h4>Add New Freight Forwarder</h4>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="newName">Company Name *</label>
-                    <input 
-                      id="newName" 
-                      type="text" 
-                      bind:value={newForwarder.name} 
-                      placeholder="Enter company name"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="newWebsite">Website</label>
-                    <input 
-                      id="newWebsite" 
-                      type="url" 
-                      bind:value={newForwarder.website} 
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="newDescription">Description</label>
-                    <textarea 
-                      id="newDescription" 
-                      bind:value={newForwarder.description} 
-                      placeholder="Brief description of the company"
-                      rows="3"
-                    ></textarea>
-                  </div>
-                </div>
                 <div class="form-group">
-                  <button 
-                    type="button" 
-                    class="btn btn-primary" 
-                    on:click={createNewForwarder}
-                  >
-                    Create Company
-                  </button>
+                  <label for="newCompanyName">Company Name *</label>
+                  <input 
+                    type="text" 
+                    id="newCompanyName" 
+                    bind:value={newForwarder.name} 
+                    placeholder="Enter company name"
+                    required
+                  />
                 </div>
+                
+                <div class="form-group">
+                  <label for="newCompanyWebsite">Website</label>
+                  <input 
+                    type="url" 
+                    id="newCompanyWebsite" 
+                    bind:value={newForwarder.website} 
+                    placeholder="https://example.com"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="newCompanyDescription">Description</label>
+                  <textarea 
+                    id="newCompanyDescription" 
+                    bind:value={newForwarder.description} 
+                    placeholder="Brief description of the company"
+                    rows="3"
+                  ></textarea>
+                </div>
+                
+                <button type="button" class="btn btn-primary" on:click={createNewForwarder}>
+                  Create Company
+                </button>
+              </div>
+            {/if}
+
+            <!-- Debug Information for Company Selection -->
+            {#if selectedCompany && !selectedBranch}
+              <div class="debug-info" style="background: #fff8dc; border: 1px solid #daa520; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                <strong>🐛 DEBUG - Company Selected:</strong><br>
+                <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
+                <strong>Company ID:</strong> {selectedCompany}<br>
+                <strong>Location:</strong> Not selected yet<br>
+                <strong>Status:</strong> Waiting for location selection to check review frequency
+              </div>
+            {/if}
+
+            <!-- Debug Information for No Selection -->
+            {#if !selectedCompany && !selectedBranch}
+              <div class="debug-info" style="background: #ffe6e6; border: 1px solid #ff9999; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                <strong>🐛 DEBUG - No Selection:</strong><br>
+                <strong>Company:</strong> Not selected yet<br>
+                <strong>Location:</strong> Not selected yet<br>
+                <strong>Status:</strong> Waiting for company and location selection
               </div>
             {/if}
 
@@ -1112,6 +1150,31 @@
                 </div>
               {/if}
 
+              <!-- Debug Information -->
+              {#if selectedCompany && selectedBranch && userReviewCount > 0}
+                <div class="debug-info" style="background: #f0f8ff; border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                  <strong>🐛 DEBUG - User Review Count:</strong><br>
+                  <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
+                  <strong>Location:</strong> {selectedBranchDisplay}<br>
+                  <strong>Reviews submitted:</strong> {userReviewCount}<br>
+                  <strong>Last review date:</strong> {userReviewDetails.length > 0 ? new Date(userReviewDetails[0].created_at).toLocaleDateString() : 'N/A'}<br>
+                  <strong>Can submit now:</strong> {canSubmitReview ? '✅ YES' : '❌ NO'}<br>
+                  {#if userReviewDetails.length > 0}
+                    <strong>Review IDs:</strong> {userReviewDetails.map(r => r.id).join(', ')}
+                  {/if}
+                </div>
+              {/if}
+              
+              {#if selectedCompany && selectedBranch && userReviewCount === 0}
+                <div class="debug-info" style="background: #f0fff0; border: 1px solid #90ee90; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                  <strong>🐛 DEBUG - User Review Count:</strong><br>
+                  <strong>Company:</strong> {freightForwarders.find(c => c.id === selectedCompany)?.name || 'Unknown'}<br>
+                  <strong>Location:</strong> {selectedBranchDisplay}<br>
+                  <strong>Reviews submitted:</strong> 0 (First time reviewing this company-location)<br>
+                  <strong>Can submit now:</strong> ✅ YES
+                </div>
+              {/if}
+
             </div>
 
           <!-- Review Options -->
@@ -1133,14 +1196,49 @@
             <h2>Tips for Accurate Reviews</h2>
             <div class="tips-container">
               <ul class="tips-list">
-                <li>Base your review on recent experiences (within 6 months)</li>
-                <li>Consider multiple interactions, not just one shipment</li>
-                <li>Always select the specific branch/location you're reviewing - service quality varies by location</li>
-
-                <li>Focus on objective criteria rather than personal preferences</li>
-                <li>Consider both positive and negative aspects</li>
+                <li>Be specific about your experience with this location</li>
+                <li>Consider factors like communication, timeliness, and service quality</li>
+                <li>Provide constructive feedback that can help other users</li>
+                <li>Respond to customer reviews</li>
               </ul>
             </div>
+          </div>
+
+          <!-- Comprehensive Debug Information -->
+          <div class="debug-section" style="background: #f8f8f8; border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 6px; font-family: monospace; font-size: 11px;">
+            <h4 style="margin: 0 0 10px 0; color: #666;">🐛 COMPREHENSIVE DEBUG INFO</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <strong>Form State:</strong><br>
+                • Company: {selectedCompany || 'None'}<br>
+                • Location: {selectedBranch || 'None'}<br>
+                • Location Display: {selectedBranchDisplay || 'None'}<br>
+                • Is Anonymous: {isAnonymous ? 'Yes' : 'No'}<br>
+                • Can Submit: {canSubmitReview ? 'Yes' : 'No'}
+              </div>
+              <div>
+                <strong>Review Data:</strong><br>
+                • User Review Count: {userReviewCount}<br>
+                • Last Review Date: {lastReviewDate ? new Date(lastReviewDate).toLocaleDateString() : 'N/A'}<br>
+                • Review Categories: {reviewCategories.length}<br>
+                • Rated Questions: {ratedQuestions}/{totalQuestions}<br>
+                • Aggregate Rating: {aggregateRating.toFixed(2)}
+              </div>
+            </div>
+            {#if userReviewDetails.length > 0}
+              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <strong>User Review Details:</strong><br>
+                {#each userReviewDetails as review, i}
+                  • Review {i + 1}: ID {review.id}, Date: {new Date(review.created_at).toLocaleDateString()}<br>
+                {/each}
+              </div>
+            {/if}
+            {#if reviewFrequencyMessage}
+              <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <strong>Review Frequency Message:</strong><br>
+                {reviewFrequencyMessage}
+              </div>
+            {/if}
           </div>
 
                     <!-- Rating Categories -->
