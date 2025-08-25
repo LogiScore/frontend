@@ -64,10 +64,18 @@
     selectedBranch = '';
     selectedBranchDisplay = '';
     // Company data will be loaded in loadCompanyData
-    // Check review frequency when company changes
-    if (selectedCompany && authState.user) {
-      checkReviewFrequency();
-    }
+    // Don't check review frequency yet - wait for both company AND location
+  }
+  
+  // Watch for both company AND location selection to check review frequency
+  $: if (selectedCompany && selectedBranch && authState.user) {
+    // Both company and location are selected, now check review frequency
+    setTimeout(() => {
+      checkReviewFrequency().catch(err => {
+        console.error('Review frequency check failed (non-blocking):', err);
+        // Don't let this error affect the UI - allow form to work
+      });
+    }, 100);
   }
   
   $: aggregateRating = reviewCategories.reduce((sum, cat) => {
@@ -205,8 +213,8 @@
       console.error('Failed to check review frequency:', err);
       
       // Check if it's a CORS error and handle it gracefully
-      if (err.message && (err.message.includes('Load failed') || err.message.includes('access control checks'))) {
-        console.log('🔍 CORS error detected, allowing submission and skipping review frequency check');
+      if (err.message && (err.message.includes('Load failed') || err.message.includes('access control checks') || err.message.includes('CORS') || err.message.includes('NetworkError'))) {
+        console.log('🔍 CORS/Network error detected, allowing submission and skipping review frequency check');
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
@@ -226,8 +234,10 @@
       }
       
       // For other errors, allow submission but log the error
+      console.log('🔍 Other error detected, allowing submission to prevent UI blocking');
       canSubmitReview = true;
       reviewFrequencyMessage = '';
+      lastReviewDate = null;
     }
   }
 
@@ -631,10 +641,8 @@
       locationSuggestions = [];
       error = null; // Clear any previous errors
       
-      // Check review frequency after branch selection
-      if (selectedCompany && authState.user) {
-        await checkReviewFrequency();
-      }
+      // Review frequency check is now handled by the reactive statement
+      // when both company and location are selected
       
       console.log('Location selection completed successfully');
       
@@ -651,10 +659,8 @@
     locationSuggestions = [];
     error = null; // Clear any previous errors
     
-    // Check review frequency after branch selection
-    if (selectedCompany && authState.user) {
-      await checkReviewFrequency();
-    }
+    // Review frequency check is now handled by the reactive statement
+    // when both company and location are selected
   }
   
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
