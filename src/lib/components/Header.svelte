@@ -537,5 +537,26 @@
       right: -1rem;
       min-width: 260px;
     }
+    
+    .logo {
+      height: 56px; /* Smaller logo for mobile devices */
+      width: auto;
+    }
+    
+    .nav-brand {
+      padding: 0.5rem 0; /* Reduce padding for mobile */
+    }
+  }
+  
+  /* Extra small mobile devices */
+  @media (max-width: 480px) {
+    .logo {
+      height: 48px; /* Even smaller logo for very small screens */
+      width: auto;
+    }
+    
+    .nav-brand {
+      padding: 0.25rem 0; /* Minimal padding for very small screens */
+    }
   }
 </style> 
