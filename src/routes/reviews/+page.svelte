@@ -194,16 +194,16 @@
       userReviewCount = companyLocationReviews.length;
       userReviewDetails = companyLocationReviews;
       
-      if (userReviews.length === 0) {
-        // No previous reviews, can submit
+      if (companyLocationReviews.length === 0) {
+        // No previous reviews for this specific location, can submit
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = null;
         return;
       }
 
-      // Check the most recent review
-      const mostRecentReview = userReviews.sort((a: any, b: any) => 
+      // Check the most recent review for this specific location
+      const mostRecentReview = companyLocationReviews.sort((a: any, b: any) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
 
@@ -212,14 +212,14 @@
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
       if (lastReviewTime > sixMonthsAgo) {
-        // Last review was within 6 months
+        // Last review for this location was within 6 months
         canSubmitReview = false;
         const timeRemaining = new Date(lastReviewTime.getTime() + (6 * 30 * 24 * 60 * 60 * 1000));
         const daysRemaining = Math.ceil((timeRemaining.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
         reviewFrequencyMessage = `Users are only allowed to review specific branches of Freight Forwarders once every six months. You can submit another review for this branch in ${daysRemaining} days. You may submit a review of another branch, unless you have already done so.`;
         lastReviewDate = mostRecentReview.created_at;
       } else {
-        // Last review was more than 6 months ago
+        // Last review for this location was more than 6 months ago
         canSubmitReview = true;
         reviewFrequencyMessage = '';
         lastReviewDate = mostRecentReview.created_at;
