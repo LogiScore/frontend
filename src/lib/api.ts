@@ -2208,11 +2208,18 @@ class ApiClient {
       // and filter by user on the frontend. This is not ideal but works with current backend.
       const url = `/api/reviews/?freight_forwarder_id=${companyId}`;
       
-      const response = await this.request<{reviews: any[], total_count: number}>(url);
-      const allCompanyReviews = response.reviews || [];
+      const response = await this.request<any[]>(url);
+      console.log('🔍 API CLIENT - Raw response:', response);
+      console.log('🔍 API CLIENT - Response type:', typeof response);
+      console.log('🔍 API CLIENT - Response length:', response?.length);
+      console.log('🔍 API CLIENT - Response keys:', response ? Object.keys(response) : 'No response');
+      const allCompanyReviews = response || [];
       
       // Filter reviews by user_id on the frontend
+      console.log('🔍 API CLIENT - All company reviews:', allCompanyReviews);
+      console.log('🔍 API CLIENT - Looking for user ID:', userId);
       const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
+      console.log('🔍 API CLIENT - User reviews after filtering:', userReviews);
       
       // Now we need to get additional information for each review
       // The reviews table only has UUIDs, so we need to extract actual names
