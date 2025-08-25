@@ -175,7 +175,28 @@
       console.log('🔍 API Call Details:');
       console.log('🔍 User ID:', authState.user.id);
       console.log('🔍 Company ID:', selectedCompany);
-      console.log('🔍 API Response:', userReviews);
+      console.log('🔍 Raw API Response:', userReviews);
+      console.log('🔍 API Response Type:', typeof userReviews);
+      console.log('🔍 API Response Length:', userReviews?.length);
+      console.log('🔍 API Response Keys:', userReviews ? Object.keys(userReviews) : 'No response');
+      
+      // Check if the response has the expected structure
+      if (userReviews && typeof userReviews === 'object') {
+        console.log('🔍 Response Structure Analysis:');
+        if (Array.isArray(userReviews)) {
+          console.log('🔍 Response is an array with', userReviews.length, 'items');
+          if (userReviews.length > 0) {
+            console.log('🔍 First item structure:', userReviews[0]);
+            console.log('🔍 First item keys:', Object.keys(userReviews[0]));
+          }
+        } else if (userReviews && typeof userReviews === 'object' && 'reviews' in userReviews) {
+          console.log('🔍 Response has reviews property:', (userReviews as any).reviews);
+          console.log('🔍 Reviews array length:', (userReviews as any).reviews?.length);
+        } else {
+          console.log('🔍 Response structure:', userReviews);
+        }
+      }
+      
       console.log('🔍 Found user reviews:', userReviews.length);
       console.log('🔍 All user reviews for company:', userReviews);
       console.log('🔍 Current selectedBranch value:', selectedBranch);
@@ -189,6 +210,11 @@
         console.log('🔍 2. API endpoint is not working');
         console.log('🔍 3. Database has no reviews');
         console.log('🔍 4. User ID or Company ID mismatch');
+        console.log('🔍 5. Frontend data processing issue');
+        console.log('🔍 6. API response structure mismatch');
+      } else {
+        console.log('🔍 SUCCESS: API returned', userReviews.length, 'reviews');
+        console.log('🔍 Now proceeding to frontend filtering...');
       }
       
       // Debug: Show the structure of each review
@@ -238,12 +264,23 @@
           cityMatch,
           countryMatch,
           locationMatch,
-          locationDisplay: selectedBranchDisplay
+          locationDisplay: selectedBranchDisplay,
+          finalMatch: userMatch && companyMatch && locationMatch
         });
         
         // A review matches if user+company match AND location matches
         return userMatch && companyMatch && locationMatch;
       });
+      
+      console.log('🔍 Filtering Results:');
+      console.log('🔍 Total reviews from API:', userReviews.length);
+      console.log('🔍 Reviews after filtering:', companyLocationReviews.length);
+      console.log('🔍 Filtered reviews:', companyLocationReviews);
+      
+      if (userReviews.length > 0 && companyLocationReviews.length === 0) {
+        console.log('🔍 FILTERING ISSUE: API returned reviews but filtering removed them all');
+        console.log('🔍 Check the filtering criteria above for the issue');
+      }
       
       console.log('🔍 Reviews for this company-location combination:', companyLocationReviews.length);
       console.log('🔍 Review details:', companyLocationReviews);
@@ -1355,6 +1392,17 @@
                 <strong>Issue:</strong> API is returning 0 reviews - check backend logs<br>
                 <strong>Next Steps:</strong> Verify reviews exist in database for this company
               </div>
+              
+              <!-- Debug: Raw API Response Data -->
+              {#if selectedCompany && selectedBranch && authState.user}
+                <div style="margin-top: 10px; padding: 8px; background: #e8f5e8; border: 1px solid #4caf50; border-radius: 4px; font-family: monospace; font-size: 8px; max-height: 150px; overflow-y: auto;">
+                  <strong>🔍 DEBUG - Raw API Response Data:</strong><br>
+                  <strong>API Response Status:</strong> Check console for detailed response data<br>
+                  <strong>Console Logs:</strong> Look for "Raw API Response" and "Response Structure Analysis"<br>
+                  <strong>Filtering Results:</strong> Look for "Filtering Results" logs<br>
+                  <strong>Expected:</strong> Backend returns 9 reviews, frontend should process them
+                </div>
+              {/if}
             {/if}
             {#if userReviewDetails.length > 0}
               <div style="margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
