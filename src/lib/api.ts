@@ -126,14 +126,6 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
-    // Debug: Log the full request details
-    console.log('API Request:', {
-      url,
-      method: options.method || 'GET',
-      headers: options.headers,
-      body: options.body
-    });
-    
     try {
       const response = await fetch(url, {
         headers: {
@@ -145,25 +137,8 @@ class ApiClient {
         ...options,
       });
 
-      // Debug: Log the raw response details
-      console.log('API Response Details:', {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
-        
-        // Debug: Log the error response
-        console.log('API Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText,
-          headers: Object.fromEntries(response.headers.entries())
-        });
         
         // Handle specific status codes
         if (response.status === 500) {
@@ -179,30 +154,20 @@ class ApiClient {
         
         throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
-
-      // Debug: Log successful response
-      console.log('API Success Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
       
       // Try to parse the response as JSON, but handle cases where it might be empty
       try {
         const responseText = await response.text();
-        console.log('API Response Text:', responseText);
         
         if (!responseText || responseText.trim() === '') {
-          console.log('API: Empty response body, returning empty object');
           return {} as T;
         }
         
         return JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('API: Failed to parse response as JSON:', parseError);
-        console.log('API: Raw response text:', await response.text());
-        throw new Error('Invalid response format from server');
-      }
+              } catch (parseError) {
+          console.error('API: Failed to parse response as JSON:', parseError instanceof Error ? parseError.message : String(parseError));
+          throw new Error('Invalid response format from server');
+        }
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         // Check if it's a network connection issue
@@ -213,13 +178,6 @@ class ApiClient {
         }
         throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
       }
-      
-      // Log the full error for debugging
-      console.error('API Request Error Details:', {
-        endpoint,
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
       
       throw error;
     }
@@ -257,7 +215,7 @@ class ApiClient {
         }
       });
     } catch (error: any) {
-      console.error('Failed to fetch freight forwarders:', error);
+      console.error('Failed to fetch freight forwarders:', error.message);
       throw error;
     }
   }
@@ -281,7 +239,7 @@ class ApiClient {
         }
       });
     } catch (error: any) {
-      console.error('Failed to fetch freight forwarder details:', error);
+      console.error('Failed to fetch freight forwarder details:', error.message);
       throw error;
     }
   }
@@ -292,17 +250,6 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      // Debug: Log request details
-      console.log('API Request Details:', {
-        url: '/api/freight-forwarders/',
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token.substring(0, 20)}...`,
-          'Content-Type': 'application/json'
-        },
-        body: forwarderData
-      });
-      
       return await this.request<FreightForwarder>('/api/freight-forwarders/', {
         method: 'POST',
         headers: {
@@ -312,7 +259,7 @@ class ApiClient {
         body: JSON.stringify(forwarderData),
       });
     } catch (error: any) {
-      console.error('Failed to create freight forwarder:', error);
+      console.error('Failed to create freight forwarder:', error.message);
       throw error;
     }
   }
@@ -330,17 +277,6 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      // Debug: Log request details
-      console.log('API Request Details:', {
-        url: '/api/branches/',
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token.substring(0, 20)}...`,
-          'Content-Type': 'application/json'
-        },
-        body: branchData
-      });
-      
       return await this.request<{ id: string; name: string; freight_forwarder_id: string }>('/api/branches/', {
         method: 'POST',
         headers: {
@@ -350,7 +286,7 @@ class ApiClient {
         body: JSON.stringify(branchData),
       });
     } catch (error: any) {
-      console.error('Failed to create branch:', error);
+      console.error('Failed to create branch:', error.message);
       throw error;
     }
   }
@@ -362,7 +298,7 @@ class ApiClient {
     try {
       return await this.request<Location[]>('/api/locations');
     } catch (error: any) {
-      console.error('Failed to fetch locations:', error);
+      console.error('Failed to fetch locations:', error.message);
       // Return fallback locations if API fails
       return this.getFallbackLocations();
     }
@@ -385,8 +321,6 @@ class ApiClient {
       if (!token) {
         throw new Error('Authentication token is required');
       }
-      
-      console.log('🔄 Fetching reviews to calculate location scores for freight forwarder:', freightForwarderId);
       
       // Fetch all reviews for this freight forwarder
       const reviewsResponse = await this.request<{
@@ -412,25 +346,15 @@ class ApiClient {
         },
       });
       
-      console.log('📊 Reviews response received:', reviewsResponse);
-      
       // Extract reviews array from response
       const reviews = reviewsResponse.reviews || reviewsResponse as any;
       
-      console.log('🔍 Reviews response type:', typeof reviews);
-      console.log('🔍 Reviews response keys:', Object.keys(reviewsResponse));
-      console.log('🔍 Reviews array check:', Array.isArray(reviews));
-      
       if (!Array.isArray(reviews)) {
-        console.error('❌ Reviews response is not an array:', reviews);
-        console.error('❌ Reviews response structure:', reviewsResponse);
+        console.error('Reviews response is not an array');
         return [];
       }
       
-      console.log('📊 Reviews array extracted:', reviews.length);
-      
       if (reviews.length === 0) {
-        console.log('📭 No reviews found for this freight forwarder');
         return [];
       }
       
@@ -464,11 +388,10 @@ class ApiClient {
         };
       });
       
-      console.log('✅ Location scores calculated:', locationScores);
       return locationScores;
       
     } catch (error: any) {
-      console.error('❌ Failed to calculate location scores from reviews:', error);
+      console.error('Failed to calculate location scores from reviews:', error.message);
       return [];
     }
   }
@@ -489,13 +412,10 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      console.log('🔄 Calculating country scores from reviews for freight forwarder:', freightForwarderId);
-      
       // Get location scores first, then aggregate by country
       const locationScores = await this.getFreightForwarderLocationScores(freightForwarderId, token);
       
       if (!locationScores || locationScores.length === 0) {
-        console.log('📭 No location scores available for country aggregation');
         return [];
       }
       
@@ -526,11 +446,10 @@ class ApiClient {
         };
       });
       
-      console.log('✅ Country scores calculated:', countryScores);
       return countryScores;
       
     } catch (error: any) {
-      console.error('❌ Failed to calculate country scores from reviews:', error);
+      console.error('Failed to calculate country scores from reviews:', error.message);
       return [];
     }
   }
@@ -581,15 +500,6 @@ class ApiClient {
         throw new Error('Authentication token is required');
       }
       
-      // Debug: Log the request details
-      console.log('Creating comprehensive review with data:', reviewData);
-      console.log('Request endpoint:', '/api/reviews/');
-      console.log('Request method:', 'POST');
-      console.log('Request headers:', {
-        'Authorization': `Bearer ${token.substring(0, 20)}...`,
-        'Content-Type': 'application/json'
-      });
-      
       return await this.request<ReviewResponse>('/api/reviews/', {
         method: 'POST',
         headers: {
@@ -616,7 +526,6 @@ class ApiClient {
         filters: { freight_forwarder_id?: string };
       }>(`/api/reviews/?freight_forwarder_id=${freightForwarderId}`);
       
-      console.log(`✅ Found ${response.reviews?.length || 0} reviews for freight forwarder: ${freightForwarderId}`);
       return response.reviews || [];
     } catch (error: any) {
       console.error('Failed to fetch reviews for freight forwarder:', error);
@@ -1300,41 +1209,28 @@ class ApiClient {
   // Step 1: Send verification code to user's email
   async sendVerificationCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
-      console.log('🔍 API sendVerificationCode called for email:', email);
-      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
-      // Validate email before making the request
+      // Validate email validation before making the request
       const emailValidation = validateBusinessEmail(email);
       if (!emailValidation.isValid) {
-        console.error('❌ Email validation failed:', emailValidation.reason);
         throw new Error(emailValidation.reason || 'Invalid email address');
       }
-      
-      console.log('✅ Email validation passed, making API request to /auth/send-code');
       
       const response = await this.request<{ message: string; expires_in?: number }>('/auth/send-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
       
-      console.log('📧 Raw API response:', response);
-      
       // Provide default expiration time if backend doesn't return it
       const result = {
         message: response.message,
         expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
       };
-      console.log('✅ Processed API result:', result);
       return result;
     } catch (error: any) {
-      console.error('💥 API sendVerificationCode failed:', error);
-      console.error('💥 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('API sendVerificationCode failed:', error);
       throw error;
     }
   }
@@ -1343,19 +1239,14 @@ class ApiClient {
   // Send verification code for existing user sign-in
   async sendSigninCode(email: string): Promise<{ message: string; expires_in: number }> {
     try {
-      console.log('🔍 API sendSigninCode called for email:', email);
-      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
       // Validate email before making the request
       const emailValidation = validateBusinessEmail(email);
       if (!emailValidation.isValid) {
-        console.error('❌ Email validation failed:', emailValidation.reason);
         throw new Error(emailValidation.reason || 'Invalid email address');
       }
-      
-      console.log('✅ Email validation passed, making API request to /api/auth/send-signin-code');
       
       try {
         const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signin-code', {
@@ -1363,15 +1254,12 @@ class ApiClient {
           body: JSON.stringify({ email }),
         });
         
-        console.log('📧 Raw API response:', response);
-        
         // Check if the response indicates user not found (even with 200 status)
         if (response.message && (
             response.message.toLowerCase().includes('user not found') ||
             response.message.toLowerCase().includes('does not exist') ||
             response.message.toLowerCase().includes('not registered')
         )) {
-          console.log('❌ Backend response indicates user not found');
           throw new Error('User not found. Please sign up instead.');
         }
         
@@ -1380,18 +1268,11 @@ class ApiClient {
           message: response.message,
           expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
         };
-        console.log('✅ Processed API result:', result);
         return result;
       } catch (backendError: any) {
         // If backend endpoint doesn't exist (404) or fails, check if user exists
-        console.log('⚠️ Backend endpoint failed, checking user existence...');
-        
         if (backendError.message?.includes('404') || backendError.message?.includes('Not Found')) {
           // Backend endpoint not implemented yet - use fallback
-          console.log('🔄 Backend endpoint not implemented, using fallback check');
-          
-          // For now, we'll use a simple check - you can replace this with your actual user existence check
-          // This is a temporary solution until the backend endpoints are implemented
           
           // Check if user exists in localStorage (temporary fallback)
           if (typeof window !== 'undefined') {
@@ -1399,7 +1280,6 @@ class ApiClient {
             if (existingUsers) {
               const users = JSON.parse(existingUsers);
               if (users.includes(email)) {
-                console.log('✅ User exists, allowing sign-in code request');
                 return {
                   message: 'Verification code sent to your email',
                   expires_in: 10
@@ -1414,8 +1294,6 @@ class ApiClient {
         
         // Check for specific backend error responses
         if (backendError.status === 400 || backendError.message?.includes('400')) {
-          console.log('🔍 Backend returned 400 status, checking error details...');
-          
           // Try to parse error response from the error message
           let errorDetail = 'User not found';
           try {
@@ -1425,18 +1303,12 @@ class ApiClient {
               const jsonEnd = backendError.message.lastIndexOf('}') + 1;
               const jsonString = backendError.message.substring(jsonStart, jsonEnd);
               
-              console.log('🔍 Extracting JSON from error message:', jsonString);
-              
               const errorData = JSON.parse(jsonString);
               errorDetail = errorData.detail || errorData.message || 'User not found';
-              
-              console.log('✅ Extracted error detail:', errorDetail);
             }
           } catch (parseError) {
-            console.log('Could not parse error response, using default message');
+            // Could not parse error response, using default message
           }
-          
-          console.log('❌ Backend error detail:', errorDetail);
           
           // Check if it's a "user not found" type error
           if (errorDetail.toLowerCase().includes('not found') || 
@@ -1453,12 +1325,7 @@ class ApiClient {
         throw backendError;
       }
     } catch (error: any) {
-      console.error('💥 API sendSigninCode failed:', error);
-      console.error('💥 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('API sendSigninCode failed:', error);
       throw error;
     }
   }
@@ -1467,19 +1334,14 @@ class ApiClient {
   // Send verification code for new user sign-up
   async sendSignupCode(email: string, userType: string, companyName: string): Promise<{ message: string; expires_in: number }> {
     try {
-      console.log('🔍 API sendSignupCode called for email:', email, 'userType:', userType, 'companyName:', companyName);
-      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
       // Validate email before making the request
       const emailValidation = validateBusinessEmail(email);
       if (!emailValidation.isValid) {
-        console.error('❌ Email validation failed:', emailValidation.reason);
         throw new Error(emailValidation.reason || 'Invalid email address');
       }
-      
-      console.log('✅ Email validation passed, making API request to /api/auth/send-signup-code');
       
       try {
         const response = await this.request<{ message: string; expires_in?: number }>('/api/auth/send-signup-code', {
@@ -1487,25 +1349,16 @@ class ApiClient {
           body: JSON.stringify({ email, user_type: userType, company_name: companyName }),
         });
         
-        console.log('📧 Raw API response:', response);
-        
         // Provide default expiration time if backend doesn't return it
         const result = {
           message: response.message,
           expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
         };
-        console.log('✅ Processed API result:', result);
         return result;
       } catch (backendError: any) {
         // If backend endpoint doesn't exist (404) or fails, provide fallback
-        console.log('⚠️ Backend endpoint failed, checking if signup is possible...');
-        
         if (backendError.message?.includes('404') || backendError.message?.includes('Not Found')) {
           // Backend endpoint not implemented yet - use fallback
-          console.log('🔄 Backend endpoint not implemented, using fallback signup');
-          
-          // For now, we'll allow signup for any new email
-          // This is a temporary solution until the backend endpoints are implemented
           
           // Check if user already exists in localStorage (temporary fallback)
           if (typeof window !== 'undefined') {
@@ -1521,7 +1374,6 @@ class ApiClient {
             localStorage.setItem('logiscore_existing_users', JSON.stringify(users));
           }
           
-          console.log('✅ New user signup allowed via fallback');
           return {
             message: 'Verification code sent to your email',
             expires_in: 10
@@ -1532,12 +1384,7 @@ class ApiClient {
         throw backendError;
       }
     } catch (error: any) {
-      console.error('💥 API sendSignupCode failed:', error);
-      console.error('💥 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('API sendSignupCode failed:', error);
       throw error;
     }
   }
@@ -1546,8 +1393,6 @@ class ApiClient {
   // Verify sign-in code for existing users
   async verifySigninCode(email: string, code: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
-      console.log('🔍 API verifySigninCode called for email:', email);
-      
       return await this.request<{ user: User; access_token: string; token_type: string }>('/api/auth/verify-signin-code', {
         method: 'POST',
         body: JSON.stringify({ email, code }),
@@ -1562,8 +1407,6 @@ class ApiClient {
   // Verify sign-up code for new users
   async verifySignupCode(email: string, code: string, fullName: string, companyName: string, userType: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
-      console.log('🔍 API verifySignupCode called for email:', email, 'fullName:', fullName, 'companyName:', companyName, 'userType:', userType);
-      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
@@ -1591,8 +1434,6 @@ class ApiClient {
   // Legacy method: Verify code and complete user authentication (for backward compatibility)
   async verifyCode(email: string, code: string, name: string, company?: string, userType?: string): Promise<{ user: User; access_token: string; token_type: string }> {
     try {
-      console.log('🔍 Legacy API verifyCode called for email:', email);
-      
       // Import email validation dynamically to avoid circular dependencies
       const { validateBusinessEmail } = await import('./emailValidation');
       
@@ -1636,12 +1477,10 @@ class ApiClient {
       });
       
       // Provide default expiration time if backend doesn't return it
-      console.log('Admin API Response:', response);
       const result = {
         message: response.message,
         expires_in: response.expires_in || 10 // Default to 10 minutes if not provided
       };
-      console.log('Processed admin result:', result);
       return result;
     } catch (error: any) {
       console.error('Failed to send admin verification code:', error);
@@ -1679,15 +1518,12 @@ class ApiClient {
         body: JSON.stringify({ email, code }),
       });
     } catch (error: any) {
-      console.error('Signin with code failed:', error);
-      console.error('Error message:', error.message);
-      console.error('Error type:', typeof error);
+      console.error('Signin with code failed:', error.message);
       
-      // Check if it's a CORS or network error
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
-        // Provide fallback authentication for demo purposes
-        console.log('Using fallback verification code authentication');
-        return {
+              // Check if it's a CORS or network error
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
+          // Provide fallback authentication for demo purposes
+          return {
           user: {
             id: 'demo-user',
             username: 'Demo User',
@@ -1703,10 +1539,9 @@ class ApiClient {
         };
       }
       
-      // If the endpoint doesn't exist (404), provide fallback
-      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
-        console.log('Backend verification code endpoint not implemented, using fallback');
-        return {
+              // If the endpoint doesn't exist (404), provide fallback
+        if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+          return {
           user: {
             id: 'demo-user',
             username: 'Demo User',
@@ -1722,9 +1557,8 @@ class ApiClient {
         };
       }
       
-      // If it's any other error, still provide fallback for demo purposes
-      console.log('Using fallback verification code authentication due to unknown error');
-      return {
+              // If it's any other error, still provide fallback for demo purposes
+        return {
         user: {
           id: 'demo-user',
             username: 'Demo User',
@@ -1817,7 +1651,7 @@ class ApiClient {
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error('Email sending failed:', error);
+      console.error('Email sending failed:', error.message);
       throw new Error(`Failed to send thank you email: ${error.message}`);
     }
   }
@@ -1842,7 +1676,7 @@ class ApiClient {
     try {
       return await this.requestWithAuth<User>('/api/users/me', {}, token);
     } catch (error) {
-      console.error('Failed to get current user:', error);
+      console.error('Failed to get current user:', error instanceof Error ? error.message : String(error));
       // Don't return demo user - let the calling code handle the error
       // This prevents real users from being replaced with demo data
       throw error;
@@ -1860,7 +1694,7 @@ class ApiClient {
         },
       });
     } catch (error) {
-      console.error('Failed to refresh token:', error);
+      console.error('Failed to refresh token:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
@@ -1884,12 +1718,10 @@ class ApiClient {
     } catch (error: any) {
       // If we get a 401, try to refresh the token and retry
       if (error.message?.includes('401') || error.message?.includes('Could not validate credentials')) {
-        console.log('Token validation failed, attempting refresh...');
         
         try {
           const refreshResponse = await this.refreshToken(token);
           if (refreshResponse.access_token) {
-            console.log('Token refreshed, retrying request...');
             // Retry the request with the new token
             return await this.request<T>(endpoint, {
               ...options,
@@ -1900,7 +1732,7 @@ class ApiClient {
             });
           }
         } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
+          console.error('Token refresh failed:', refreshError instanceof Error ? refreshError.message : String(refreshError));
         }
       }
       
@@ -2027,7 +1859,6 @@ class ApiClient {
   // Admin methods (for the 8x7k9m2p dashboard)
   async getDashboardStats(token: string) {
     try {
-      console.log('Calling admin dashboard with token:', token ? `${token.substring(0, 20)}...` : 'none');
       return await this.request('/admin/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2037,7 +1868,6 @@ class ApiClient {
       // Check if it's an authentication error
       if ((error as any).message?.includes('401') || (error as any).message?.includes('Could not validate credentials')) {
         console.error('Authentication failed - token validation issue');
-        console.error('Token being used:', token);
         throw new Error('Authentication failed. Please log in again.');
       }
       
@@ -2121,8 +1951,6 @@ class ApiClient {
   // ===== METHOD: updateCompany =====
   async updateCompany(token: string, companyId: string, companyData: any) {
     try {
-      console.log('API: Updating company', companyId, 'with data:', companyData);
-      
       const result = await this.request(`/admin/companies/${companyId}`, {
         method: 'PUT',
         headers: { 
@@ -2132,7 +1960,6 @@ class ApiClient {
         body: JSON.stringify(companyData)
       });
       
-      console.log('API: Company update successful:', result);
       return result;
     } catch (error) {
       console.error('API: Failed to update company:', error);
@@ -2236,7 +2063,6 @@ class ApiClient {
   // ===== METHOD: getRecentActivity =====
   async getRecentActivity(token: string) {
     try {
-      console.log('Calling admin recent activity with token:', token ? `${token.substring(0, 20)}...` : 'none');
       return await this.request('/admin/recent-activity', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2282,27 +2108,19 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Backend now supports proper search and pagination - no more client-side pagination needed!
-      console.log('🎉 Backend limitation removed! Using new search-enabled API...');
-      
       // Get all locations without search filter (for initial load)
       const url = '/api/locations/?page=1&page_size=1000';
-      console.log(`📡 Fetching all locations: ${url}`);
       
       const response = await this.request<any>(url);
-      console.log(`📦 Received response structure:`, response);
       
       // Handle the new response format with pagination metadata
       let data: any[];
       if (response.data && Array.isArray(response.data)) {
         // New format: { data: [...], pagination: {...} }
         data = response.data;
-        console.log(`✅ Successfully loaded ${data.length} locations via new API format`);
-        console.log(`📊 Pagination info:`, response.pagination);
       } else if (Array.isArray(response)) {
         // Fallback: direct array response
         data = response;
-        console.log(`✅ Successfully loaded ${data.length} locations via direct array response`);
       } else {
         throw new Error('Unexpected API response format');
       }
@@ -2320,7 +2138,6 @@ class ApiClient {
       console.error('Failed to load locations from database:', error);
       
       // Fallback: Load from static data if backend API is not available
-      console.log('Using fallback locations due to API error');
       const fallbackLocations = [
         { id: 'us-east', name: 'New York, NY, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
         { id: 'us-west', name: 'Los Angeles, CA, USA', region: 'Americas', subregion: 'North America', country: 'USA' },
@@ -2344,7 +2161,6 @@ class ApiClient {
         { id: 'no-oslo', name: 'Oslo, , Norway', region: 'Europe', subregion: 'Northern Europe', country: 'Norway' }
       ];
       
-      console.log('Using fallback locations, backend API not available');
       return fallbackLocations;
     }
   }
@@ -2354,23 +2170,17 @@ class ApiClient {
     try {
       // Use the new backend search API with pagination
       const url = `/api/locations/?q=${encodeURIComponent(query)}&page=1&page_size=1000`;
-      console.log(`🔍 Searching locations with query: "${query}"`);
-      console.log(`📡 Search URL: ${url}`);
       
       const response = await this.request<any>(url);
-      console.log(`📦 Search response structure:`, response);
       
       // Handle the new response format with pagination metadata
       let data: any[];
       if (response.data && Array.isArray(response.data)) {
         // New format: { data: [...], pagination: {...} }
         data = response.data;
-        console.log(`✅ Search found ${data.length} locations for "${query}"`);
-        console.log(`📊 Search pagination info:`, response.pagination);
       } else if (Array.isArray(response)) {
         // Fallback: direct array response
         data = response;
-        console.log(`✅ Search found ${data.length} locations for "${query}" (direct response)`);
       } else {
         throw new Error('Unexpected search API response format');
       }
@@ -2397,7 +2207,6 @@ class ApiClient {
       // Since the backend doesn't support user_id filtering, we get all reviews for the company
       // and filter by user on the frontend. This is not ideal but works with current backend.
       const url = `/api/reviews/?freight_forwarder_id=${companyId}`;
-      console.log(`🔍 Getting all reviews for company: ${companyId} to filter by user: ${userId}`);
       
       const response = await this.request<{reviews: any[], total_count: number}>(url);
       const allCompanyReviews = response.reviews || [];
@@ -2405,7 +2214,6 @@ class ApiClient {
       // Filter reviews by user_id on the frontend
       const userReviews = allCompanyReviews.filter(review => review.user_id === userId);
       
-      console.log(`✅ Found ${userReviews.length} previous reviews for user ${userId} and company ${companyId} out of ${allCompanyReviews.length} total company reviews`);
       return userReviews;
     } catch (error: any) {
       console.error(`Failed to get user reviews for company: ${companyId}`, error);
