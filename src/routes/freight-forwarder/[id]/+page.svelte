@@ -316,7 +316,7 @@
                   <div class="loading-scores">Loading location scores...</div>
                 {:else if locationScores && locationScores.length > 0}
                   <div class="location-scores-grid">
-                    {#each locationScores as location}
+                    {#each locationScores.sort((a, b) => a.location_name.localeCompare(b.location_name)) as location}
                       <div class="location-score-card">
                         <div class="location-header">
                           <h3>{location.location_name}</h3>
@@ -364,7 +364,7 @@
                   <div class="loading-scores">Loading country scores...</div>
                 {:else if countryScores.length > 0}
                   <div class="country-scores-grid">
-                    {#each countryScores as country}
+                    {#each countryScores.sort((a, b) => a.country.localeCompare(b.country)) as country}
                       <div class="country-score-card">
                         <div class="country-header">
                           <h3>🇺🇳 {country.country}</h3>
