@@ -984,6 +984,15 @@
     ? locations.filter(loc => loc.country === selectedCountry && loc.city === selectedCity)
     : [];
 
+  // Debug computed properties
+  $: if (selectedCountry) {
+    console.log('🔍 Debug computed properties:');
+    console.log('- selectedCountry:', selectedCountry);
+    console.log('- availableCities:', availableCities);
+    console.log('- availableLocations:', availableLocations);
+    console.log('- Sample locations for country:', locations.filter(loc => loc.country === selectedCountry).slice(0, 3));
+  }
+
   // Hierarchical location selection functions
   function selectCountry(country: string) {
     console.log('🌍 selectCountry called with:', country);
@@ -1415,16 +1424,42 @@
               </div>
               
               <div class="location-list">
-                {#each availableCities.filter(city => 
-                  !citySearchTerm || city.toLowerCase().includes(citySearchTerm.toLowerCase())
-                ) as city}
-                  <div 
-                    class="modal-location-item"
-                    on:click={() => selectCity(city)}
-                  >
-                    🏙️ {city}
+                {#if availableCities.length > 0}
+                  {#each availableCities.filter(city => 
+                    !citySearchTerm || city.toLowerCase().includes(citySearchTerm.toLowerCase())
+                  ) as city}
+                    <div 
+                      class="modal-location-item"
+                      on:click={() => selectCity(city)}
+                    >
+                      🏙️ {city}
+                    </div>
+                  {/each}
+                {:else}
+                  <!-- Fallback: Show locations directly if no cities found -->
+                  <div class="no-cities-message">
+                    <p>No cities found for {selectedCountry}. Showing locations directly:</p>
                   </div>
-                {/each}
+                  {#each locations.filter(loc => 
+                    loc.country === selectedCountry && 
+                    (!citySearchTerm || 
+                     loc.city?.toLowerCase().includes(citySearchTerm.toLowerCase()) ||
+                     loc.name?.toLowerCase().includes(citySearchTerm.toLowerCase()))
+                  ) as location}
+                    <div 
+                      class="modal-location-item"
+                      on:click={() => {
+                        selectLocationFromHierarchy(location);
+                        showLocationModal = false;
+                      }}
+                    >
+                      <strong>📍 {location.name || 'Unknown Location'}</strong>
+                      {#if location.city}
+                        <span class="location-details">, {location.city}</span>
+                      {/if}
+                    </div>
+                  {/each}
+                {/if}
               </div>
             </div>
           
