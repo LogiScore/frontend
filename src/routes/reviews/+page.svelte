@@ -1211,13 +1211,8 @@
     try {
       console.log(`📍 Loading locations for city: ${city}, ${country}`);
       
-      // Search for locations in this specific city and country
-      const searchResults = await apiClient.searchLocations(`${city} ${country}`);
-      
-      // Filter results to this specific city and country
-      const cityLocations = searchResults.filter(loc => 
-        loc.country === country && loc.city === city
-      );
+      // Use the new API method to get all locations in this specific city and country
+      const cityLocations = await apiClient.getLocationsByCity(country, city);
       
       console.log(`✅ Found ${cityLocations.length} locations in ${city}, ${country}:`, cityLocations.slice(0, 5));
       
@@ -1734,8 +1729,15 @@
                   type="text" 
                   placeholder="Search locations in {selectedCity}, {selectedCountry}..." 
                   bind:value={locationSearchTerm}
+                  on:input={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    console.log('🔍 Location search input:', target.value);
+                  }}
                   class="location-search-input"
                 />
+                <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                  💡 Type to filter locations in {selectedCity}, {selectedCountry}
+                </div>
               </div>
               
               <div class="location-list">
