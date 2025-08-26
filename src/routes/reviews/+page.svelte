@@ -1137,7 +1137,7 @@
   }
 
   async function searchCities(country: string, query: string) {
-    if (!query || query.length < 2) {
+    if (!query || query.length < 4) {
       searchedCities = [];
       return;
     }
@@ -1568,7 +1568,7 @@
               <div class="location-search">
                 <input 
                   type="text" 
-                  placeholder="Search countries..." 
+                  placeholder="Search countries (min. 2 characters)..." 
                   bind:value={countrySearchTerm}
                   on:input={(e) => {
                     const target = e.target as HTMLInputElement;
@@ -1578,6 +1578,9 @@
                   }}
                   class="location-search-input"
                 />
+                <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                  💡 Type at least 2 characters to search (e.g., "ba" for Bangladesh, "fr" for France)
+                </div>
               </div>
               
               <div class="location-list">
@@ -1644,10 +1647,18 @@
               <div class="location-search">
                 <input 
                   type="text" 
-                  placeholder="Search cities in {selectedCountry}..." 
+                  placeholder="Search cities in {selectedCountry} (min. 4 characters)..." 
                   bind:value={citySearchTerm}
+                  on:input={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    const query = target.value;
+                    searchCities(selectedCountry, query);
+                  }}
                   class="location-search-input"
                 />
+                <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                  💡 Type at least 4 characters to search (e.g., "dha" for Dhaka, "par" for Paris)
+                </div>
               </div>
               
               <div class="location-list">
