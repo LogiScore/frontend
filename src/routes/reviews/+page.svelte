@@ -1088,28 +1088,39 @@
 
   // Real-time search functions
   async function searchCountries(query: string) {
+    console.log(`🔍 searchCountries called with: "${query}"`);
+    
     if (!query || query.length < 2) {
+      console.log('❌ Query too short, clearing results');
       searchedCountries = [];
+      isSearchingCountries = false;
       return;
     }
     
     try {
+      console.log('🔄 Setting isSearchingCountries = true');
       isSearchingCountries = true;
       console.log(`🔍 Searching countries for: "${query}"`);
       
       // Search locations in database with country filter
       const searchResults = await apiClient.searchLocations(query);
+      console.log(`📊 Search API returned ${searchResults.length} results:`, searchResults.slice(0, 3));
       
       // Extract unique countries from search results
       const countries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
-      searchedCountries = countries;
+      console.log(`🏗️ Extracted ${countries.length} unique countries:`, countries);
       
-      console.log(`✅ Found ${countries.length} countries for "${query}":`, countries);
+      // Update the searchedCountries array
+      searchedCountries = countries;
+      console.log(`✅ Updated searchedCountries array:`, searchedCountries);
+      
     } catch (error) {
       console.error('❌ Country search failed:', error);
       searchedCountries = [];
     } finally {
+      console.log('🔄 Setting isSearchingCountries = false');
       isSearchingCountries = false;
+      console.log(`🎯 Final state - searchedCountries: ${searchedCountries.length}, isSearching: ${isSearchingCountries}`);
     }
   }
 
