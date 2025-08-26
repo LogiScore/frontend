@@ -1152,8 +1152,8 @@
     try {
       console.log(`🏙️ Loading cities for country: ${country}`);
       
-      // Use the searchCountries method to get ALL locations in this country
-      const searchResults = await apiClient.searchCountries(country);
+      // Use the new getAllLocationsInCountry method to get ALL locations with pagination
+      const searchResults = await apiClient.getAllLocationsInCountry(country);
       
       // Extract unique cities from all locations in this country
       const cities = [...new Set(searchResults.map(loc => loc.city).filter(Boolean))].sort();

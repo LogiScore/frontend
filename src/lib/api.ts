@@ -2285,6 +2285,74 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: getAllLocationsInCountry =====
+  async getAllLocationsInCountry(countryQuery: string): Promise<Location[]> {
+    try {
+      let allLocations: Location[] = [];
+      let page = 1;
+      const pageSize = 1000;
+      let hasMorePages = true;
+      
+      console.log(`🔍 Fetching all locations in ${countryQuery} with pagination...`);
+      
+      while (hasMorePages) {
+        const url = `/api/locations/?country=${encodeURIComponent(countryQuery)}&page=${page}&page_size=${pageSize}`;
+        console.log(`📄 Fetching page ${page}...`);
+        
+        const response = await this.request<any>(url);
+        
+        // Handle the new response format with pagination metadata
+        let data: any[];
+        if (response.data && Array.isArray(response.data)) {
+          // New format: { data: [...], pagination: {...} }
+          data = response.data;
+        } else if (Array.isArray(response)) {
+          // Fallback: direct array response
+          data = response;
+        } else {
+          throw new Error('Unexpected search API response format');
+        }
+        
+        // Add locations from this page
+        const pageLocations = data.map((loc: any) => ({
+          id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+          name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+          city: loc.city || '',
+          state: loc.state || '',
+          region: loc.region || '',
+          subregion: loc.subregion || '',
+          country: loc.country || ''
+        }));
+        
+        allLocations.push(...pageLocations);
+        console.log(`✅ Page ${page}: Got ${pageLocations.length} locations (Total: ${allLocations.length})`);
+        
+        // Check if there are more pages
+        if (response.pagination) {
+          hasMorePages = page < response.pagination.total_pages;
+        } else {
+          // If no pagination info, assume we've got everything if this page is smaller than pageSize
+          hasMorePages = pageLocations.length === pageSize;
+        }
+        
+        page++;
+        
+        // Safety check to prevent infinite loops
+        if (page > 100) {
+          console.warn('⚠️ Safety limit reached: stopping pagination at 100 pages');
+          break;
+        }
+      }
+      
+      console.log(`🎯 Total locations found in ${countryQuery}: ${allLocations.length}`);
+      return allLocations;
+      
+    } catch (error: any) {
+      console.error(`Failed to get all locations in country "${countryQuery}":`, error);
+      return [];
+    }
+  }
+
   // ===== METHOD: getLocationsByCity =====
   async getLocationsByCity(country: string, city: string): Promise<Location[]> {
     try {
