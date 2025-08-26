@@ -1041,7 +1041,7 @@
   }
 
   // Hierarchical location selection functions
-  function selectCountry(country: string) {
+  async function selectCountry(country: string) {
     console.log('🌍 selectCountry called with:', country);
     selectedCountry = country;
     selectedCity = '';
@@ -1056,9 +1056,12 @@
     console.log('- selectedCity:', selectedCity);
     console.log('- availableCities:', availableCities);
     console.log('- availableLocations:', availableLocations);
+    
+    // Load cities for this country from database
+    await loadCitiesForCountry(country);
   }
 
-  function selectCity(city: string) {
+  async function selectCity(city: string) {
     console.log('🏙️ selectCity called with:', city);
     selectedCity = city;
     selectedBranch = '';
@@ -1070,6 +1073,9 @@
     console.log('- selectedCountry:', selectedCountry);
     console.log('- selectedCity:', selectedCity);
     console.log('- availableLocations:', availableLocations);
+    
+    // Load locations for this city from database
+    await loadLocationsForCity(selectedCountry, city);
   }
 
   function selectLocationFromHierarchy(location: any) {
@@ -1104,6 +1110,29 @@
       searchedCountries = [];
     } finally {
       isSearchingCountries = false;
+    }
+  }
+
+  // Load cities for a specific country from database
+  async function loadCitiesForCountry(country: string) {
+    try {
+      console.log(`🏙️ Loading cities for country: ${country}`);
+      
+      // Search for locations in this country to get all cities
+      const searchResults = await apiClient.searchLocations(country);
+      
+      // Filter results to this specific country and extract unique cities
+      const countryLocations = searchResults.filter(loc => loc.country === country);
+      const cities = [...new Set(countryLocations.map(loc => loc.city).filter(Boolean))].sort();
+      
+      console.log(`✅ Found ${cities.length} cities in ${country}:`, cities.slice(0, 10));
+      
+      // Update the availableCities computed property
+      availableCities = cities;
+      
+    } catch (error) {
+      console.error(`❌ Failed to load cities for ${country}:`, error);
+      availableCities = [];
     }
   }
 
@@ -1163,6 +1192,30 @@
       searchedLocations = [];
     } finally {
       isSearchingLocations = false;
+    }
+  }
+
+  // Load locations for a specific city from database
+  async function loadLocationsForCity(country: string, city: string) {
+    try {
+      console.log(`📍 Loading locations for city: ${city}, ${country}`);
+      
+      // Search for locations in this specific city and country
+      const searchResults = await apiClient.searchLocations(`${city} ${country}`);
+      
+      // Filter results to this specific city and country
+      const cityLocations = searchResults.filter(loc => 
+        loc.country === country && loc.city === city
+      );
+      
+      console.log(`✅ Found ${cityLocations.length} locations in ${city}, ${country}:`, cityLocations.slice(0, 5));
+      
+      // Update the availableLocations computed property
+      availableLocations = cityLocations;
+      
+    } catch (error) {
+      console.error(`❌ Failed to load locations for ${city}, ${country}:`, error);
+      availableLocations = [];
     }
   }
 
