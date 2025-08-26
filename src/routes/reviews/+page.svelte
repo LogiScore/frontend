@@ -2981,20 +2981,20 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    background: #ecfdf5;
-    border: 2px solid #10b981;
+    background: #f8f9fa;
+    border: 2px solid #6c757d;
     border-radius: 8px;
   }
 
   .selected-location-text {
     font-weight: 600;
-    color: #065f46;
+    color: #495057;
     font-size: 1rem;
   }
 
   .change-location-btn {
     padding: 0.5rem 1rem;
-    background: #10b981;
+    background: #6c757d;
     border: none;
     border-radius: 6px;
     color: white;
@@ -3004,7 +3004,7 @@
   }
 
   .change-location-btn:hover {
-    background-color: #059669;
+    background-color: #5a6268;
   }
 
   /* Modal Step Styles */
