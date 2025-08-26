@@ -1773,16 +1773,6 @@
           {:else if selectedCountry && !selectedCity}
             <div class="modal-step">
               <div class="modal-step-header">
-                <button 
-                  type="button" 
-                  class="back-button"
-                  on:click={() => {
-                    selectedCountry = '';
-                    citySearchTerm = '';
-                  }}
-                >
-                  ← Back to Countries
-                </button>
                 <h4>2. Select City in {selectedCountry}</h4>
               </div>
               
@@ -1798,9 +1788,6 @@
                   }}
                   class="location-search-input"
                 />
-                                  <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
-                    💡 Type at least 4 characters to search (e.g., "dhak" for Dhaka, "paris" for Paris)
-                  </div>
               </div>
               
               <div class="location-list">
@@ -1854,6 +1841,20 @@
                     </div>
                   {/each}
                 {/if}
+              </div>
+              
+              <!-- Back button at bottom -->
+              <div class="modal-step-footer">
+                <button 
+                  type="button" 
+                  class="back-button"
+                  on:click={() => {
+                    selectedCountry = '';
+                    citySearchTerm = '';
+                  }}
+                >
+                  ← Back to Countries
+                </button>
               </div>
             </div>
           
@@ -3200,6 +3201,13 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+  }
+
+  .modal-step-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
   }
 
   .back-button {
