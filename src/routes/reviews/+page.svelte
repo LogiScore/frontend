@@ -141,7 +141,14 @@
     if (!city || !query) return false;
     const normalizedCity = normalizeText(city);
     const normalizedQuery = normalizeText(query);
-    return normalizedCity.includes(normalizedQuery);
+    const matches = normalizedCity.includes(normalizedQuery);
+    
+    // Debug logging for city search
+    if (query.length >= 3) { // Only log for meaningful searches
+      console.log(`🔍 City search: "${city}" (${normalizedCity}) matches "${query}" (${normalizedQuery}): ${matches}`);
+    }
+    
+    return matches;
   }
 
   // Function to open location modal and reset search
@@ -1145,14 +1152,14 @@
     try {
       console.log(`🏙️ Loading cities for country: ${country}`);
       
-      // Search for locations in this country to get all cities
-      const searchResults = await apiClient.searchLocations(country);
+      // Use the searchCountries method to get ALL locations in this country
+      const searchResults = await apiClient.searchCountries(country);
       
-      // Filter results to this specific country and extract unique cities
-      const countryLocations = searchResults.filter(loc => loc.country === country);
-      const cities = [...new Set(countryLocations.map(loc => loc.city).filter(Boolean))].sort();
+      // Extract unique cities from all locations in this country
+      const cities = [...new Set(searchResults.map(loc => loc.city).filter(Boolean))].sort();
       
       console.log(`✅ Found ${cities.length} cities in ${country}:`, cities.slice(0, 10));
+      console.log(`🔍 All cities in ${country}:`, cities);
       
       // Update the availableCities computed property
       availableCities = cities;
