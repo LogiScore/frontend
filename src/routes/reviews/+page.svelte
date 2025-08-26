@@ -986,6 +986,7 @@
 
   // Hierarchical location selection functions
   function selectCountry(country: string) {
+    console.log('🌍 selectCountry called with:', country);
     selectedCountry = country;
     selectedCity = '';
     selectedBranch = '';
@@ -993,14 +994,26 @@
     showCountrySelector = false;
     showCitySelector = true;
     showLocationSelector = false;
+    
+    console.log('After selectCountry:');
+    console.log('- selectedCountry:', selectedCountry);
+    console.log('- selectedCity:', selectedCity);
+    console.log('- availableCities:', availableCities);
+    console.log('- availableLocations:', availableLocations);
   }
 
   function selectCity(city: string) {
+    console.log('🏙️ selectCity called with:', city);
     selectedCity = city;
     selectedBranch = '';
     selectedBranchDisplay = '';
     showCitySelector = false;
     showLocationSelector = true;
+    
+    console.log('After selectCity:');
+    console.log('- selectedCountry:', selectedCountry);
+    console.log('- selectedCity:', selectedCity);
+    console.log('- availableLocations:', availableLocations);
   }
 
   function selectLocationFromHierarchy(location: any) {
@@ -1376,7 +1389,7 @@
             </div>
           
           <!-- Step 2: City Selection -->
-          {:else if !selectedCity}
+          {:else if selectedCountry && !selectedCity}
             <div class="modal-step">
               <div class="modal-step-header">
                 <button 
@@ -1416,7 +1429,7 @@
             </div>
           
           <!-- Step 3: Specific Location Selection -->
-          {:else}
+          {:else if selectedCountry && selectedCity}
             <div class="modal-step">
               <div class="modal-step-header">
                 <button 
