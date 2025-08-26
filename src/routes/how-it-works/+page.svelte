@@ -65,7 +65,6 @@
             <ul>
               <li>Write detailed reviews</li>
               <li>Rate specific categories</li>
-              <li>Share anonymously or verified</li>
               <li>Help the community grow</li>
             </ul>
           </div>
