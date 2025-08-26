@@ -128,6 +128,22 @@
       )
     : locationSuggestions;
 
+  // Helper function to normalize text for search (remove accents, diacritics, etc.)
+  function normalizeText(text: string): string {
+    return text
+      .normalize('NFD') // Decompose characters with diacritics
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .toLowerCase(); // Convert to lowercase
+  }
+
+  // Helper function to check if city matches search query with normalization
+  function cityMatchesQuery(city: string, query: string): boolean {
+    if (!city || !query) return false;
+    const normalizedCity = normalizeText(city);
+    const normalizedQuery = normalizeText(query);
+    return normalizedCity.includes(normalizedQuery);
+  }
+
   // Function to open location modal and reset search
   function openLocationModal() {
     showLocationModal = true;
@@ -1663,7 +1679,7 @@
               <div class="location-list">
                 {#if availableCities.length > 0}
                   {#each availableCities.filter(city => 
-                    !citySearchTerm || city.toLowerCase().includes(citySearchTerm.toLowerCase())
+                    !citySearchTerm || cityMatchesQuery(city, citySearchTerm)
                   ) as city}
                     <div 
                       class="modal-location-item"
@@ -1680,8 +1696,8 @@
                   {#each locations.filter(loc => 
                     loc.country === selectedCountry && 
                     (!citySearchTerm || 
-                     loc.city?.toLowerCase().includes(citySearchTerm.toLowerCase()) ||
-                     loc.name?.toLowerCase().includes(citySearchTerm.toLowerCase()))
+                     (loc.city && cityMatchesQuery(loc.city, citySearchTerm)) ||
+                     (loc.name && cityMatchesQuery(loc.name, citySearchTerm)))
                   ) as location}
                     <div 
                       class="modal-location-item"
@@ -1736,8 +1752,8 @@
               <div class="location-list">
                 {#each availableLocations.filter(location => 
                   !locationSearchTerm || 
-                  location.name?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
-                  location.state?.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                  (location.name && cityMatchesQuery(location.name, locationSearchTerm)) ||
+                  (location.state && cityMatchesQuery(location.state, locationSearchTerm))
                 ) as location}
                   <div 
                     class="modal-location-item"
