@@ -18,6 +18,9 @@
   // Anonymous reviews are no longer supported - all reviews count as 100% weight
   let isAnonymous = false;
   
+  // Shipment reference for review verification
+  let shipmentReference = '';
+  
   // Location autocomplete
   let showLocationSuggestions = false;
   let locationSuggestions: any[] = [];
@@ -847,11 +850,12 @@
     }
 
     // Prepare review data for API
-    const reviewData: ReviewCreate = {
+    const reviewData: any = {
       freight_forwarder_id: selectedCompany,
       location_id: selectedBranch.trim(), // Changed from branch_id to location_id
       is_anonymous: isAnonymous,
       review_weight: reviewWeight,
+      shipment_reference: shipmentReference.trim() || null, // Add shipment reference
       category_ratings: reviewCategories.map(cat => ({
         category: cat.id,
         questions: cat.questions.map(q => ({
@@ -867,6 +871,7 @@
     console.log('Submitting review with data:', {
       freight_forwarder_id: reviewData.freight_forwarder_id,
       location_id: reviewData.location_id,
+      shipment_reference: reviewData.shipment_reference,
       selectedBranch: selectedBranch,
       selectedBranchDisplay: selectedBranchDisplay
     });
@@ -1631,6 +1636,24 @@
                 {/each}
               </div>
             {/each}
+          </div>
+
+          <!-- Shipment Reference -->
+          <div class="form-section">
+            <h2>Shipment Reference (Optional)</h2>
+            <div class="form-group">
+              <label for="shipmentReference">Shipment Reference</label>
+              <input 
+                type="text" 
+                id="shipmentReference" 
+                bind:value={shipmentReference}
+                placeholder="Enter shipment reference (e.g., AWB number, booking reference, etc.)"
+                class="form-control"
+              />
+              <p class="help-text">
+                You may optionally add a shipment reference of the Freight Forwarder to verify your review
+              </p>
+            </div>
           </div>
 
           <!-- Rating Summary -->
