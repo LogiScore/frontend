@@ -1642,16 +1642,16 @@
           <div class="form-section">
             <h2>Shipment Reference (Optional)</h2>
             <div class="form-group">
-              <label for="shipmentReference">Shipment Reference</label>
+              <label for="shipmentReference">Reference</label>
               <input 
                 type="text" 
                 id="shipmentReference" 
                 bind:value={shipmentReference}
-                placeholder="Enter shipment reference (e.g., AWB number, booking reference, etc.)"
+                placeholder="Enter reference (e.g., AWB number, booking reference, etc.)"
                 class="form-control"
               />
               <p class="help-text">
-                You may optionally add a shipment reference of the Freight Forwarder to verify your review
+                You may optionally add a reference of the Freight Forwarder to verify your review
               </p>
             </div>
           </div>
@@ -2150,6 +2150,22 @@
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 1rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
   }
 
   .checkbox-group label {
