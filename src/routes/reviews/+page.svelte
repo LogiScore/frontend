@@ -1590,10 +1590,6 @@
               </div>
               
               <div class="location-list">
-                <!-- Debug info -->
-                <div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                  Debug: SearchTerm="{countrySearchTerm}", Searching={isSearchingCountries}, Results={searchedCountries.length}, Available={availableCountries.length}
-                </div>
                 
                 {#if isSearchingCountries}
                   <div class="searching-indicator">
