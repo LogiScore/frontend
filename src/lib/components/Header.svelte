@@ -6,6 +6,7 @@
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import ProfileModal from '$lib/components/ProfileModal.svelte';
   import ChangePasswordModal from '$lib/components/ChangePasswordModal.svelte';
+  import ReviewSubscriptionModal from '$lib/components/ReviewSubscriptionModal.svelte';
   
   // Props
   export let hideNavigation = false;
@@ -22,6 +23,7 @@
   let showSubscriptionModal = false;
   let showProfileModal = false;
   let showChangePasswordModal = false;
+  let showReviewSubscriptionModal = false;
   let authModalMode: 'signin' | 'signup' = 'signin';
   
   // Check if current page is admin page
@@ -88,6 +90,11 @@
     console.log('Opening change password modal');
     showChangePasswordModal = true;
   }
+
+  function openReviewSubscriptionModal() {
+    console.log('Opening review subscription modal');
+    showReviewSubscriptionModal = true;
+  }
   
   function closeSubscriptionModal() {
     showSubscriptionModal = false;
@@ -99,6 +106,10 @@
   
   function closeChangePasswordModal() {
     showChangePasswordModal = false;
+  }
+
+  function closeReviewSubscriptionModal() {
+    showReviewSubscriptionModal = false;
   }
   
   function handleLogout() {
@@ -170,6 +181,17 @@
                   </svg>
                   Upgrade Subscription
                 </button>
+                
+                <!-- Review Notifications Management -->
+                {#if authState.user.subscription_tier === 'Subscription Annual'}
+                  <button class="dropdown-item" on:click={openReviewSubscriptionModal}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    Review Notifications
+                  </button>
+                {/if}
                 <button class="dropdown-item" on:click={openChangePasswordModal}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -243,6 +265,13 @@
   <ChangePasswordModal 
     isOpen={showChangePasswordModal}
     on:close={closeChangePasswordModal}
+  />
+{/if}
+
+{#if showReviewSubscriptionModal}
+  <ReviewSubscriptionModal 
+    isOpen={showReviewSubscriptionModal}
+    on:close={closeReviewSubscriptionModal}
   />
 {/if}
 

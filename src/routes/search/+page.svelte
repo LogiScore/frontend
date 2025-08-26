@@ -69,6 +69,16 @@
     return true;
   }
 
+  function toggleCitySubscription(city: string) {
+    // TODO: Implement API call to toggle city subscription
+    alert(`City subscription feature coming soon for ${city}!`);
+  }
+
+  function toggleCountrySubscription(country: string) {
+    // TODO: Implement API call to toggle country subscription
+    alert(`Country subscription feature coming soon for ${country}!`);
+  }
+
   function goBackToCities() {
     console.log('Going back to cities');
     selectedCity = '';
@@ -400,12 +410,47 @@
         <h2>Cities with Reviews in "{selectedCountry}"</h2>
         <p class="cities-subtitle">Click on a city to see companies with reviews there</p>
         
+        <!-- Country Subscription Checkbox -->
+        {#if user && user.subscription_tier === 'Subscription Annual'}
+          <div class="country-subscription">
+            <label class="subscription-checkbox">
+              <input 
+                type="checkbox" 
+                checked={false}
+                on:change={() => toggleCountrySubscription(selectedCountry)}
+              />
+              <span class="checkbox-text">
+                🔔 Get notified when new reviews are submitted in {selectedCountry}
+              </span>
+            </label>
+            <p class="subscription-note">
+              You'll receive email notifications for new reviews in this country.
+            </p>
+          </div>
+        {/if}
+        
         <div class="cities-grid">
           {#each citiesWithReviews as city}
-            <div class="city-card" on:click={() => {
-              selectCity(city);
-            }}>
-              <div class="city-name">{city}</div>
+            <div class="city-card">
+              <div class="city-info" on:click={() => {
+                selectCity(city);
+              }}>
+                <div class="city-name">{city}</div>
+              </div>
+              
+              <!-- City Subscription Checkbox -->
+              {#if user && user.subscription_tier === 'Subscription Annual'}
+                <div class="city-subscription" on:click|stopPropagation>
+                  <label class="subscription-checkbox">
+                    <input 
+                      type="checkbox" 
+                      checked={false}
+                      on:change={() => toggleCitySubscription(city)}
+                    />
+                    <span class="checkbox-text">🔔</span>
+                  </label>
+                </div>
+              {/if}
             </div>
           {/each}
         </div>
@@ -1355,6 +1400,53 @@
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Subscription Checkbox Styles */
+  .country-subscription {
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .city-subscription {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+  }
+
+  .subscription-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .subscription-checkbox input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .checkbox-text {
+    font-size: 0.9rem;
+    color: #495057;
+  }
+
+  .subscription-note {
+    margin: 8px 0 0 0;
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  /* Update city-card to support subscription positioning */
+  .city-card {
+    position: relative;
   }
 
   @media (max-width: 768px) {

@@ -37,6 +37,11 @@
     showAuthModal = false;
   }
 
+  function toggleForwarderSubscription(forwarderId: string) {
+    // TODO: Implement API call to toggle forwarder subscription
+    alert('Forwarder subscription feature coming soon!');
+  }
+
   // Function to format category names from snake_case to Title Case
   function formatCategoryName(categoryName: string): string {
     if (!categoryName) return '';
@@ -237,6 +242,28 @@
             <div class="detail-item full-width">
               <h3>Company Description</h3>
               <p class="description-text">{freightForwarder.description}</p>
+            </div>
+          {/if}
+          
+          <!-- Review Notification Subscription -->
+          {#if isLoggedIn && isSubscribed && user && user.subscription_tier === 'Subscription Annual'}
+            <div class="detail-item full-width">
+              <h3>Review Notifications</h3>
+              <div class="subscription-checkbox">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    checked={false}
+                    on:change={() => toggleForwarderSubscription(freightForwarder.id)}
+                  />
+                  <span class="checkbox-text">
+                    🔔 Get notified when new reviews are submitted for {freightForwarder.name}
+                  </span>
+                </label>
+                <p class="subscription-note">
+                  You'll receive email notifications for new reviews about this forwarder.
+                </p>
+              </div>
             </div>
           {/if}
           {#if freightForwarder.headquarters_country}
@@ -1284,6 +1311,39 @@
     .country-score-card {
       padding: 1.25rem;
     }
+  }
+
+  /* Subscription Checkbox Styles */
+  .subscription-checkbox {
+    margin-top: 12px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 0;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .checkbox-text {
+    font-size: 0.95rem;
+    color: #495057;
+    line-height: 1.4;
+  }
+
+  .subscription-note {
+    margin: 8px 0 0 30px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
   }
 
   @media (max-width: 480px) {
