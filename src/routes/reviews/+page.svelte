@@ -399,9 +399,35 @@
         name: err.name
       });
       
-      // Set empty array instead of hardcoded fallback
-      locations = [];
-      console.log('🔄 Using empty locations array due to error');
+      // Enhanced fallback with Bangladesh and more locations
+      console.log('🔄 Using enhanced fallback locations due to API error');
+      locations = [
+        // Bangladesh locations
+        { id: convertLocationIdToUUID('bd-dhaka'), name: 'Dhaka, Dhaka Division, Bangladesh', city: 'Dhaka', state: 'Dhaka Division', country: 'Bangladesh', region: 'Asia', subregion: 'South Asia' },
+        { id: convertLocationIdToUUID('bd-chittagong'), name: 'Chittagong, Chittagong Division, Bangladesh', city: 'Chittagong', state: 'Chittagong Division', country: 'Bangladesh', region: 'Asia', subregion: 'South Asia' },
+        { id: convertLocationIdToUUID('bd-sylhet'), name: 'Sylhet, Sylhet Division, Bangladesh', city: 'Sylhet', state: 'Sylhet Division', country: 'Bangladesh', region: 'Asia', subregion: 'South Asia' },
+        
+        // Other major locations
+        { id: convertLocationIdToUUID('us-new-york'), name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('us-los-angeles'), name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('uk-london'), name: 'London, England, UK', city: 'London', state: 'England', country: 'UK', region: 'Europe', subregion: 'Western Europe' },
+        { id: convertLocationIdToUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: convertLocationIdToUUID('de-hamburg'), name: 'Hamburg, Hamburg, Germany', city: 'Hamburg', state: 'Hamburg', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
+        { id: convertLocationIdToUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
+        { id: convertLocationIdToUUID('in-mumbai'), name: 'Mumbai, Maharashtra, India', city: 'Mumbai', state: 'Maharashtra', country: 'India', region: 'Asia', subregion: 'South Asia' },
+        { id: convertLocationIdToUUID('cn-shanghai'), name: 'Shanghai, Shanghai, China', city: 'Shanghai', state: 'Shanghai', country: 'China', region: 'Asia', subregion: 'East Asia' },
+        { id: convertLocationIdToUUID('jp-tokyo'), name: 'Tokyo, Tokyo, Japan', city: 'Tokyo', state: 'Tokyo', country: 'Japan', region: 'Asia', subregion: 'East Asia' },
+        { id: convertLocationIdToUUID('au-sydney'), name: 'Sydney, NSW, Australia', city: 'Sydney', state: 'NSW', country: 'Australia', region: 'Oceania', subregion: 'Australia and New Zealand' },
+        { id: convertLocationIdToUUID('ca-toronto'), name: 'Toronto, ON, Canada', city: 'Toronto', state: 'ON', country: 'Canada', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('mx-mexico-city'), name: 'Mexico City, Mexico City, Mexico', city: 'Mexico City', state: 'Mexico City', country: 'Mexico', region: 'Americas', subregion: 'North America' },
+        { id: convertLocationIdToUUID('nl-amsterdam'), name: 'Amsterdam, North Holland, Netherlands', city: 'Amsterdam', state: 'North Holland', country: 'Netherlands', region: 'Europe', subregion: 'Western Europe' },
+        { id: convertLocationIdToUUID('fr-paris'), name: 'Paris, Île-de-France, France', city: 'Paris', state: 'Île-de-France', country: 'France', region: 'Europe', subregion: 'Southern Europe' },
+        { id: convertLocationIdToUUID('it-milan'), name: 'Milan, Lombardy, Italy', city: 'Milan', state: 'Lombardy', country: 'Italy', region: 'Europe', subregion: 'Southern Europe' },
+        { id: convertLocationIdToUUID('es-barcelona'), name: 'Barcelona, Catalonia, Spain', city: 'Barcelona', state: 'Catalonia', country: 'Spain', region: 'Europe', subregion: 'Southern Europe' }
+      ];
+      
+      console.log('✅ Fallback locations loaded:', locations.length);
+      console.log('✅ Available countries in fallback:', [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort());
     }
   }
 
