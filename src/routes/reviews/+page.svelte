@@ -24,7 +24,6 @@
   let error: string | null = null;
   let successMessage: string | null = null;
   let showLocationModal = false;
-  let locationSearchTerm = '';
   
   // New forwarder creation - RE-ENABLED after backend implementation
   let showNewForwarderForm = false;
@@ -46,6 +45,11 @@
   let showCountrySelector = false;
   let showCitySelector = false;
   let showLocationSelector = false;
+  
+  // Separate search terms for each step
+  let countrySearchTerm = '';
+  let citySearchTerm = '';
+  let locationSearchTerm = '';
   
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -1089,12 +1093,12 @@
                 class="btn btn-secondary" 
                 on:click={() => showNewForwarderForm = !showNewForwarderForm}
               >
-                {showNewForwarderForm ? 'Cancel' : 'Add New Company'}
+                                  {showNewForwarderForm ? 'Cancel' : 'Add New Company'}
               </button>
             </div>
 
             <!-- New Company Form -->
-            {#if showNewForwarderForm}
+                          {#if showNewForwarderForm}
               <div class="new-company-form">
                 <div class="form-group">
                   <label for="newCompanyName">Company Name *</label>
@@ -1352,14 +1356,14 @@
                 <input 
                   type="text" 
                   placeholder="Search countries..." 
-                  bind:value={locationSearchTerm}
+                  bind:value={countrySearchTerm}
                   class="location-search-input"
                 />
               </div>
               
               <div class="location-list">
                 {#each availableCountries.filter(country => 
-                  !locationSearchTerm || country.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                  !countrySearchTerm || country.toLowerCase().includes(countrySearchTerm.toLowerCase())
                 ) as country}
                   <div 
                     class="modal-location-item"
@@ -1378,7 +1382,10 @@
                 <button 
                   type="button" 
                   class="back-button"
-                  on:click={() => selectedCountry = ''}
+                  on:click={() => {
+                    selectedCountry = '';
+                    citySearchTerm = '';
+                  }}
                 >
                   ← Back to Countries
                 </button>
@@ -1389,14 +1396,14 @@
                 <input 
                   type="text" 
                   placeholder="Search cities in {selectedCountry}..." 
-                  bind:value={locationSearchTerm}
+                  bind:value={citySearchTerm}
                   class="location-search-input"
                 />
               </div>
               
               <div class="location-list">
                 {#each availableCities.filter(city => 
-                  !locationSearchTerm || city.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                  !citySearchTerm || city.toLowerCase().includes(citySearchTerm.toLowerCase())
                 ) as city}
                   <div 
                     class="modal-location-item"
@@ -1415,7 +1422,10 @@
                 <button 
                   type="button" 
                   class="back-button"
-                  on:click={() => selectedCity = ''}
+                  on:click={() => {
+                    selectedCity = '';
+                    locationSearchTerm = '';
+                  }}
                 >
                   ← Back to Cities
                 </button>
