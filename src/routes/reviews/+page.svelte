@@ -1642,12 +1642,12 @@
           <div class="form-section">
             <h2>Shipment Reference (Optional)</h2>
             <div class="form-group">
-              <label for="shipmentReference">Reference</label>
+              <label for="shipmentReference"></label>
               <input 
                 type="text" 
                 id="shipmentReference" 
                 bind:value={shipmentReference}
-                placeholder="Enter reference (e.g., AWB number, booking reference, etc.)"
+                placeholder="Enter reference (e.g. Shipment ID, Shipment Job No etc.)"
                 class="form-control"
               />
               <p class="help-text">
