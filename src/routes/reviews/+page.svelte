@@ -1102,8 +1102,8 @@
       isSearchingCountries = true;
       console.log(`🔍 Searching countries for: "${query}"`);
       
-      // Search locations in database with country filter
-      const searchResults = await apiClient.searchLocations(query);
+      // Search countries using the country parameter (accepts 2+ characters)
+      const searchResults = await apiClient.searchCountries(query);
       console.log(`📊 Search API returned ${searchResults.length} results:`, searchResults.slice(0, 3));
       
       // Extract unique countries from search results

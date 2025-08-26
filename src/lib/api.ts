@@ -2250,6 +2250,41 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: searchCountries =====
+  async searchCountries(countryQuery: string): Promise<Location[]> {
+    try {
+      // Use the country parameter for country filtering (accepts 2+ characters)
+      const url = `/api/locations/?country=${encodeURIComponent(countryQuery)}&page=1&page_size=1000`;
+      
+      const response = await this.request<any>(url);
+      
+      // Handle the new response format with pagination metadata
+      let data: any[];
+      if (response.data && Array.isArray(response.data)) {
+        // New format: { data: [...], pagination: {...} }
+        data = response.data;
+      } else if (Array.isArray(response)) {
+        // Fallback: direct array response
+        data = response;
+      } else {
+        throw new Error('Unexpected search API response format');
+      }
+      
+      return data.map((loc: any) => ({
+        id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+        name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
+        city: loc.city || '',
+        state: loc.state || '',
+        region: loc.region || '',
+        subregion: loc.subregion || '',
+        country: loc.country || ''
+      }));
+    } catch (error: any) {
+      console.error(`Failed to search countries for "${countryQuery}":`, error);
+      return [];
+    }
+  }
+
   // ===== METHOD: getUserReviewsForCompany =====
   // Get user's previous reviews for a specific company to check review frequency
   // Note: This method is optimized for review frequency checking and returns basic data
