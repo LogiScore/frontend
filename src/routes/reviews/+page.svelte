@@ -1798,9 +1798,9 @@
                   }}
                   class="location-search-input"
                 />
-                <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
-                  💡 Type at least 4 characters to search (e.g., "dha" for Dhaka, "par" for Paris)
-                </div>
+                                  <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                    💡 Type at least 4 characters to search (e.g., "dhak" for Dhaka, "paris" for Paris)
+                  </div>
               </div>
               
               <div class="location-list">
@@ -1827,7 +1827,7 @@
                 {:else if citySearchTerm.length < 4}
                   <!-- Show instruction message -->
                   <div class="search-instruction">
-                    💡 Type at least 4 characters to search for cities in {selectedCountry}
+                    💡 Type at least 4 characters to search
                   </div>
                 {:else}
                   <!-- Fallback: Show locations directly if no cities found -->
