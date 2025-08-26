@@ -1614,9 +1614,6 @@
                   </div>
                 {:else}
                   <!-- Show all available countries -->
-                  <div class="all-countries-header">
-                    🌍 All Countries ({availableCountries.length} available):
-                  </div>
                   {#each availableCountries as country}
                     <div 
                       class="modal-location-item"
