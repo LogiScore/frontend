@@ -2107,24 +2107,63 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      // Get all locations without search filter (for initial load)
-      const url = '/api/locations/?page=1&page_size=1000';
+      console.log('🔄 Loading locations from database with pagination...');
       
-      const response = await this.request<any>(url);
+      let allLocations: any[] = [];
+      let page = 1;
+      const pageSize = 1000;
+      let hasMorePages = true;
       
-      // Handle the new response format with pagination metadata
-      let data: any[];
-      if (response.data && Array.isArray(response.data)) {
-        // New format: { data: [...], pagination: {...} }
-        data = response.data;
-      } else if (Array.isArray(response)) {
-        // Fallback: direct array response
-        data = response;
-      } else {
-        throw new Error('Unexpected API response format');
+      // Load locations page by page until all are retrieved
+      while (hasMorePages) {
+        const url = `/api/locations/?page=${page}&page_size=${pageSize}`;
+        console.log(`📄 Loading page ${page} with ${pageSize} locations...`);
+        
+        const response = await this.request<any>(url);
+        
+        // Handle the new response format with pagination metadata
+        let data: any[];
+        let totalPages = 1;
+        
+        if (response.data && Array.isArray(response.data)) {
+          // New format: { data: [...], pagination: {...} }
+          data = response.data;
+          if (response.pagination) {
+            totalPages = response.pagination.total_pages || Math.ceil(response.pagination.total / pageSize) || 1;
+            console.log(`📊 Page ${page}/${totalPages}, total items: ${response.pagination.total || 'unknown'}`);
+          }
+        } else if (Array.isArray(response)) {
+          // Fallback: direct array response
+          data = response;
+        } else {
+          throw new Error('Unexpected API response format');
+        }
+        
+        // Add locations from this page
+        allLocations.push(...data);
+        console.log(`✅ Page ${page} loaded: ${data.length} locations (total so far: ${allLocations.length})`);
+        
+        // Check if we have more pages
+        if (response.pagination && response.pagination.total_pages) {
+          hasMorePages = page < response.pagination.total_pages;
+        } else {
+          // If no pagination info, assume we're done if we got less than pageSize
+          hasMorePages = data.length === pageSize;
+        }
+        
+        page++;
+        
+        // Safety check to prevent infinite loops
+        if (page > 50) {
+          console.warn('⚠️ Safety limit reached: stopping at 50 pages');
+          break;
+        }
       }
       
-      return data.map((loc: any) => ({
+      console.log(`🎯 Total locations loaded: ${allLocations.length}`);
+      
+      // Convert to the expected format for the existing code
+      const processedLocations = allLocations.map((loc: any) => ({
         id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
         name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
         city: loc.city || '',
@@ -2133,6 +2172,18 @@ class ApiClient {
         subregion: loc.subregion || '',
         country: loc.country || ''
       }));
+      
+      // Check for Bangladesh specifically
+      const bangladeshLocations = processedLocations.filter(loc => 
+        loc.country && loc.country.toLowerCase().includes('bangladesh')
+      );
+      console.log(`🇧🇩 Bangladesh locations found: ${bangladeshLocations.length}`);
+      if (bangladeshLocations.length > 0) {
+        console.log('🇧🇩 Sample Bangladesh locations:', bangladeshLocations.slice(0, 3));
+      }
+      
+      return processedLocations;
+      
     } catch (error: any) {
       console.error('Failed to load locations from database:', error);
       
@@ -2151,7 +2202,7 @@ class ApiClient {
         { id: 'au-sydney', name: 'Sydney, NSW, Australia', region: 'Oceania', subregion: 'Australia and New Zealand', country: 'Australia' },
         { id: 'ca-toronto', name: 'Toronto, ON, Canada', region: 'Americas', subregion: 'North America', country: 'Canada' },
         { id: 'br-sao-paulo', name: 'São Paulo, SP, Brazil', region: 'Americas', subregion: 'South America', country: 'Brazil' },
-        { id: 'mx-mexico-city', name: 'Mexico City, , Mexico', region: 'Americas', subregion: 'North America', country: 'Mexico' },
+        { id: 'mx-mexico-city', name: 'Mexico City, , Mexico', region: 'America', subregion: 'North America', country: 'Mexico' },
         { id: 'nl-amsterdam', name: 'Amsterdam, , Netherlands', region: 'Europe', subregion: 'Western Europe', country: 'Netherlands' },
         { id: 'fr-paris', name: 'Paris, , France', region: 'Europe', subregion: 'Southern Europe', country: 'France' },
         { id: 'it-milan', name: 'Milan, , Italy', region: 'Europe', subregion: 'Southern Europe', country: 'Italy' },

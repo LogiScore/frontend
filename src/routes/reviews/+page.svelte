@@ -1021,6 +1021,14 @@
     ? locations.filter(loc => loc.country === selectedCountry && loc.city === selectedCity)
     : [];
 
+  // Real-time search results for each step
+  let searchedCountries: string[] = [];
+  let searchedCities: string[] = [];
+  let searchedLocations: any[] = [];
+  let isSearchingCountries = false;
+  let isSearchingCities = false;
+  let isSearchingLocations = false;
+
   // Debug computed properties
   $: if (selectedCountry) {
     console.log('🔍 Debug computed properties:');
@@ -1072,6 +1080,92 @@
     showCitySelector = false;
   }
 
+  // Real-time search functions
+  async function searchCountries(query: string) {
+    if (!query || query.length < 2) {
+      searchedCountries = [];
+      return;
+    }
+    
+    try {
+      isSearchingCountries = true;
+      console.log(`🔍 Searching countries for: "${query}"`);
+      
+      // Search locations in database with country filter
+      const searchResults = await apiClient.searchLocations(query);
+      
+      // Extract unique countries from search results
+      const countries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
+      searchedCountries = countries;
+      
+      console.log(`✅ Found ${countries.length} countries for "${query}":`, countries);
+    } catch (error) {
+      console.error('❌ Country search failed:', error);
+      searchedCountries = [];
+    } finally {
+      isSearchingCountries = false;
+    }
+  }
+
+  async function searchCities(country: string, query: string) {
+    if (!query || query.length < 2) {
+      searchedCities = [];
+      return;
+    }
+    
+    try {
+      isSearchingCities = true;
+      console.log(`🔍 Searching cities in ${country} for: "${query}"`);
+      
+      // Search locations in database with country and city filter
+      const searchResults = await apiClient.searchLocations(`${query} ${country}`);
+      
+      // Extract unique cities from search results for the specific country
+      const cities = [...new Set(
+        searchResults
+          .filter(loc => loc.country === country)
+          .map(loc => loc.city)
+          .filter(Boolean)
+      )].sort();
+      
+      searchedCities = cities;
+      console.log(`✅ Found ${cities.length} cities in ${country} for "${query}":`, cities);
+    } catch (error) {
+      console.error('❌ City search failed:', error);
+      searchedCities = [];
+    } finally {
+      isSearchingCities = false;
+    }
+  }
+
+  async function searchLocations(country: string, city: string, query: string) {
+    if (!query || query.length < 2) {
+      searchedLocations = [];
+      return;
+    }
+    
+    try {
+      isSearchingLocations = true;
+      console.log(`🔍 Searching locations in ${city}, ${country} for: "${query}"`);
+      
+      // Search locations in database with specific filters
+      const searchResults = await apiClient.searchLocations(`${query} ${city} ${country}`);
+      
+      // Filter results to specific city and country
+      const locations = searchResults.filter(loc => 
+        loc.country === country && loc.city === city
+      );
+      
+      searchedLocations = locations;
+      console.log(`✅ Found ${locations.length} locations in ${city}, ${country} for "${query}":`, locations);
+    } catch (error) {
+      console.error('❌ Location search failed:', error);
+      searchedLocations = [];
+    } finally {
+      isSearchingLocations = false;
+    }
+  }
+
   function resetLocationSelection() {
     selectedCountry = '';
     selectedCity = '';
@@ -1080,6 +1174,11 @@
     showCountrySelector = false;
     showCitySelector = false;
     showLocationSelector = false;
+    
+    // Clear search results
+    searchedCountries = [];
+    searchedCities = [];
+    searchedLocations = [];
   }
 </script>
 
@@ -1418,21 +1517,44 @@
                   type="text" 
                   placeholder="Search countries..." 
                   bind:value={countrySearchTerm}
+                  on:input={(e) => {
+                    const query = e.target.value;
+                    searchCountries(query);
+                  }}
                   class="location-search-input"
                 />
               </div>
               
               <div class="location-list">
-                {#each availableCountries.filter(country => 
-                  !countrySearchTerm || country.toLowerCase().includes(countrySearchTerm.toLowerCase())
-                ) as country}
-                  <div 
-                    class="modal-location-item"
-                    on:click={() => selectCountry(country)}
-                  >
-                    🌍 {country}
+                {#if isSearchingCountries}
+                  <div class="searching-indicator">
+                    🔍 Searching countries...
                   </div>
-                {/each}
+                {:else if countrySearchTerm && searchedCountries.length > 0}
+                  <!-- Show search results -->
+                  {#each searchedCountries as country}
+                    <div 
+                      class="modal-location-item"
+                      on:click={() => selectCountry(country)}
+                    >
+                      🌍 {country}
+                    </div>
+                  {/each}
+                {:else if countrySearchTerm && searchedCountries.length === 0}
+                  <div class="no-results">
+                    No countries found for "{countrySearchTerm}"
+                  </div>
+                {:else}
+                  <!-- Show all available countries -->
+                  {#each availableCountries as country}
+                    <div 
+                      class="modal-location-item"
+                      on:click={() => selectCountry(country)}
+                    >
+                      🌍 {country}
+                    </div>
+                  {/each}
+                {/if}
               </div>
             </div>
           
