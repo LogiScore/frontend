@@ -15,6 +15,7 @@
   let selectedCompany: string = '';
   let selectedBranch = '';
   let selectedBranchDisplay = '';
+  // Anonymous reviews are no longer supported - all reviews count as 100% weight
   let isAnonymous = false;
   
   // Location autocomplete
@@ -1585,19 +1586,7 @@
 
             </div>
 
-          <!-- Review Options -->
-          <div class="form-section">
-            <h2>Review Options</h2>
-            <div class="form-group checkbox-group">
-              <label>
-                <input type="checkbox" bind:checked={isAnonymous}>
-                Submit anonymously (reviews count 50% weight)
-              </label>
-              <p class="help-text">
-                {isAnonymous ? 'Your review will count as 50% weight' : 'Log in as a shipper for 100% weight'}
-              </p>
-            </div>
-          </div>
+
 
           <!-- Tips for Accurate Reviews -->
           <div class="form-section">
