@@ -1109,8 +1109,15 @@
     console.log('- selectedCity:', selectedCity);
     console.log('- availableLocations:', availableLocations);
     
-    // Load locations for this city from database
-    await loadLocationsForCity(selectedCountry, city);
+    // Don't load all locations upfront - let users search for specific locations
+    // This prevents the 30-second loading issue
+    console.log(`✅ Locations will be loaded on-demand when user types 4+ characters`);
+    
+    // Clear any previous locations and let the search handle it
+    availableLocations = [];
+    
+    // Note: Locations are now loaded dynamically via searchLocations() when user types
+    // This keeps the performance fast while still providing location selection
   }
 
   function selectLocationFromHierarchy(location: any) {
@@ -1193,26 +1200,19 @@
     try {
       console.log(`🏙️ Loading cities for country: ${country}`);
       
-      // Use the new getAllLocationsInCountry method to get ALL locations with pagination
-      const searchResults = await apiClient.getAllLocationsInCountry(country);
+      // Don't load all cities upfront - let users search for cities they need
+      // This prevents the 30-second loading issue
+      console.log(`✅ Cities will be loaded on-demand when user types 4+ characters`);
       
-      // Store the locations for this country in the global locations array
-      // This replaces the need to load all locations upfront
-      locations = searchResults;
+      // Clear any previous cities and let the search handle it
+      availableCities = [];
       
-      // Extract unique cities from all locations in this country
-      const cities = [...new Set(searchResults.map(loc => loc.city).filter((city): city is string => Boolean(city)))].sort();
-      
-      console.log(`✅ Found ${cities.length} cities in ${country}:`, cities.slice(0, 10));
-      console.log(`🔍 All cities in ${country}:`, cities);
-      console.log(`📊 Total locations loaded for ${country}: ${searchResults.length}`);
-      
-      // Note: availableCities is now computed automatically from the locations array
+      // Note: Cities are now loaded dynamically via searchCities() when user types
+      // This keeps the performance fast while still providing city selection
       
     } catch (error) {
       console.error(`❌ Failed to load cities for ${country}:`, error);
       availableCities = [];
-      locations = []; // Reset locations on error
     }
   }
 
@@ -1730,10 +1730,9 @@
               </div>
               
               <div class="location-list">
-                {#if availableCities.length > 0}
-                  {#each availableCities.filter(city => 
-                    !citySearchTerm || cityMatchesQuery(city, citySearchTerm)
-                  ) as city}
+                {#if citySearchTerm.length >= 4 && searchedCities.length > 0}
+                  <!-- Show searched cities -->
+                  {#each searchedCities as city}
                     <div 
                       class="modal-location-item"
                       on:click={() => selectCity(city)}
@@ -1741,6 +1740,21 @@
                       🏙️ {city}
                     </div>
                   {/each}
+                {:else if citySearchTerm.length >= 4 && isSearchingCities}
+                  <!-- Show loading state -->
+                  <div class="search-loading">
+                    🔍 Searching for cities...
+                  </div>
+                {:else if citySearchTerm.length >= 4 && searchedCities.length === 0}
+                  <!-- Show no results message -->
+                  <div class="no-results">
+                    No cities found for "{citySearchTerm}" in {selectedCountry}
+                  </div>
+                {:else if citySearchTerm.length < 4}
+                  <!-- Show instruction message -->
+                  <div class="search-instruction">
+                    💡 Type at least 4 characters to search for cities in {selectedCountry}
+                  </div>
                 {:else}
                   <!-- Fallback: Show locations directly if no cities found -->
                   <div class="no-cities-message">
@@ -1793,7 +1807,8 @@
                   bind:value={locationSearchTerm}
                   on:input={(e) => {
                     const target = e.target as HTMLInputElement;
-                    console.log('🔍 Location search input:', target.value);
+                    const query = target.value;
+                    searchLocations(selectedCountry, selectedCity, query);
                   }}
                   class="location-search-input"
                 />
@@ -1803,31 +1818,50 @@
               </div>
               
               <div class="location-list">
-                {#each availableLocations.filter(location => 
-                  !locationSearchTerm || 
-                  (location.name && cityMatchesQuery(location.name, locationSearchTerm)) ||
-                  (location.state && cityMatchesQuery(location.state, locationSearchTerm))
-                ) as location}
-                  <div 
-                    class="modal-location-item"
-                    on:click={() => {
-                      selectLocationFromHierarchy(location);
-                      showLocationModal = false;
-                    }}
-                  >
-                    <strong>📍 {location.name || 'Unknown Location'}</strong>
-                    {#if location.state}
-                      <span class="location-details">, {location.state}</span>
-                    {/if}
+                {#if locationSearchTerm.length >= 4 && searchedLocations.length > 0}
+                  <!-- Show searched locations -->
+                  {#each searchedLocations as location}
+                    <div 
+                      class="modal-location-item"
+                      on:click={() => {
+                        selectLocationFromHierarchy(location);
+                        showLocationModal = false;
+                      }}
+                    >
+                      <strong>📍 {location.name || 'Unknown Location'}</strong>
+                      {#if location.state}
+                        <span class="location-details">, {location.state}</span>
+                      {/if}
+                    </div>
+                  {/each}
+                {:else if locationSearchTerm.length >= 4 && isSearchingLocations}
+                  <!-- Show loading state -->
+                  <div class="search-loading">
+                    🔍 Searching for locations...
                   </div>
-                {/each}
+                {:else if locationSearchTerm.length >= 4 && searchedLocations.length === 0}
+                  <!-- Show no results message -->
+                  <div class="no-results">
+                    No locations found for "{locationSearchTerm}" in {selectedCity}, {selectedCountry}
+                  </div>
+                {:else if locationSearchTerm.length < 4}
+                  <!-- Show instruction message -->
+                  <div class="search-instruction">
+                    💡 Type at least 4 characters to search for locations in {selectedCity}, {selectedCountry}
+                  </div>
+                {:else}
+                  <!-- Show message that search is required -->
+                  <div class="search-instruction">
+                    💡 Type at least 4 characters to search for locations
+                  </div>
+                {/if}
               </div>
             </div>
           {/if}
           
-          {#if selectedCountry && selectedCity && availableLocations.length === 0}
+          {#if selectedCountry && selectedCity && locationSearchTerm.length >= 4 && searchedLocations.length === 0}
             <div class="no-locations">
-              <p>No locations found in {selectedCity}, {selectedCountry}.</p>
+              <p>No locations found for "{locationSearchTerm}" in {selectedCity}, {selectedCountry}.</p>
             </div>
           {/if}
         </div>
