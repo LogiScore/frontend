@@ -1814,7 +1814,7 @@
                 {:else if citySearchTerm.length < 4}
                   <!-- Show instruction message -->
                   <div class="search-instruction">
-                    💡 Type at least 4 characters to search
+                    
                   </div>
                 {:else}
                   <!-- Fallback: Show locations directly if no cities found -->
@@ -1922,12 +1922,12 @@
                 {:else if locationSearchTerm.length < 4}
                   <!-- Show instruction message -->
                   <div class="search-instruction">
-                    💡 Type at least 4 characters to search for locations in {selectedCity}, {selectedCountry}
+                    
                   </div>
                 {:else}
                   <!-- Show message that search is required -->
                   <div class="search-instruction">
-                    💡 Type at least 4 characters to search for locations
+                    
                   </div>
                 {/if}
               </div>
