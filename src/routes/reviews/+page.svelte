@@ -23,7 +23,8 @@
   let isLoading = true;
   let error: string | null = null;
   let successMessage: string | null = null;
-
+  let showLocationModal = false;
+  let locationSearchTerm = '';
   
   // New forwarder creation - RE-ENABLED after backend implementation
   let showNewForwarderForm = false;
@@ -36,6 +37,15 @@
   // Branch location autopopulation
   let locations: any[] = [];
 
+  // Hierarchical location selection
+  let selectedCountry = '';
+  let selectedCity = '';
+  let availableCountries: string[] = [];
+  let availableCities: string[] = [];
+  let availableLocations: any[] = [];
+  let showCountrySelector = false;
+  let showCitySelector = false;
+  let showLocationSelector = false;
   
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -104,6 +114,21 @@
   $: totalQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
   $: reviewWeight = isAnonymous ? 0.5 : 1.0;
   $: weightedRating = aggregateRating * reviewWeight;
+
+  // Computed property for filtered modal locations
+  $: filteredModalLocations = locationSearchTerm 
+    ? locationSuggestions.filter(loc => 
+        loc.name?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
+        loc.city?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
+        loc.country?.toLowerCase().includes(locationSearchTerm.toLowerCase())
+      )
+    : locationSuggestions;
+
+  // Function to open location modal and reset search
+  function openLocationModal() {
+    showLocationModal = true;
+    locationSearchTerm = '';
+  }
 
   onMount(async () => {
     try {
@@ -944,7 +969,53 @@
     });
   }
 
+  // Hierarchical location selection computed properties
+  $: availableCountries = [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort();
+  
+  $: availableCities = selectedCountry 
+    ? [...new Set(locations.filter(loc => loc.country === selectedCountry).map(loc => loc.city).filter(Boolean))].sort()
+    : [];
+  
+  $: availableLocations = selectedCountry && selectedCity
+    ? locations.filter(loc => loc.country === selectedCountry && loc.city === selectedCity)
+    : [];
 
+  // Hierarchical location selection functions
+  function selectCountry(country: string) {
+    selectedCountry = country;
+    selectedCity = '';
+    selectedBranch = '';
+    selectedBranchDisplay = '';
+    showCountrySelector = false;
+    showCitySelector = true;
+    showLocationSelector = false;
+  }
+
+  function selectCity(city: string) {
+    selectedCity = city;
+    selectedBranch = '';
+    selectedBranchDisplay = '';
+    showCitySelector = false;
+    showLocationSelector = true;
+  }
+
+  function selectLocationFromHierarchy(location: any) {
+    selectLocation(location);
+    showLocationSelector = false;
+    // Reset hierarchical selectors
+    showCountrySelector = false;
+    showCitySelector = false;
+  }
+
+  function resetLocationSelection() {
+    selectedCountry = '';
+    selectedCity = '';
+    selectedBranch = '';
+    selectedBranchDisplay = '';
+    showCountrySelector = false;
+    showCitySelector = false;
+    showLocationSelector = false;
+  }
 </script>
 
 <svelte:head>
@@ -1097,29 +1168,42 @@
                     <span class="hint-text">Type at least 4 characters to search locations...</span>
                   </div>
                 {/if}
+                
+                <!-- Mobile-friendly location selector -->
                 {#if showLocationSuggestions && locationSuggestions.length > 0}
-                  <div class="location-suggestions">
-                    {#each locationSuggestions as suggestion}
-                      <div 
-                        class="suggestion-item" 
-                        on:click={() => {
-                          console.log('Location suggestion clicked:', suggestion);
-                          selectLocation(suggestion);
-                        }}
-                        on:keydown={(e) => {
-                          if (e.key === 'Enter') {
-                            console.log('Location suggestion Enter key pressed:', suggestion);
-                            selectLocation(suggestion);
+                  <div class="location-selector-mobile">
+                    <!-- Option 1: Native select (good for small lists) -->
+                    {#if locationSuggestions.length <= 20}
+                      <select 
+                        class="location-select"
+                        on:change={(e) => {
+                          const target = e.target as HTMLSelectElement;
+                          const selectedId = target.value;
+                          if (selectedId) {
+                            const selectedLocation = locationSuggestions.find(loc => loc.id === selectedId);
+                            if (selectedLocation) {
+                              selectLocation(selectedLocation);
+                            }
                           }
                         }}
-                        tabindex="0"
-                        role="button"
-                        style="cursor: pointer;"
                       >
-                        <strong>{suggestion.name || 'Unknown Location'}</strong>
-                        <span class="suggestion-details">{suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}</span>
-                      </div>
-                    {/each}
+                        <option value="">Select a location...</option>
+                        {#each locationSuggestions as suggestion}
+                          <option value={suggestion.id}>
+                            {suggestion.name || 'Unknown Location'} - {suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}
+                          </option>
+                        {/each}
+                      </select>
+                    {:else}
+                      <!-- Option 2: Modal trigger for large lists -->
+                      <button 
+                        type="button"
+                        class="location-modal-trigger"
+                        on:click={openLocationModal}
+                      >
+                        📍 Select Location ({locationSuggestions.length} options)
+                      </button>
+                    {/if}
                     
                     <!-- Show More option if there are more results -->
                     {#if locationSuggestions.length >= 25}
@@ -1290,6 +1374,58 @@
       {/if}
     </div>
   </section>
+
+  <!-- Location Selection Modal -->
+  {#if showLocationModal}
+    <div class="modal-overlay" on:click={() => showLocationModal = false}>
+      <div class="location-modal" on:click|stopPropagation>
+        <div class="modal-header">
+          <h3>Select Location</h3>
+          <button 
+            type="button" 
+            class="modal-close"
+            on:click={() => showLocationModal = false}
+          >
+            ×
+          </button>
+        </div>
+        
+        <div class="modal-content">
+          <div class="location-search">
+            <input 
+              type="text" 
+              placeholder="Search locations..." 
+              bind:value={locationSearchTerm}
+              class="location-search-input"
+            />
+          </div>
+          
+          <div class="location-list">
+            {#each filteredModalLocations as suggestion}
+              <div 
+                class="modal-location-item"
+                on:click={() => {
+                  selectLocation(suggestion);
+                  showLocationModal = false;
+                }}
+              >
+                <strong>{suggestion.name || 'Unknown Location'}</strong>
+                <span class="location-details">
+                  {suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}
+                </span>
+              </div>
+            {/each}
+          </div>
+          
+          {#if filteredModalLocations.length === 0}
+            <div class="no-locations">
+              <p>No locations found matching your search.</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -1900,6 +2036,73 @@
     margin-bottom: 0;
   }
 
+  /* Mobile-friendly location selector */
+  .location-selector-mobile {
+    margin-top: 0.5rem;
+  }
+
+  .location-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    /* Mobile-optimized styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+  }
+
+  .location-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .location-modal-trigger {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+
+  .location-modal-trigger:hover {
+    border-color: #667eea;
+    background-color: #f8f9fa;
+  }
+
+  .location-modal-trigger:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    .location-select {
+      font-size: 16px; /* Prevents zoom on iOS */
+      padding: 1rem;
+      min-height: 48px; /* Better touch target */
+    }
+  }
+
+  /* Hide the old location suggestions styles */
+  .location-suggestions {
+    display: none;
+  }
+
   .auth-benefits h3 {
     color: #333;
     margin-bottom: 1rem;
@@ -2253,6 +2456,322 @@
     left: 0;
     color: #4caf50;
     font-weight: bold;
+  }
+
+  /* Hide the old location suggestions styles */
+  .location-suggestions {
+    display: none;
+  }
+
+  /* Location Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+  }
+
+  .location-modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .location-search {
+    margin-bottom: 1.5rem;
+  }
+
+  .location-search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .location-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .location-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .modal-location-item {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .modal-location-item:hover {
+    background: #f9fafb;
+    border-color: #667eea;
+  }
+
+  .modal-location-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .location-details {
+    display: block;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+
+  .no-locations {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+  }
+
+  /* Mobile optimizations for modal */
+  @media (max-width: 768px) {
+    .modal-overlay {
+      padding: 0.5rem;
+    }
+    
+    .location-modal {
+      max-height: 90vh;
+      border-radius: 8px;
+    }
+    
+    .modal-header {
+      padding: 1rem;
+    }
+    
+    .modal-content {
+      padding: 1rem;
+    }
+    
+    .location-list {
+      max-height: 300px;
+    }
+  }
+
+  /* Hierarchical Location Selection Styles */
+  .hierarchical-location-selection {
+    margin-top: 1rem;
+  }
+
+  .location-step {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+
+  .step-label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .location-step-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .location-step-button:hover {
+    border-color: #667eea;
+    background-color: #f8f9fa;
+  }
+
+  .location-step-button:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .location-options-container {
+    margin-top: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    overflow: hidden;
+  }
+
+  .location-search-filter {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8f9fa;
+  }
+
+  .location-filter-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .location-filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .location-options-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  .location-option {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .location-option:hover {
+    background-color: #f3f4f6;
+    border-color: #667eea;
+  }
+
+  .location-option:last-child {
+    margin-bottom: 0;
+  }
+
+  .selected-location-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #ecfdf5;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+  }
+
+  .selected-value {
+    font-weight: 600;
+    color: #065f46;
+  }
+
+  .change-selection-btn {
+    padding: 0.5rem 1rem;
+    background: #10b981;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .change-selection-btn:hover {
+    background-color: #059669;
+  }
+
+  .location-summary {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f0f9ff;
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+  }
+
+  .summary-item {
+    margin-bottom: 0.5rem;
+    color: #0c4a6e;
+  }
+
+  .summary-item:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Mobile optimizations for hierarchical selection */
+  @media (max-width: 768px) {
+    .location-step {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .location-options-list {
+      max-height: 250px;
+    }
+    
+    .location-step-button {
+      padding: 1rem;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .location-option {
+      padding: 1rem;
+      font-size: 16px;
+    }
   }
 </style>
 
