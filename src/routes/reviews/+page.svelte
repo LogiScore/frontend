@@ -1100,9 +1100,32 @@
     console.log('🏙️ selectCity called with:', city);
     selectedCity = city;
     
-    // Complete the location selection with city + country
-    // This matches the previous behavior where city selection was sufficient
-    selectedBranch = `city-${city}-${selectedCountry}`; // Create a unique ID
+    // Find the actual location data for this city from the search results
+    // We need the real location ID for the review submission
+    let locationData = null;
+    
+    if (searchedLocations.length > 0) {
+      // Find a location that matches the selected city and country
+      locationData = searchedLocations.find(loc => 
+        loc.city === city && loc.country === selectedCountry
+      );
+      
+      if (locationData) {
+        // Use the real location ID
+        selectedBranch = locationData.id;
+        console.log('✅ Found real location ID:', selectedBranch);
+        console.log('✅ Location data:', locationData);
+      } else {
+        console.warn('⚠️ No matching location found in searchedLocations');
+      }
+    }
+    
+    // If we still don't have a real ID, create a fallback
+    if (!locationData || !selectedBranch) {
+      selectedBranch = `city-${city}-${selectedCountry}`;
+      console.warn('⚠️ Using fallback ID - review submission may fail');
+    }
+    
     selectedBranchDisplay = `${city}, ${selectedCountry}`;
     
     // Close the modal - selection is complete
@@ -1115,9 +1138,10 @@
     console.log('- selectedCity:', selectedCity);
     console.log('- selectedBranch:', selectedBranch);
     console.log('- selectedBranchDisplay:', selectedBranchDisplay);
+    console.log('- locationData:', locationData);
     
-    // Note: Location selection is now complete at city level
-    // This matches the previous simple country + city workflow
+    // Note: We need a real location ID for review submission to work
+    // The fallback ID will cause 404 errors
   }
 
   function selectLocationFromHierarchy(location: any) {
@@ -1219,6 +1243,7 @@
   async function searchCities(country: string, query: string) {
     if (!query || query.length < 4) {
       searchedCities = [];
+      searchedLocations = []; // Clear previous location data
       return;
     }
     
@@ -1255,6 +1280,9 @@
       console.log(`🔍 Sample search result:`, searchResults[0]);
       console.log(`🔍 All search results:`, searchResults);
       
+      // Store the full location data for later use
+      searchedLocations = searchResults;
+      
       // Extract unique cities from search results for the specific country
       const cities = [...new Set(
         searchResults
@@ -1264,9 +1292,11 @@
       
       searchedCities = cities;
       console.log(`✅ Found ${cities.length} cities in ${country} for "${query}":`, cities);
+      console.log(`✅ Stored ${searchedLocations.length} location objects for city selection`);
     } catch (error) {
       console.error('❌ City search failed:', error);
       searchedCities = [];
+      searchedLocations = [];
     } finally {
       isSearchingCities = false;
     }
