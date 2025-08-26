@@ -1571,7 +1571,9 @@
                   placeholder="Search countries..." 
                   bind:value={countrySearchTerm}
                   on:input={(e) => {
-                    const query = e.target.value;
+                    const target = e.target as HTMLInputElement;
+                    const query = target.value;
+                    console.log('🔍 Country search input:', query);
                     searchCountries(query);
                   }}
                   class="location-search-input"
@@ -1579,12 +1581,20 @@
               </div>
               
               <div class="location-list">
+                <!-- Debug info -->
+                <div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                  Debug: SearchTerm="{countrySearchTerm}", Searching={isSearchingCountries}, Results={searchedCountries.length}, Available={availableCountries.length}
+                </div>
+                
                 {#if isSearchingCountries}
                   <div class="searching-indicator">
                     🔍 Searching countries...
                   </div>
                 {:else if countrySearchTerm && searchedCountries.length > 0}
                   <!-- Show search results -->
+                  <div class="search-results-header">
+                    🔍 Search Results ({searchedCountries.length} found):
+                  </div>
                   {#each searchedCountries as country}
                     <div 
                       class="modal-location-item"
@@ -1599,6 +1609,9 @@
                   </div>
                 {:else}
                   <!-- Show all available countries -->
+                  <div class="all-countries-header">
+                    🌍 All Countries ({availableCountries.length} available):
+                  </div>
                   {#each availableCountries as country}
                     <div 
                       class="modal-location-item"
