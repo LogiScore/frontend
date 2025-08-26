@@ -78,7 +78,6 @@
     <section class="tos-section">
       <h2>5. Anonymity & Privacy</h2>
       <ul>
-        <li>Users may post ratings anonymously.</li>
         <li>Reviewer identities will not be disclosed unless required by law.</li>
         <li>Data is handled according to our <a href="/privacy">Privacy Policy</a>.</li>
       </ul>
