@@ -1042,19 +1042,20 @@
   }
 
   // Hierarchical location selection computed properties
-  // Note: locations array is now empty initially and populated only when needed
-  $: availableCountries = locations.length > 0 
-    ? [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort()
-    : [];
+  // Note: countries and locations are now loaded separately for better performance
+  $: availableCountries = countries.length > 0 ? countries : [];
   
   $: availableCities = selectedCountry && locations.length > 0
-    ? [...new Set(locations.filter(loc => loc.country === selectedCountry).map(loc => loc.city).filter(Boolean))].sort()
+    ? [...new Set(locations.map(loc => loc.city).filter((city): city is string => Boolean(city)))].sort()
     : [];
   
   $: availableLocations = selectedCountry && selectedCity && locations.length > 0
-    ? locations.filter(loc => loc.country === selectedCountry && loc.city === selectedCity)
+    ? locations.filter(loc => loc.city === selectedCity)
     : [];
-
+  
+  // Separate arrays for countries and locations
+  let countries: string[] = []; // Available countries (loaded separately from locations)
+  
   // Real-time search results for each step
   let searchedCountries: string[] = [];
   let searchedCities: string[] = [];
@@ -1129,14 +1130,19 @@
       // This will give us a good starting point for country selection
       const searchResults = await apiClient.searchCountries('a');
       
+      console.log('🔍 Raw search results:', searchResults.length, 'items');
+      console.log('🔍 Sample search result:', searchResults[0]);
+      
       // Extract unique countries from search results
-      const countries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
+      const uniqueCountries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
       
-      console.log(`✅ Found ${countries.length} available countries:`, countries.slice(0, 10));
+      console.log(`✅ Found ${uniqueCountries.length} available countries:`, uniqueCountries.slice(0, 10));
       
-      // Update the availableCountries computed property
-      // Note: This is a subset of all countries, but sufficient for user selection
-      availableCountries = countries;
+      // Update the countries array which feeds into the availableCountries computed property
+      countries = uniqueCountries;
+      
+      console.log('🔍 Updated countries array:', countries.length, 'countries');
+      console.log('🔍 availableCountries computed property should now have:', availableCountries.length, 'countries');
       
     } catch (error) {
       console.error('❌ Failed to load available countries:', error);
@@ -1201,8 +1207,7 @@
       console.log(`🔍 All cities in ${country}:`, cities);
       console.log(`📊 Total locations loaded for ${country}: ${searchResults.length}`);
       
-      // Update the availableCities computed property
-      availableCities = cities;
+      // Note: availableCities is now computed automatically from the locations array
       
     } catch (error) {
       console.error(`❌ Failed to load cities for ${country}:`, error);
