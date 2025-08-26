@@ -1100,6 +1100,13 @@
     console.log('🏙️ selectCity called with:', city);
     selectedCity = city;
     
+    // Debug: Check what data we have available
+    console.log('🔍 Debug selectCity:');
+    console.log('- searchedLocations length:', searchedLocations.length);
+    console.log('- searchedCities length:', searchedCities.length);
+    console.log('- selectedCountry:', selectedCountry);
+    console.log('- searchedLocations sample:', searchedLocations.slice(0, 2));
+    
     // Find the actual location data for this city from the search results
     // We need the real location ID for the review submission
     let locationData = null;
@@ -1117,13 +1124,18 @@
         console.log('✅ Location data:', locationData);
       } else {
         console.warn('⚠️ No matching location found in searchedLocations');
+        console.warn('⚠️ Available cities in searchedLocations:', searchedLocations.map(loc => loc.city));
+        console.warn('⚠️ Available countries in searchedLocations:', searchedLocations.map(loc => loc.country));
       }
+    } else {
+      console.warn('⚠️ searchedLocations is empty - no location data available');
     }
     
     // If we still don't have a real ID, create a fallback
     if (!locationData || !selectedBranch) {
       selectedBranch = `city-${city}-${selectedCountry}`;
       console.warn('⚠️ Using fallback ID - review submission may fail');
+      console.warn('⚠️ This means the city search did not return location data');
     }
     
     selectedBranchDisplay = `${city}, ${selectedCountry}`;
@@ -1282,6 +1294,13 @@
       
       // Store the full location data for later use
       searchedLocations = searchResults;
+      
+      // Debug: Check what we're storing
+      console.log(`🔍 Debug searchCities storage:`);
+      console.log(`- searchResults length:`, searchResults.length);
+      console.log(`- searchedLocations length:`, searchedLocations.length);
+      console.log(`- Sample location object:`, searchResults[0]);
+      console.log(`- Location IDs:`, searchResults.map(loc => loc.id).slice(0, 5));
       
       // Extract unique cities from search results for the specific country
       const cities = [...new Set(
