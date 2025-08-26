@@ -355,8 +355,12 @@
 
   async function loadLocations() {
     try {
+      console.log('🔄 Loading locations from database...');
+      
       // Use the new dynamic location loading method from database
       const databaseLocations = await apiClient.getLocationsFromDatabase();
+      console.log('📊 Database locations loaded:', databaseLocations.length);
+      console.log('📊 Sample database location:', databaseLocations[0]);
       
       // Convert to the expected format for the existing code
       const processedLocations = databaseLocations.map(loc => ({
@@ -369,28 +373,35 @@
         subregion: loc.subregion
       }));
       
-      // TEMPORARY: Always add test data with special characters for testing
-      const testLocations = [
-        { id: convertLocationIdToUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: convertLocationIdToUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
-        { id: convertLocationIdToUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
-      ];
+      console.log('🔄 Processed locations:', processedLocations.length);
+      console.log('🔄 Sample processed location:', processedLocations[0]);
       
-      // Combine backend locations with test data
-      locations = [...processedLocations, ...testLocations];
+      // Check for Bangladesh specifically
+      const bangladeshLocations = processedLocations.filter(loc => 
+        loc.country && loc.country.toLowerCase().includes('bangladesh')
+      );
+      console.log('🇧🇩 Bangladesh locations found:', bangladeshLocations.length);
+      if (bangladeshLocations.length > 0) {
+        console.log('🇧🇩 Sample Bangladesh location:', bangladeshLocations[0]);
+      }
+      
+      // Set locations to only the processed ones (no hardcoded test data)
+      locations = processedLocations;
+      
+      console.log('✅ Final locations array:', locations.length);
+      console.log('✅ Available countries:', [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort());
+      
     } catch (err: any) {
       console.error('❌ Failed to load dynamic locations:', err);
-      // Keep existing fallback logic as a safety net
-      locations = [
-        { id: convertLocationIdToUUID('us-east'), name: 'New York, NY, USA', city: 'New York', state: 'NY', country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: convertLocationIdToUUID('us-west'), name: 'Los Angeles, CA, USA', city: 'Los Angeles', state: 'CA', country: 'USA', region: 'Americas', subregion: 'North America' },
-        { id: convertLocationIdToUUID('uk-london'), name: 'London, , UK', city: 'London', state: '', country: 'UK', region: 'Europe', subregion: 'Western Europe' },
-        { id: convertLocationIdToUUID('de-munchen'), name: 'München, Bayern, Germany', city: 'München', state: 'Bayern', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: convertLocationIdToUUID('de-hamburg'), name: 'Hamburg, , Germany', city: 'Hamburg', state: '', country: 'Germany', region: 'Europe', subregion: 'Central Europe' },
-        { id: convertLocationIdToUUID('br-sao-paulo'), name: 'São Paulo, SP, Brazil', city: 'São Paulo', state: 'SP', country: 'Brazil', region: 'Americas', subregion: 'South America' },
-        { id: convertLocationIdToUUID('ma-selibaby'), name: 'Sélibaby, , Mauritania', city: 'Sélibaby', state: '', country: 'Mauritania', region: 'Africa', subregion: 'Western Africa' }
-      ];
-      console.log('🔄 Using minimal fallback locations due to error');
+      console.error('❌ Error details:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      
+      // Set empty array instead of hardcoded fallback
+      locations = [];
+      console.log('🔄 Using empty locations array due to error');
     }
   }
 
@@ -990,7 +1001,9 @@
     console.log('- selectedCountry:', selectedCountry);
     console.log('- availableCities:', availableCities);
     console.log('- availableLocations:', availableLocations);
+    console.log('- Total locations for country:', locations.filter(loc => loc.country === selectedCountry).length);
     console.log('- Sample locations for country:', locations.filter(loc => loc.country === selectedCountry).slice(0, 3));
+    console.log('- Cities found for country:', [...new Set(locations.filter(loc => loc.country === selectedCountry).map(loc => loc.city).filter(Boolean))]);
   }
 
   // Hierarchical location selection functions
