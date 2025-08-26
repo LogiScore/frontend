@@ -1099,25 +1099,25 @@
   async function selectCity(city: string) {
     console.log('🏙️ selectCity called with:', city);
     selectedCity = city;
-    selectedBranch = '';
-    selectedBranchDisplay = '';
+    
+    // Complete the location selection with city + country
+    // This matches the previous behavior where city selection was sufficient
+    selectedBranch = `city-${city}-${selectedCountry}`; // Create a unique ID
+    selectedBranchDisplay = `${city}, ${selectedCountry}`;
+    
+    // Close the modal - selection is complete
     showCitySelector = false;
-    showLocationSelector = true;
+    showLocationSelector = false;
+    showLocationModal = false;
     
     console.log('After selectCity:');
     console.log('- selectedCountry:', selectedCountry);
     console.log('- selectedCity:', selectedCity);
-    console.log('- availableLocations:', availableLocations);
+    console.log('- selectedBranch:', selectedBranch);
+    console.log('- selectedBranchDisplay:', selectedBranchDisplay);
     
-    // Don't load all locations upfront - let users search for specific locations
-    // This prevents the 30-second loading issue
-    console.log(`✅ Locations will be loaded on-demand when user types 4+ characters`);
-    
-    // Clear any previous locations and let the search handle it
-    availableLocations = [];
-    
-    // Note: Locations are now loaded dynamically via searchLocations() when user types
-    // This keeps the performance fast while still providing location selection
+    // Note: Location selection is now complete at city level
+    // This matches the previous simple country + city workflow
   }
 
   function selectLocationFromHierarchy(location: any) {
@@ -3131,6 +3131,8 @@
   .change-location-btn:hover {
     background-color: #5a6268;
   }
+
+
 
   /* Modal Step Styles */
   .modal-step {
