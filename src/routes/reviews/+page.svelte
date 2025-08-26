@@ -1226,13 +1226,38 @@
       isSearchingCities = true;
       console.log(`🔍 Searching cities in ${country} for: "${query}"`);
       
-      // Search locations in database with country and city filter
-      const searchResults = await apiClient.searchLocations(`${query} ${country}`);
+      // Try multiple search strategies to find cities
+      let searchResults: any[] = [];
+      
+      // Strategy 1: Search for city name with country
+      console.log(`🔍 Strategy 1: Searching for "${query} ${country}"`);
+      searchResults = await apiClient.searchLocations(`${query} ${country}`);
+      
+      // Strategy 2: If no results, try searching just for the city name
+      if (searchResults.length === 0) {
+        console.log(`🔍 Strategy 2: Searching for "${query}" only`);
+        const cityOnlyResults = await apiClient.searchLocations(query);
+        // Filter to only include results from the selected country
+        searchResults = cityOnlyResults.filter(loc => loc.country === country);
+      }
+      
+      // Strategy 3: If still no results, try searching with country parameter
+      if (searchResults.length === 0) {
+        console.log(`🔍 Strategy 3: Searching with country parameter "${country}"`);
+        const countryResults = await apiClient.searchCountries(country);
+        // Filter to cities that contain the search query
+        searchResults = countryResults.filter(loc => 
+          loc.city && loc.city.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+      
+      console.log(`🔍 Final search results:`, searchResults.length, 'items');
+      console.log(`🔍 Sample search result:`, searchResults[0]);
+      console.log(`🔍 All search results:`, searchResults);
       
       // Extract unique cities from search results for the specific country
       const cities = [...new Set(
         searchResults
-          .filter(loc => loc.country === country)
           .map(loc => loc.city)
           .filter((city): city is string => Boolean(city))
       )].sort();
