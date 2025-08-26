@@ -1139,78 +1139,31 @@
             <div class="form-group">
               <label for="branch">Location *</label>
               
-              <!-- Location input field -->
-              <div class="location-input-section">
-                
-                <input 
-                  type="text" 
-                  id="location-input-field" 
-                  bind:value={selectedBranchDisplay}
-                  placeholder="Start typing to search locations..."
-                  on:input={handleLocationSearch}
-                  class="location-input"
-                  required
-                />
-                <div class="search-tips">
-                  <small>
-                    💡 <strong>Search Tips:</strong> 
-                    Type city names (e.g., "London"), country names (e.g., "Germany"), or specific locations (e.g., "New York") for better results.
-                    <br>⚠️ <strong>Special Characters:</strong> Enter special characters exactly as they appear (e.g., "Sélibaby", "São Paulo", "München").
-                    {#if locations.length <= 50}
-                      <br>⚠️ <strong>Limited Data:</strong> Currently only {locations.length} locations available. Backend needs to be updated for full location database.
-                    {/if}
-                  </small>
-                  
-
-                </div>
-                {#if selectedBranchDisplay && selectedBranchDisplay.length > 0 && selectedBranchDisplay.length < 4}
-                  <div class="location-hint">
-                    <span class="hint-text">Type at least 4 characters to search locations...</span>
-                  </div>
-                {/if}
-                
-                <!-- Mobile-friendly location selector -->
-                {#if showLocationSuggestions && locationSuggestions.length > 0}
-                  <div class="location-selector-mobile">
-                    <!-- Option 1: Native select (good for small lists) -->
-                    {#if locationSuggestions.length <= 20}
-                      <select 
-                        class="location-select"
-                        on:change={(e) => {
-                          const target = e.target as HTMLSelectElement;
-                          const selectedId = target.value;
-                          if (selectedId) {
-                            const selectedLocation = locationSuggestions.find(loc => loc.id === selectedId);
-                            if (selectedLocation) {
-                              selectLocation(selectedLocation);
-                            }
-                          }
-                        }}
-                      >
-                        <option value="">Select a location...</option>
-                        {#each locationSuggestions as suggestion}
-                          <option value={suggestion.id}>
-                            {suggestion.name || 'Unknown Location'} - {suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}
-                          </option>
-                        {/each}
-                      </select>
-                    {:else}
-                      <!-- Option 2: Modal trigger for large lists -->
-                      <button 
-                        type="button"
-                        class="location-modal-trigger"
-                        on:click={openLocationModal}
-                      >
-                        📍 Select Location ({locationSuggestions.length} options)
-                      </button>
-                    {/if}
-                    
-                    <!-- Show More option if there are more results -->
-                    {#if locationSuggestions.length >= 25}
-                      <div class="show-more-item">
-                        <em>Showing first 25 results. Try a more specific search for better results.</em>
-                      </div>
-                    {/if}
+              <!-- Single Location Selection Button -->
+              <div class="location-selection-container">
+                {#if !selectedBranch}
+                  <button 
+                    type="button"
+                    class="location-selection-button"
+                    on:click={() => showLocationModal = true}
+                  >
+                    🌍 Select Location
+                  </button>
+                {:else}
+                  <div class="selected-location-display">
+                    <span class="selected-location-text">📍 {selectedBranchDisplay}</span>
+                    <button 
+                      type="button"
+                      class="change-location-btn"
+                      on:click={() => {
+                        selectedBranch = '';
+                        selectedBranchDisplay = '';
+                        selectedCountry = '';
+                        selectedCity = '';
+                      }}
+                    >
+                      Change
+                    </button>
                   </div>
                 {/if}
               </div>
@@ -1391,35 +1344,119 @@
         </div>
         
         <div class="modal-content">
-          <div class="location-search">
-            <input 
-              type="text" 
-              placeholder="Search locations..." 
-              bind:value={locationSearchTerm}
-              class="location-search-input"
-            />
-          </div>
-          
-          <div class="location-list">
-            {#each filteredModalLocations as suggestion}
-              <div 
-                class="modal-location-item"
-                on:click={() => {
-                  selectLocation(suggestion);
-                  showLocationModal = false;
-                }}
-              >
-                <strong>{suggestion.name || 'Unknown Location'}</strong>
-                <span class="location-details">
-                  {suggestion.city || ''}{suggestion.state ? ', ' + suggestion.state : ''}, {suggestion.country || 'Unknown Country'}
-                </span>
+          <!-- Step 1: Country Selection -->
+          {#if !selectedCountry}
+            <div class="modal-step">
+              <h4>1. Select Country</h4>
+              <div class="location-search">
+                <input 
+                  type="text" 
+                  placeholder="Search countries..." 
+                  bind:value={locationSearchTerm}
+                  class="location-search-input"
+                />
               </div>
-            {/each}
-          </div>
+              
+              <div class="location-list">
+                {#each availableCountries.filter(country => 
+                  !locationSearchTerm || country.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                ) as country}
+                  <div 
+                    class="modal-location-item"
+                    on:click={() => selectCountry(country)}
+                  >
+                    🌍 {country}
+                  </div>
+                {/each}
+              </div>
+            </div>
           
-          {#if filteredModalLocations.length === 0}
+          <!-- Step 2: City Selection -->
+          {:else if !selectedCity}
+            <div class="modal-step">
+              <div class="modal-step-header">
+                <button 
+                  type="button" 
+                  class="back-button"
+                  on:click={() => selectedCountry = ''}
+                >
+                  ← Back to Countries
+                </button>
+                <h4>2. Select City in {selectedCountry}</h4>
+              </div>
+              
+              <div class="location-search">
+                <input 
+                  type="text" 
+                  placeholder="Search cities in {selectedCountry}..." 
+                  bind:value={locationSearchTerm}
+                  class="location-search-input"
+                />
+              </div>
+              
+              <div class="location-list">
+                {#each availableCities.filter(city => 
+                  !locationSearchTerm || city.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                ) as city}
+                  <div 
+                    class="modal-location-item"
+                    on:click={() => selectCity(city)}
+                  >
+                    🏙️ {city}
+                  </div>
+                {/each}
+              </div>
+            </div>
+          
+          <!-- Step 3: Specific Location Selection -->
+          {:else}
+            <div class="modal-step">
+              <div class="modal-step-header">
+                <button 
+                  type="button" 
+                  class="back-button"
+                  on:click={() => selectedCity = ''}
+                >
+                  ← Back to Cities
+                </button>
+                <h4>3. Select Location in {selectedCity}, {selectedCountry}</h4>
+              </div>
+              
+              <div class="location-search">
+                <input 
+                  type="text" 
+                  placeholder="Search locations in {selectedCity}, {selectedCountry}..." 
+                  bind:value={locationSearchTerm}
+                  class="location-search-input"
+                />
+              </div>
+              
+              <div class="location-list">
+                {#each availableLocations.filter(location => 
+                  !locationSearchTerm || 
+                  location.name?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
+                  location.state?.toLowerCase().includes(locationSearchTerm.toLowerCase())
+                ) as location}
+                  <div 
+                    class="modal-location-item"
+                    on:click={() => {
+                      selectLocationFromHierarchy(location);
+                      showLocationModal = false;
+                    }}
+                  >
+                    <strong>📍 {location.name || 'Unknown Location'}</strong>
+                    {#if location.state}
+                      <span class="location-details">, {location.state}</span>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          
+          {#if selectedCountry && selectedCity && availableLocations.length === 0}
             <div class="no-locations">
-              <p>No locations found matching your search.</p>
+              <p>No locations found in {selectedCity}, {selectedCountry}.</p>
             </div>
           {/if}
         </div>
@@ -2602,30 +2639,14 @@
     }
   }
 
-  /* Hierarchical Location Selection Styles */
-  .hierarchical-location-selection {
-    margin-top: 1rem;
+  /* New Location Selection Styles */
+  .location-selection-container {
+    margin-top: 0.5rem;
   }
 
-  .location-step {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #f9fafb;
-  }
-
-  .step-label {
-    display: block;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
-  }
-
-  .location-step-button {
+  .location-selection-button {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     background: white;
     border: 2px solid #d1d5db;
     border-radius: 8px;
@@ -2634,93 +2655,39 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  .location-step-button:hover {
+  .location-selection-button:hover {
     border-color: #667eea;
     background-color: #f8f9fa;
   }
 
-  .location-step-button:focus {
+  .location-selection-button:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
-  .location-options-container {
-    margin-top: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    overflow: hidden;
-  }
-
-  .location-search-filter {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f8f9fa;
-  }
-
-  .location-filter-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.2s ease;
-  }
-
-  .location-filter-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-
-  .location-options-list {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 0.5rem;
-  }
-
-  .location-option {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-  }
-
-  .location-option:hover {
-    background-color: #f3f4f6;
-    border-color: #667eea;
-  }
-
-  .location-option:last-child {
-    margin-bottom: 0;
-  }
-
-  .selected-location-step {
+  .selected-location-display {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     background: #ecfdf5;
     border: 2px solid #10b981;
     border-radius: 8px;
   }
 
-  .selected-value {
+  .selected-location-text {
     font-weight: 600;
     color: #065f46;
+    font-size: 1rem;
   }
 
-  .change-selection-btn {
+  .change-location-btn {
     padding: 0.5rem 1rem;
     background: #10b981;
     border: none;
@@ -2731,46 +2698,60 @@
     transition: background-color 0.2s ease;
   }
 
-  .change-selection-btn:hover {
+  .change-location-btn:hover {
     background-color: #059669;
   }
 
-  .location-summary {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #f0f9ff;
-    border: 1px solid #0ea5e9;
-    border-radius: 8px;
+  /* Modal Step Styles */
+  .modal-step {
+    min-height: 400px;
   }
 
-  .summary-item {
-    margin-bottom: 0.5rem;
-    color: #0c4a6e;
+  .modal-step h4 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+    font-size: 1.1rem;
+    font-weight: 600;
   }
 
-  .summary-item:last-child {
-    margin-bottom: 0;
+  .modal-step-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
-  /* Mobile optimizations for hierarchical selection */
+  .back-button {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .back-button:hover {
+    background-color: #f3f4f6;
+  }
+
+  /* Mobile optimizations for new location selection */
   @media (max-width: 768px) {
-    .location-step {
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    
-    .location-options-list {
-      max-height: 250px;
-    }
-    
-    .location-step-button {
+    .location-selection-button {
       padding: 1rem;
       font-size: 16px; /* Prevents zoom on iOS */
+      min-height: 48px; /* Better touch target */
     }
     
-    .location-option {
-      padding: 1rem;
-      font-size: 16px;
+    .modal-step {
+      min-height: 300px;
+    }
+    
+    .modal-step-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
   }
 </style>
