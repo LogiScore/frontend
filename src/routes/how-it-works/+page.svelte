@@ -29,12 +29,12 @@
         <div class="step-number">1</div>
         <div class="step-content">
           <h3>Search & Discover</h3>
-          <p>Find freight forwarders by name or location. Browse detailed company profiles and ratings from real customers.</p>
+          <p>Begin your journey by exploring our comprehensive database of freight forwarders. Use our search functionality to find companies that match your requirements.</p>
           <div class="step-features">
             <ul>
               <li>Search by company name or location</li>
-              <li>View detailed company profiles</li>
-              <li>Compare multiple companies side-by-side</li>
+              <li>Browse detailed company profiles with company information</li>
+              <li>View company ratings and reviews</li>
             </ul>
           </div>
         </div>
@@ -44,13 +44,13 @@
         <div class="step-number">2</div>
         <div class="step-content">
           <h3>Compare & Evaluate</h3>
-          <p>Compare companies side-by-side. Read detailed reviews and ratings from real customers who have used their services.</p>
+          <p>Make informed decisions by analyzing detailed performance metrics and authentic customer experiences. Our comprehensive rating system covers 8 key categories to give you a complete picture.</p>
           <div class="step-features">
             <ul>
-              <li>Read authentic customer reviews</li>
-              <li>Compare ratings and scores</li>
-              <li>View detailed category breakdowns</li>
-              <li>Check company verification status</li>
+              <li>Compare multiple companies side-by-side</li>
+              <li>Review detailed category ratings and scores</li>
+              <li>Read authentic customer reviews and testimonials</li>
+              <li>Access company information and credentials</li>
             </ul>
           </div>
         </div>
@@ -60,12 +60,12 @@
         <div class="step-number">3</div>
         <div class="step-content">
           <h3>Review & Share</h3>
-          <p>Share your experience by leaving reviews and ratings. Help other businesses make informed decisions.</p>
+          <p>Contribute to the community by sharing your experiences. Your reviews help other businesses make better decisions while building transparency in the logistics industry.</p>
           <div class="step-features">
             <ul>
-              <li>Write detailed reviews</li>
-              <li>Rate specific categories</li>
-              <li>Help the community grow</li>
+              <li>Write comprehensive reviews with category ratings</li>
+              <li>Share specific experiences and recommendations</li>
+              <li>Help maintain quality standards in the industry</li>
             </ul>
           </div>
         </div>
