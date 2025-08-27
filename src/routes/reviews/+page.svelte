@@ -138,28 +138,56 @@
       .normalize('NFD') // Decompose characters with diacritics
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
       .toLowerCase() // Convert to lowercase
-      // Additional normalization for specific characters that might not be caught by NFD
-      // Polish characters
-      .replace(/[ń]/g, 'n') // Polish ń -> n
-      .replace(/[ć]/g, 'c') // Polish ć -> c
-      .replace(/[ś]/g, 's') // Polish ś -> s
-      .replace(/[ź]/g, 'z') // Polish ź -> z
-      .replace(/[ż]/g, 'z') // Polish ż -> z
-      .replace(/[ł]/g, 'l') // Polish ł -> l
+      // Comprehensive normalization for international characters
+      // Latin characters with diacritics
+      .replace(/[ÀÁÂÃÄÅĀĂĄ]/g, 'a') // A variants -> a
+      .replace(/[àáâãäåāăą]/g, 'a') // a variants -> a
+      .replace(/[ÇĆĈĊČ]/g, 'c') // C variants -> c
+      .replace(/[çćĉċč]/g, 'c') // c variants -> c
+      .replace(/[ÐĎĐ]/g, 'd') // D variants -> d
+      .replace(/[ďđ]/g, 'd') // d variants -> d
+      .replace(/[ÈÉÊËĒĔĖĘĚ]/g, 'e') // E variants -> e
+      .replace(/[èéêëēĕėęě]/g, 'e') // e variants -> e
+      .replace(/[ĜĞĠĢ]/g, 'g') // G variants -> g
+      .replace(/[ĝğġģ]/g, 'g') // g variants -> g
+      .replace(/[ĤĦ]/g, 'h') // H variants -> h
+      .replace(/[ĥħ]/g, 'h') // h variants -> h
+      .replace(/[ÌÍÎÏĨĪĬĮİ]/g, 'i') // I variants -> i
+      .replace(/[ìíîïĩīĭįı]/g, 'i') // i variants -> i
+      .replace(/[Ĵ]/g, 'j') // J variants -> j
+      .replace(/[ĵ]/g, 'j') // j variants -> j
+      .replace(/[Ķ]/g, 'k') // K variants -> k
+      .replace(/[ķ]/g, 'k') // k variants -> k
+      .replace(/[ĹĻĽĿŁ]/g, 'l') // L variants -> l
+      .replace(/[ĺļľŀł]/g, 'l') // l variants -> l
+      .replace(/[ÑŃŅŇŉ]/g, 'n') // N variants -> n
+      .replace(/[ñńņňŉ]/g, 'n') // n variants -> n
+      .replace(/[ÒÓÔÕÖØŌŎŐ]/g, 'o') // O variants -> o
+      .replace(/[òóôõöøōŏő]/g, 'o') // o variants -> o
+      .replace(/[ŔŖŘ]/g, 'r') // R variants -> r
+      .replace(/[ŕŗř]/g, 'r') // r variants -> r
+      .replace(/[ŚŜŞŠ]/g, 's') // S variants -> s
+      .replace(/[śŝşš]/g, 's') // s variants -> s
+      .replace(/[ŢŤ]/g, 't') // T variants -> t
+      .replace(/[ţť]/g, 't') // t variants -> t
+      .replace(/[ÙÚÛÜŨŪŬŮŰŲ]/g, 'u') // U variants -> u
+      .replace(/[ùúûüũūŭůűų]/g, 'u') // u variants -> u
+      .replace(/[ŴŴ]/g, 'w') // W variants -> w
+      .replace(/[ŵŵ]/g, 'w') // w variants -> w
+      .replace(/[ÝŶŸ]/g, 'y') // Y variants -> y
+      .replace(/[ýŷÿ]/g, 'y') // y variants -> y
+      .replace(/[ŹŻŽ]/g, 'z') // Z variants -> z
+      .replace(/[źżž]/g, 'z') // z variants -> z
+      // Additional special characters that might not be caught by NFD
       .replace(/[Ł]/g, 'l') // Polish Ł -> l
-      // Turkish characters
-      .replace(/[ç]/g, 'c') // Turkish ç -> c
-      .replace(/[Ç]/g, 'c') // Turkish Ç -> c
-      .replace(/[ğ]/g, 'g') // Turkish ğ -> g
-      .replace(/[Ğ]/g, 'g') // Turkish Ğ -> g
-      .replace(/[ı]/g, 'i') // Turkish ı -> i
-      .replace(/[I]/g, 'i') // Turkish I -> i (note: Turkish I is different from English I)
-      .replace(/[ö]/g, 'o') // Turkish ö -> o
-      .replace(/[Ö]/g, 'o') // Turkish Ö -> o
-      .replace(/[ş]/g, 's') // Turkish ş -> s
-      .replace(/[Ş]/g, 's') // Turkish Ş -> s
-      .replace(/[ü]/g, 'u') // Turkish ü -> u
-      .replace(/[Ü]/g, 'u'); // Turkish Ü -> u
+      .replace(/[Å]/g, 'a') // Nordic Å -> a
+      .replace(/[å]/g, 'a') // Nordic å -> a
+      .replace(/[Ø]/g, 'o') // Nordic Ø -> o
+      .replace(/[ø]/g, 'o') // Nordic ø -> o
+      .replace(/[Æ]/g, 'ae') // Nordic Æ -> ae
+      .replace(/[æ]/g, 'ae') // Nordic æ -> ae
+      .replace(/[Œ]/g, 'oe') // French Œ -> oe
+      .replace(/[œ]/g, 'oe'); // French œ -> oe
   }
 
   // Helper function to check if city matches search query with normalization
@@ -173,10 +201,9 @@
     if (query.length >= 3) { // Only log for meaningful searches
       console.log(`🔍 City search: "${city}" (${normalizedCity}) matches "${query}" (${normalizedQuery}): ${matches}`);
       
-              // Special debug for Polish and Turkish characters
-        if (city.includes('ń') || city.includes('ć') || city.includes('ś') || city.includes('ź') || city.includes('ż') ||
-            city.includes('ç') || city.includes('ğ') || city.includes('ı') || city.includes('ö') || city.includes('ş') || city.includes('ü')) {
-          console.log(`🔍 Special character debug: "${city}" -> "${normalizedCity}"`);
+              // Special debug for international characters
+        if (/[À-ÿĀ-ž]/.test(city)) {
+          console.log(`🔍 International character debug: "${city}" -> "${normalizedCity}"`);
         }
     }
     
@@ -1075,24 +1102,28 @@
     });
   }
 
-  // Test function for Polish and Turkish character normalization
-  function testSpecialCharacterNormalization() {
-    console.log('🧪 Testing Polish and Turkish character normalization:');
+  // Test function for comprehensive international character normalization
+  function testInternationalCharacterNormalization() {
+    console.log('🧪 Testing comprehensive international character normalization:');
     const testCases = [
       // Polish characters
-      'Gdańsk',
-      'Gdań',
-      'Warszawa',
-      'Kraków',
-      'Łódź',
-      'Poznań',
+      'Gdańsk', 'Gdań', 'Warszawa', 'Kraków', 'Łódź', 'Poznań',
       // Turkish characters
-      'İstanbul',
-      'İzmir',
-      'Çanakkale',
-      'Göreme',
-      'Şanlıurfa',
-      'Ürgüp'
+      'İstanbul', 'İzmir', 'Çanakkale', 'Göreme', 'Şanlıurfa', 'Ürgüp',
+      // Latin characters with macrons (Hawaiian, Māori, etc.)
+      'Hawaiʻi', 'Āotearoa', 'Kāneʻohe', 'Wailuku',
+      // French characters
+      'Bordeaux', 'Côte d\'Azur', 'Île-de-France', 'Nîmes',
+      // German characters
+      'München', 'Köln', 'Düsseldorf', 'Straßburg',
+      // Spanish characters
+      'España', 'México', 'Colombia', 'Perú',
+      // Portuguese characters
+      'São Paulo', 'João Pessoa', 'Açores', 'Porto',
+      // Nordic characters
+      'København', 'Göteborg', 'Åland', 'Trondheim',
+      // Eastern European characters
+      'Praha', 'Bratislava', 'Budapest', 'București'
     ];
     
     testCases.forEach(test => {
