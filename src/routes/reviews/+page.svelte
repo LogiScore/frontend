@@ -850,7 +850,7 @@
     }
 
     // Prepare review data for API
-    const reviewData: any = {
+    const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
       location_id: selectedBranch.trim(), // Changed from branch_id to location_id
       is_anonymous: isAnonymous,
@@ -1640,7 +1640,7 @@
 
           <!-- Shipment Reference -->
           <div class="form-section">
-            <h2>Shipment Reference (Optional)</h2>
+            <h2>Shipment Reference</h2>
             <div class="form-group">
               <label for="shipmentReference"></label>
               <input 
@@ -1739,9 +1739,7 @@
                   }}
                   class="location-search-input"
                 />
-                <div class="search-help" style="font-size: 12px; color: #666; margin-top: 5px;">
-                  💡 Type at least 2 characters to search (e.g., "ba" for Bangladesh, "fr" for France)
-                </div>
+
               </div>
               
               <div class="location-list">
