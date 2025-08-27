@@ -77,6 +77,13 @@
     </div>
   </section>
 
+  <!-- Launch Announcement Image -->
+  <section class="launch-announcement">
+    <div class="container">
+      <img src="/We've launched.png" alt="We've launched announcement" class="launch-image" />
+    </div>
+  </section>
+
   <!-- Features Section -->
   <section class="features">
     <div class="container">
@@ -258,6 +265,20 @@
 
   .hero .btn:last-child {
     margin-right: 0;
+  }
+
+  /* Launch Announcement Section */
+  .launch-announcement {
+    padding: 40px 0;
+    background: #f8f9fa;
+    text-align: center;
+  }
+
+  .launch-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   /* Features Section */
