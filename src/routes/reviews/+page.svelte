@@ -137,7 +137,29 @@
     return text
       .normalize('NFD') // Decompose characters with diacritics
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .toLowerCase(); // Convert to lowercase
+      .toLowerCase() // Convert to lowercase
+      // Additional normalization for specific characters that might not be caught by NFD
+      // Polish characters
+      .replace(/[ń]/g, 'n') // Polish ń -> n
+      .replace(/[ć]/g, 'c') // Polish ć -> c
+      .replace(/[ś]/g, 's') // Polish ś -> s
+      .replace(/[ź]/g, 'z') // Polish ź -> z
+      .replace(/[ż]/g, 'z') // Polish ż -> z
+      .replace(/[ł]/g, 'l') // Polish ł -> l
+      .replace(/[Ł]/g, 'l') // Polish Ł -> l
+      // Turkish characters
+      .replace(/[ç]/g, 'c') // Turkish ç -> c
+      .replace(/[Ç]/g, 'c') // Turkish Ç -> c
+      .replace(/[ğ]/g, 'g') // Turkish ğ -> g
+      .replace(/[Ğ]/g, 'g') // Turkish Ğ -> g
+      .replace(/[ı]/g, 'i') // Turkish ı -> i
+      .replace(/[I]/g, 'i') // Turkish I -> i (note: Turkish I is different from English I)
+      .replace(/[ö]/g, 'o') // Turkish ö -> o
+      .replace(/[Ö]/g, 'o') // Turkish Ö -> o
+      .replace(/[ş]/g, 's') // Turkish ş -> s
+      .replace(/[Ş]/g, 's') // Turkish Ş -> s
+      .replace(/[ü]/g, 'u') // Turkish ü -> u
+      .replace(/[Ü]/g, 'u'); // Turkish Ü -> u
   }
 
   // Helper function to check if city matches search query with normalization
@@ -147,9 +169,15 @@
     const normalizedQuery = normalizeText(query);
     const matches = normalizedCity.includes(normalizedQuery);
     
-    // Debug logging for city search
+    // Enhanced debug logging for city search
     if (query.length >= 3) { // Only log for meaningful searches
       console.log(`🔍 City search: "${city}" (${normalizedCity}) matches "${query}" (${normalizedQuery}): ${matches}`);
+      
+              // Special debug for Polish and Turkish characters
+        if (city.includes('ń') || city.includes('ć') || city.includes('ś') || city.includes('ź') || city.includes('ż') ||
+            city.includes('ç') || city.includes('ğ') || city.includes('ı') || city.includes('ö') || city.includes('ş') || city.includes('ü')) {
+          console.log(`🔍 Special character debug: "${city}" -> "${normalizedCity}"`);
+        }
     }
     
     return matches;
@@ -1047,6 +1075,32 @@
     });
   }
 
+  // Test function for Polish and Turkish character normalization
+  function testSpecialCharacterNormalization() {
+    console.log('🧪 Testing Polish and Turkish character normalization:');
+    const testCases = [
+      // Polish characters
+      'Gdańsk',
+      'Gdań',
+      'Warszawa',
+      'Kraków',
+      'Łódź',
+      'Poznań',
+      // Turkish characters
+      'İstanbul',
+      'İzmir',
+      'Çanakkale',
+      'Göreme',
+      'Şanlıurfa',
+      'Ürgüp'
+    ];
+    
+    testCases.forEach(test => {
+      const normalized = normalizeText(test);
+      console.log(`"${test}" -> "${normalized}"`);
+    });
+  }
+
   // Hierarchical location selection computed properties
   // Note: countries and locations are now loaded separately for better performance
   $: availableCountries = countries.length > 0 ? countries : [];
@@ -1288,10 +1342,22 @@
       if (searchResults.length === 0) {
         console.log(`🔍 Strategy 3: Searching with country parameter "${country}"`);
         const countryResults = await apiClient.searchCountries(country);
-        // Filter to cities that contain the search query
+        // Filter to cities that contain the search query using normalized text
         searchResults = countryResults.filter(loc => 
-          loc.city && loc.city.toLowerCase().includes(query.toLowerCase())
+          loc.city && cityMatchesQuery(loc.city, query)
         );
+      }
+      
+      // Strategy 4: Client-side fallback with normalized text if backend search fails
+      if (searchResults.length === 0) {
+        console.log(`🔍 Strategy 4: Client-side fallback with normalized text`);
+        // Use the existing locations array if available
+        if (locations.length > 0) {
+          searchResults = locations.filter(loc => 
+            loc.country === country && 
+            loc.city && cityMatchesQuery(loc.city, query)
+          );
+        }
       }
       
       console.log(`🔍 Final search results:`, searchResults.length, 'items');
