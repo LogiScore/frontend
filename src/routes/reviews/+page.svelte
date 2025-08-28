@@ -1573,6 +1573,7 @@
                     bind:value={newForwarder.name} 
                     placeholder="Enter company name"
                     required
+                    class="new-company-input"
                   />
                 </div>
                 
@@ -1583,17 +1584,8 @@
                     id="newCompanyWebsite" 
                     bind:value={newForwarder.website} 
                     placeholder="https://example.com"
+                    class="new-company-input"
                   />
-                </div>
-                
-                <div class="form-group">
-                  <label for="newCompanyDescription">Description</label>
-                  <textarea 
-                    id="newCompanyDescription" 
-                    bind:value={newForwarder.description} 
-                    placeholder="Brief description of the company"
-                    rows="3"
-                  ></textarea>
                 </div>
                 
                 <button type="button" class="btn btn-primary" on:click={createNewForwarder}>
@@ -2646,6 +2638,22 @@
     margin-bottom: 1.5rem;
     color: #333;
     font-size: 1.2rem;
+  }
+
+  .new-company-input {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    background: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .new-company-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
   }
 
   .form-row {
