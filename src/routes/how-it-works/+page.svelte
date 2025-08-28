@@ -66,6 +66,7 @@
               <li>Write comprehensive reviews with category ratings</li>
               <li>Share specific experiences and recommendations</li>
               <li>Help maintain quality standards in the industry</li>
+              <li>Add new freight forwarders during the review process</li>
             </ul>
           </div>
         </div>
