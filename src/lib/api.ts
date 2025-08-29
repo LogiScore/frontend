@@ -1696,6 +1696,42 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: sendWelcomeEmail =====
+  // Send welcome email to new users after successful signup
+  async sendWelcomeEmail(
+    userEmail: string,
+    userName: string,
+    companyName: string,
+    userType: string
+  ): Promise<{ message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/email/welcome`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: userEmail,
+          user_name: userName,
+          company_name: companyName,
+          user_type: userType
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Welcome email API error:', response.status, errorText);
+        throw new Error(`Failed to send welcome email: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error('Welcome email sending failed:', error.message);
+      throw new Error(`Failed to send welcome email: ${error.message}`);
+    }
+  }
+
   // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {

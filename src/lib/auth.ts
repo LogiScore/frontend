@@ -817,6 +817,20 @@ export const authMethods = {
           isLoading: false
         }));
         
+        // Send welcome email to new user
+        try {
+          await apiClient.sendWelcomeEmail(
+            email,
+            fullName,
+            companyName,
+            userType
+          );
+          console.log('Welcome email sent successfully to:', email);
+        } catch (welcomeEmailError) {
+          console.error('Failed to send welcome email:', welcomeEmailError);
+          // Don't fail the signup process if welcome email fails
+        }
+        
         // Start inactivity tracking after successful signup
         setTimeout(() => {
           authMethods.startInactivityTracking();
