@@ -548,6 +548,23 @@
       const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token);
       console.log('Forwarder created successfully:', createdForwarder);
       
+      // Send admin notification about new freight forwarder
+      try {
+        if (authState.user) {
+          await apiClient.sendAdminNewForwarderNotification(
+            createdForwarder.name,
+            newForwarder.website,
+            newForwarder.description,
+            authState.user.full_name || authState.user.username || 'Unknown User',
+            authState.user.email || 'No email provided'
+          );
+          console.log('Admin notification sent successfully');
+        }
+      } catch (notificationError) {
+        console.error('Failed to send admin notification:', notificationError);
+        // Don't fail the entire operation if notification fails
+      }
+      
       // Add to the list and select it
       freightForwarders.push(createdForwarder);
       selectedCompany = createdForwarder.id;

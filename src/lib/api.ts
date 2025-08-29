@@ -78,6 +78,7 @@ export interface ReviewCreate {
   location_id: string; // Changed from branch_id to location_id
   is_anonymous: boolean;
   review_weight: number;
+  shipment_reference?: string | null; // Optional shipment reference for review verification
   category_ratings: CategoryRating[];
   aggregate_rating: number;
   weighted_rating: number;
@@ -91,6 +92,7 @@ export interface ReviewResponse {
   country?: string; // Country from the review
   is_anonymous: boolean;
   review_weight: number;
+  shipment_reference?: string | null; // Optional shipment reference for review verification
   aggregate_rating: number;
   weighted_rating: number;
   total_questions_rated: number;
@@ -1655,6 +1657,45 @@ class ApiClient {
     }
   }
 
+  // ===== METHOD: sendAdminNewForwarderNotification =====
+  // Send notification to admin when a new freight forwarder is created
+  async sendAdminNewForwarderNotification(
+    forwarderName: string,
+    forwarderWebsite: string | undefined,
+    forwarderDescription: string | undefined,
+    createdByUser: string,
+    createdByEmail: string
+  ): Promise<{ message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/email/admin-new-forwarder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          forwarder_name: forwarderName,
+          forwarder_website: forwarderWebsite || 'Not provided',
+          forwarder_description: forwarderDescription || 'Not provided',
+          created_by_user: createdByUser,
+          created_by_email: createdByEmail,
+          admin_email: 'admin@logiscore.net'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Admin notification API error:', response.status, errorText);
+        throw new Error(`Failed to send admin notification: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      console.error('Admin notification sending failed:', error.message);
+      throw new Error(`Failed to send admin notification: ${error.message}`);
+    }
+  }
+
   // ===== METHOD: getGitHubAuthUrl =====
   // Authentication - GitHub OAuth (keeping for backward compatibility)
   async getGitHubAuthUrl(): Promise<{ auth_url: string }> {
@@ -2285,7 +2326,50 @@ class ApiClient {
     }
   }
 
-  // ===== METHOD: getAllLocationsInCountry =====
+  // ===== METHOD: getCitiesInCountry (EFFICIENT) =====
+  async getCitiesInCountry(countryQuery: string): Promise<string[]> {
+    try {
+      console.log(`🏙️ Fetching cities in ${countryQuery} efficiently...`);
+      
+      // Get just the first page with a large page size to get a good sample of cities
+      // This is much faster than paginating through all locations
+      const url = `/api/locations/?country=${encodeURIComponent(countryQuery)}&page=1&page_size=5000`;
+      
+      const response = await this.request<any>(url);
+      
+      // Handle the new response format with pagination metadata
+      let data: any[];
+      if (response.data && Array.isArray(response.data)) {
+        // New format: { data: [...], pagination: {...} }
+        data = response.data;
+      } else if (Array.isArray(response)) {
+        // Fallback: direct array response
+        data = response;
+      } else {
+        throw new Error('Unexpected search API response format');
+      }
+      
+      // Extract unique cities from the sample
+      const cities = [...new Set(data.map(loc => loc.city).filter((city): city is string => Boolean(city)))].sort();
+      
+      console.log(`✅ Found ${cities.length} unique cities in ${countryQuery} from sample of ${data.length} locations`);
+      
+      // If we have pagination info and there are more pages, we might be missing some cities
+      // But for user experience, this sample should be sufficient
+      if (response.pagination && response.pagination.total_pages > 1) {
+        console.log(`ℹ️ Note: There are ${response.pagination.total_pages} total pages, but we're using a sample for performance`);
+        console.log(`ℹ️ If you need all cities, consider implementing a cities-specific API endpoint`);
+      }
+      
+      return cities;
+      
+    } catch (error: any) {
+      console.error(`Failed to get cities in country "${countryQuery}":`, error);
+      return [];
+    }
+  }
+
+  // ===== METHOD: getAllLocationsInCountry (LEGACY - SLOW) =====
   async getAllLocationsInCountry(countryQuery: string): Promise<Location[]> {
     try {
       let allLocations: Location[] = [];
@@ -2315,7 +2399,7 @@ class ApiClient {
         
         // Add locations from this page
         const pageLocations = data.map((loc: any) => ({
-          id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
+          id: loc.uuid || loc.id?.toString() || `${loc.city}-${loc.city}-${loc.country}`.toLowerCase().replace(/\s+/g, '-'),
           name: loc.name || `${loc.city}, ${loc.state ? loc.state + ', ' : ''}${loc.country}`,
           city: loc.city || '',
           state: loc.state || '',
