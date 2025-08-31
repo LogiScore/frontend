@@ -2811,6 +2811,104 @@ class ApiClient {
       };
     }
   }
+
+  // ===== REVIEW SUBSCRIPTION METHODS =====
+  
+  // Create a new review subscription
+  async createReviewSubscription(
+    token: string,
+    subscriptionData: {
+      freight_forwarder_id?: string;
+      location_country?: string;
+      location_city?: string;
+      review_type?: string;
+      notification_frequency?: 'immediate' | 'daily' | 'weekly';
+    }
+  ): Promise<{ id: string; message: string }> {
+    return this.request<{ id: string; message: string }>('/api/review-subscriptions/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(subscriptionData)
+    });
+  }
+
+  // Get user's current review subscriptions
+  async getReviewSubscriptions(token: string): Promise<{
+    subscriptions: Array<{
+      id: string;
+      freight_forwarder_id?: string;
+      freight_forwarder_name?: string;
+      location_country?: string;
+      location_city?: string;
+      review_type?: string;
+      notification_frequency: string;
+      is_active: boolean;
+      created_at: string;
+    }>;
+  }> {
+    return this.request<{
+      subscriptions: Array<{
+        id: string;
+        freight_forwarder_id?: string;
+        freight_forwarder_name?: string;
+        location_country?: string;
+        location_city?: string;
+        review_type?: string;
+        notification_frequency: string;
+        is_active: boolean;
+        created_at: string;
+      }>;
+    }>('/api/review-subscriptions/', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  // Update an existing review subscription
+  async updateReviewSubscription(
+    token: string,
+    subscriptionId: string,
+    updates: {
+      location_country?: string;
+      location_city?: string;
+      review_type?: string;
+      notification_frequency?: 'immediate' | 'daily' | 'weekly';
+    }
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/review-subscriptions/${subscriptionId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    });
+  }
+
+  // Delete a review subscription
+  async deleteReviewSubscription(token: string, subscriptionId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/review-subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  // Toggle subscription active status
+  async toggleReviewSubscription(token: string, subscriptionId: string): Promise<{ message: string; is_active: boolean }> {
+    return this.request<{ message: string; is_active: boolean }>(`/api/review-subscriptions/${subscriptionId}/toggle`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
 }
 
 // Export singleton instance

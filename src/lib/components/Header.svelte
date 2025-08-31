@@ -184,7 +184,8 @@
                 </button>
                 
                 <!-- Review Notifications Management -->
-                {#if authState.user.subscription_tier === 'Subscription Annual'}
+                {#if (authState.user.user_type === 'shipper' && authState.user.subscription_tier === 'annual') || 
+                      (authState.user.user_type === 'forwarder' && authState.user.subscription_tier === 'enterprise')}
                   <button class="dropdown-item" on:click={openReviewSubscriptionModal}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>

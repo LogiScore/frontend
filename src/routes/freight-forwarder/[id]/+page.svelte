@@ -246,7 +246,7 @@
           {/if}
           
           <!-- Review Notification Subscription -->
-          {#if isLoggedIn && isSubscribed && user && user.subscription_tier === 'Subscription Annual'}
+          {#if isLoggedIn && isSubscribed && user && user.user_type === 'shipper' && user.subscription_tier === 'annual'}
             <div class="detail-item full-width">
               <h3>Review Notifications</h3>
               <div class="subscription-checkbox">
