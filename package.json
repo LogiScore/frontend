@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"@stripe/stripe-js": "^7.8.0",
-		"@sveltejs/adapter-vercel": "^5.8.1"
+		"@sveltejs/adapter-vercel": "^5.8.1",
+		"@vercel/analytics": "^1.5.0"
 	}
 }

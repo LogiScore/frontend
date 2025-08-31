@@ -5,15 +5,19 @@
 	import InactivityPrompt from '$lib/components/InactivityPrompt.svelte';
 	import CookieConsent from '$lib/components/CookieConsent.svelte';
 	import { page } from '$app/stores';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	
 	// Force cache buster to be included in build
 	console.log('Layout loaded with cache buster:', CACHE_BUSTER_CONFIG);
 	
 	// Check if we're on an admin page
 	$: isAdminPage = $page.url.pathname.includes('8x7k9m2p');
+	
+	// Initialize Vercel Analytics
+	injectAnalytics();
 </script>
 
-<Header hideSignUp={isAdminPage} hideNavigation={isAdminPage} />
+<Header hideNavigation={isAdminPage} />
 
 <slot />
 
