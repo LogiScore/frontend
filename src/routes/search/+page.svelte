@@ -955,12 +955,11 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.25rem;
   }
 
   .company-item {
-    padding: 1rem;
-    border-bottom: 1px solid #e9ecef;
+    padding: 0.5rem;
     transition: background-color 0.2s ease;
   }
 
