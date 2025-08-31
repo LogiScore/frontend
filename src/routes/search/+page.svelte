@@ -145,7 +145,7 @@
       });
       
       const companies = await Promise.all(companiesPromises);
-      companiesForLocation = companies.filter(company => company !== null);
+      companiesForLocation = companies.filter(company => company !== null).sort((a, b) => a.name.localeCompare(b.name));
       searchResults = companiesForLocation;
       
       if (companiesForLocation.length === 0) {
@@ -177,7 +177,8 @@
       if (searchType === 'company') {
         // Company search
         const results = await apiClient.searchFreightForwarders(companyQuery);
-        searchResults = results;
+        // Sort results alphabetically by company name
+        searchResults = results.sort((a, b) => a.name.localeCompare(b.name));
       } else if (searchType === 'country') {
         // Country search - get cities with reviews
         selectedCountry = countryQuery;
@@ -185,7 +186,7 @@
         
         // Extract unique cities from reviews
         const cities = [...new Set(reviews.map(review => review.city).filter((city): city is string => city !== undefined))];
-        citiesWithReviews = cities;
+        citiesWithReviews = cities.sort(); // Sort cities alphabetically
         
         // Show cities instead of companies
         searchResults = [];
@@ -954,11 +955,11 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.75rem;
   }
 
   .company-item {
-    padding: 1.5rem;
+    padding: 1rem;
     border-bottom: 1px solid #e9ecef;
     transition: background-color 0.2s ease;
   }
