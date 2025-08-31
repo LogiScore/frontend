@@ -431,7 +431,19 @@
     try {
       usersLoading = true;
       console.log('Loading users with token:', authState.token.substring(0, 20) + '...');
-      users = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
+      const usersData = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
+      console.log('Users loaded:', usersData.length, 'users');
+      
+      // Find the user we just updated to see if the subscription changed
+      if (selectedUserId) {
+        const updatedUser = usersData.find(u => u.id === selectedUserId);
+        if (updatedUser) {
+          console.log('Updated user data:', updatedUser);
+          console.log('Current subscription tier:', updatedUser.subscription_tier);
+        }
+      }
+      
+      users = usersData;
     } catch (error) {
       console.error('Failed to load users:', error);
       
@@ -803,8 +815,20 @@
   function openSubscriptionModal(user: any) {
     console.log('Opening subscription modal for user:', user);
     console.log('User type:', user.user_type);
+    console.log('Current subscription tier:', user.subscription_tier);
+    
     selectedUserId = user.id;
     selectedUser = user;
+    
+    // Initialize subscription data with current user values
+    subscriptionData = {
+      tier: user.subscription_tier || 'free',
+      comment: '',
+      duration: '1',
+      isPaid: false
+    };
+    
+    console.log('Initialized subscription data:', subscriptionData);
     showSubscriptionModal = true;
   }
 
@@ -835,18 +859,39 @@
   async function updateUserSubscription() {
     if (!authState.token || !selectedUserId) return;
     
+    console.log('Updating subscription for user:', selectedUserId);
+    console.log('New subscription data:', subscriptionData);
+    
     try {
-      await apiClient.updateUserSubscription(authState.token, selectedUserId, {
+      const requestData = {
         tier: subscriptionData.tier,
         comment: subscriptionData.comment,
         duration: Number(subscriptionData.duration),
         is_paid: subscriptionData.isPaid
-      });
+      };
+      
+      console.log('Sending subscription update request:', requestData);
+      
+      const result = await apiClient.updateUserSubscription(authState.token, selectedUserId, requestData);
+      
+      console.log('Subscription update result:', result);
       
       await loadUsers(); // Reload users
+      console.log('Users reloaded after subscription update');
+      
       closeSubscriptionModal();
+      
+      // Format the tier name for display
+      let tierDisplayName = subscriptionData.tier;
+      if (subscriptionData.tier === 'monthly') tierDisplayName = 'Monthly';
+      else if (subscriptionData.tier === 'annual') tierDisplayName = 'Annual';
+      else if (subscriptionData.tier === 'enterprise') tierDisplayName = 'Enterprise';
+      else if (subscriptionData.tier === 'free') tierDisplayName = 'Free';
+      
+      addNotification('success', `Subscription updated to ${tierDisplayName}`);
     } catch (error) {
       console.error('Failed to update subscription:', error);
+      addNotification('error', `Failed to update subscription: ${(error as any).message || 'Unknown error'}`);
     }
   }
 
@@ -1359,12 +1404,12 @@
                         <span class="subscription {getSubscriptionClass(user.subscription_tier)}">
                           {#if user.subscription_tier === 'free' || !user.subscription_tier}
                             Free
-                          {:else if user.subscription_tier === 'Subscription Monthly'}
+                          {:else if user.subscription_tier === 'monthly'}
                             Monthly
-                          {:else if user.subscription_tier === 'Subscription Annual'}
+                          {:else if user.subscription_tier === 'annual'}
                             Annual
-                          {:else if user.subscription_tier === 'Subscription Annual Plus'}
-                            Annual Plus
+                          {:else if user.subscription_tier === 'enterprise'}
+                            Enterprise
                           {:else}
                             {user.subscription_tier}
                           {/if}
@@ -1614,23 +1659,25 @@
           <select id="subscription-tier" bind:value={subscriptionData.tier}>
             <option value="free">Free</option>
             {#if selectedUser && selectedUser.user_type === 'shipper'}
-              <option value="Subscription Monthly">Subscription Monthly ($38/month)</option>
-              <option value="Subscription Annual">Subscription Annual ($418/year)</option>
+              <option value="monthly">Monthly ($38/month)</option>
+              <option value="annual">Annual ($418/year)</option>
             {:else if selectedUser && selectedUser.user_type === 'forwarder'}
-              <option value="Subscription Monthly">Subscription Monthly ($76/month)</option>
-              <option value="Subscription Annual">Subscription Annual ($836/year)</option>
-              <option value="Subscription Annual Plus">Subscription Annual Plus ($3,450/year)</option>
+              <option value="monthly">Monthly ($76/month)</option>
+              <option value="annual">Annual ($836/year)</option>
+              <option value="enterprise">Enterprise ($3,450/year)</option>
             {:else}
               <!-- Default options for unknown user type -->
-              <option value="Subscription Monthly">Subscription Monthly</option>
-              <option value="Subscription Annual">Subscription Annual</option>
-              <option value="Subscription Annual Plus">Subscription Annual Plus</option>
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+              <option value="enterprise">Enterprise</option>
             {/if}
           </select>
           <!-- Debug info -->
           {#if selectedUser}
             <div class="debug-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;">
               Debug: User type = "{selectedUser.user_type}", ID = "{selectedUser.id}"
+              <br>Current tier: "{selectedUser.subscription_tier || 'free'}"
+              <br>Selected tier: "{subscriptionData.tier}"
             </div>
           {/if}
           {#if selectedUser}
@@ -1638,7 +1685,7 @@
               {#if selectedUser.user_type === 'shipper'}
                 <small>Shipper plans: Monthly $38, Annual $418</small>
               {:else if selectedUser.user_type === 'forwarder'}
-                <small>Forwarder plans: Monthly $76, Annual $836, Annual Plus $3,450</small>
+                <small>Forwarder plans: Monthly $76, Annual $836, Enterprise $3,450</small>
               {/if}
             </div>
           {/if}
@@ -2441,17 +2488,17 @@
     color: #1976d2;
   }
 
-  .subscription.subscription-monthly {
+  .subscription.monthly {
     background: #fff3e0;
     color: #f57c00;
   }
 
-  .subscription.subscription-annual {
+  .subscription.annual {
     background: #e8f5e8;
     color: #388e3c;
   }
 
-  .subscription.subscription-annual-plus {
+  .subscription.enterprise {
     background: #f3e5f5;
     color: #7b1fa2;
   }
