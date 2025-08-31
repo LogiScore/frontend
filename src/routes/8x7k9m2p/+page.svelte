@@ -92,6 +92,7 @@
   let showSubscriptionModal = false;
   let showEditUserModal = false;
   let selectedUserId: string | null = null;
+  let selectedUser: any = null;
   let selectedCompanyId: string | null = null;
   let subscriptionData = {
     tier: 'free',
@@ -215,6 +216,35 @@
     
     lastRefreshTime = new Date();
 
+    // Clear any existing errors when refreshing
+    dashboardError = null;
+    recentActivityError = null;
+    
+    switch (activeTab) {
+      case 'dashboard':
+        await Promise.all([loadDashboardStats(), loadRecentActivity()]);
+        break;
+      case 'users':
+        await loadUsers();
+        break;
+      case 'reviews':
+        await loadReviews();
+        break;
+      case 'disputes':
+        await loadDisputes();
+        break;
+      case 'companies':
+        await loadCompanies();
+        break;
+      case 'analytics':
+        await loadAnalytics();
+        break;
+      case 'promotions':
+        await loadPromotionData();
+        break;
+    }
+  }
+
   // Promotion management functions
   async function togglePromotion() {
     if (!authState.token || authState.user?.user_type !== 'admin') return;
@@ -303,32 +333,6 @@
     } catch (error) {
       console.error('Failed to award user reward:', error);
       addNotification('error', 'Failed to award user reward');
-    }
-  }
-    
-    // Clear any existing errors when refreshing
-    dashboardError = null;
-    recentActivityError = null;
-    
-    switch (activeTab) {
-      case 'dashboard':
-        await Promise.all([loadDashboardStats(), loadRecentActivity()]);
-        break;
-      case 'users':
-        await loadUsers();
-        break;
-      case 'reviews':
-        await loadReviews();
-        break;
-      case 'disputes':
-        await loadDisputes();
-        break;
-      case 'companies':
-        await loadCompanies();
-        break;
-      case 'analytics':
-        await loadAnalytics();
-        break;
     }
   }
 
@@ -790,14 +794,18 @@
     }
   }
 
-  function openSubscriptionModal(userId: string) {
-    selectedUserId = userId;
+  function openSubscriptionModal(user: any) {
+    console.log('Opening subscription modal for user:', user);
+    console.log('User type:', user.user_type);
+    selectedUserId = user.id;
+    selectedUser = user;
     showSubscriptionModal = true;
   }
 
   function closeSubscriptionModal() {
     showSubscriptionModal = false;
     selectedUserId = null;
+    selectedUser = null;
     subscriptionData = { tier: 'free', comment: '', duration: '1', isPaid: false };
   }
 
@@ -1341,12 +1349,26 @@
                       <td>{user.email}</td>
                       <td>{user.user_type}</td>
                       <td>{user.company_name || 'N/A'}</td>
-                      <td><span class="subscription {user.subscription_tier}">{user.subscription_tier}</span></td>
+                      <td>
+                        <span class="subscription {user.subscription_tier}">
+                          {#if user.subscription_tier === 'free' || !user.subscription_tier}
+                            Free
+                          {:else if user.subscription_tier === 'subscription_monthly'}
+                            Monthly
+                          {:else if user.subscription_tier === 'subscription_annual'}
+                            Annual
+                          {:else if user.subscription_tier === 'subscription_annual_plus'}
+                            Annual Plus
+                          {:else}
+                            {user.subscription_tier}
+                          {/if}
+                        </span>
+                      </td>
                       <td><span class="status {user.is_active ? 'active' : 'inactive'}">{user.is_active ? 'Active' : 'Inactive'}</span></td>
                       <td>
                         <button class="btn-secondary" on:click={() => openEditUserModal(user)}>Edit</button>
                         <button class="btn-secondary">Suspend</button>
-                        <button class="btn-primary" on:click={() => openSubscriptionModal(user.id)}>Manage Subscription</button>
+                        <button class="btn-primary" on:click={() => openSubscriptionModal(user)}>Manage Subscription</button>
                       </td>
                     </tr>
                   {/each}
@@ -1565,8 +1587,18 @@
 {#if showSubscriptionModal}
   <div class="modal-overlay" on:click={closeSubscriptionModal}>
     <div class="modal-content" on:click|stopPropagation>
+      <!-- Force re-render with user-specific key -->
+      {#key selectedUser?.id || 'no-user'}
       <div class="modal-header">
-        <h2>Manage User Subscription</h2>
+        <div>
+          <h2>Manage User Subscription</h2>
+          {#if selectedUser}
+            <p class="user-info">
+              {selectedUser.full_name || selectedUser.username} ({selectedUser.user_type}) - 
+              Current: <span class="current-tier">{selectedUser.subscription_tier || 'Free'}</span>
+            </p>
+          {/if}
+        </div>
         <button class="close-btn" on:click={closeSubscriptionModal}>&times;</button>
       </div>
       
@@ -1575,9 +1607,35 @@
           <label for="subscription-tier">Subscription Tier:</label>
           <select id="subscription-tier" bind:value={subscriptionData.tier}>
             <option value="free">Free</option>
-            <option value="premium">Premium</option>
-            <option value="enterprise">Enterprise</option>
+            {#if selectedUser && selectedUser.user_type === 'shipper'}
+              <option value="subscription_monthly">Subscription Monthly ($38/month)</option>
+              <option value="subscription_annual">Subscription Annual ($418/year)</option>
+            {:else if selectedUser && selectedUser.user_type === 'forwarder'}
+              <option value="subscription_monthly">Subscription Monthly ($76/month)</option>
+              <option value="subscription_annual">Subscription Annual ($836/year)</option>
+              <option value="subscription_annual_plus">Subscription Annual Plus ($3,450/year)</option>
+            {:else}
+              <!-- Default options for unknown user type -->
+              <option value="subscription_monthly">Subscription Monthly</option>
+              <option value="subscription_annual">Subscription Annual</option>
+              <option value="subscription_annual_plus">Subscription Annual Plus</option>
+            {/if}
           </select>
+          <!-- Debug info -->
+          {#if selectedUser}
+            <div class="debug-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;">
+              Debug: User type = "{selectedUser.user_type}", ID = "{selectedUser.id}"
+            </div>
+          {/if}
+          {#if selectedUser}
+            <div class="pricing-note">
+              {#if selectedUser.user_type === 'shipper'}
+                <small>Shipper plans: Monthly $38, Annual $418</small>
+              {:else if selectedUser.user_type === 'forwarder'}
+                <small>Forwarder plans: Monthly $76, Annual $836, Annual Plus $3,450</small>
+              {/if}
+            </div>
+          {/if}
         </div>
         
         <div class="form-group">
@@ -1609,6 +1667,7 @@
         <button class="btn-secondary" on:click={closeSubscriptionModal}>Cancel</button>
         <button class="btn-primary" on:click={updateUserSubscription}>Update Subscription</button>
       </div>
+      {/key}
     </div>
   </div>
 {/if}
@@ -2371,14 +2430,19 @@
     color: #1976d2;
   }
 
-  .subscription.premium {
+  .subscription.subscription_monthly {
     background: #fff3e0;
     color: #f57c00;
   }
 
-  .subscription.enterprise {
+  .subscription.subscription_annual {
     background: #e8f5e8;
     color: #388e3c;
+  }
+
+  .subscription.subscription_annual_plus {
+    background: #f3e5f5;
+    color: #7b1fa2;
   }
 
   /* Subscription Modal */
@@ -2413,8 +2477,20 @@
   }
 
   .modal-header h2 {
-    margin: 0;
+    margin: 0 0 8px 0;
     color: #333;
+  }
+
+  .user-info {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .current-tier {
+    color: #667eea;
+    font-weight: 600;
   }
 
   .close-btn {
@@ -2466,6 +2542,20 @@
   .form-group input[type="checkbox"] {
     width: auto;
     margin-right: 8px;
+  }
+
+  .pricing-note {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+  }
+
+  .pricing-note small {
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 500;
   }
 
   /* Analytics */
