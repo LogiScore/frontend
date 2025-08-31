@@ -671,6 +671,12 @@
     }
   }
 
+  // Utility function to get CSS-safe subscription class
+  function getSubscriptionClass(tier: string): string {
+    if (!tier) return 'free';
+    return tier.toLowerCase().replace(/\s+/g, '-');
+  }
+
   // Notification functions
   function addNotification(type: 'success' | 'error' | 'info' | 'warning', message: string) {
     const id = `notification-${++notificationId}`;
@@ -1350,14 +1356,14 @@
                       <td>{user.user_type}</td>
                       <td>{user.company_name || 'N/A'}</td>
                       <td>
-                        <span class="subscription {user.subscription_tier}">
+                        <span class="subscription {getSubscriptionClass(user.subscription_tier)}">
                           {#if user.subscription_tier === 'free' || !user.subscription_tier}
                             Free
-                          {:else if user.subscription_tier === 'subscription_monthly'}
+                          {:else if user.subscription_tier === 'Subscription Monthly'}
                             Monthly
-                          {:else if user.subscription_tier === 'subscription_annual'}
+                          {:else if user.subscription_tier === 'Subscription Annual'}
                             Annual
-                          {:else if user.subscription_tier === 'subscription_annual_plus'}
+                          {:else if user.subscription_tier === 'Subscription Annual Plus'}
                             Annual Plus
                           {:else}
                             {user.subscription_tier}
@@ -1608,17 +1614,17 @@
           <select id="subscription-tier" bind:value={subscriptionData.tier}>
             <option value="free">Free</option>
             {#if selectedUser && selectedUser.user_type === 'shipper'}
-              <option value="subscription_monthly">Subscription Monthly ($38/month)</option>
-              <option value="subscription_annual">Subscription Annual ($418/year)</option>
+              <option value="Subscription Monthly">Subscription Monthly ($38/month)</option>
+              <option value="Subscription Annual">Subscription Annual ($418/year)</option>
             {:else if selectedUser && selectedUser.user_type === 'forwarder'}
-              <option value="subscription_monthly">Subscription Monthly ($76/month)</option>
-              <option value="subscription_annual">Subscription Annual ($836/year)</option>
-              <option value="subscription_annual_plus">Subscription Annual Plus ($3,450/year)</option>
+              <option value="Subscription Monthly">Subscription Monthly ($76/month)</option>
+              <option value="Subscription Annual">Subscription Annual ($836/year)</option>
+              <option value="Subscription Annual Plus">Subscription Annual Plus ($3,450/year)</option>
             {:else}
               <!-- Default options for unknown user type -->
-              <option value="subscription_monthly">Subscription Monthly</option>
-              <option value="subscription_annual">Subscription Annual</option>
-              <option value="subscription_annual_plus">Subscription Annual Plus</option>
+              <option value="Subscription Monthly">Subscription Monthly</option>
+              <option value="Subscription Annual">Subscription Annual</option>
+              <option value="Subscription Annual Plus">Subscription Annual Plus</option>
             {/if}
           </select>
           <!-- Debug info -->
@@ -2430,17 +2436,22 @@
     color: #1976d2;
   }
 
-  .subscription.subscription_monthly {
+  .subscription.free {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+
+  .subscription.subscription-monthly {
     background: #fff3e0;
     color: #f57c00;
   }
 
-  .subscription.subscription_annual {
+  .subscription.subscription-annual {
     background: #e8f5e8;
     color: #388e3c;
   }
 
-  .subscription.subscription_annual_plus {
+  .subscription.subscription-annual-plus {
     background: #f3e5f5;
     color: #7b1fa2;
   }
