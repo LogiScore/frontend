@@ -39,7 +39,7 @@ const userPlans: Plan[] = [
 		features: [
 			'Single user subscription',
 			'Search for Forwarders and view aggregated scores by company, country and branch locations',
-			'Search for reviews by country and location to view Forwarders reviews side-by-side',
+			'Search for locations and view aggregated scores of Forwarders by service category side-by-side',
 			'Full numerical score display (e.g., 4.2/5.0)'
 		],
 		billingCycle: 'month',
