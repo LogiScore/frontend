@@ -38,9 +38,8 @@ const userPlans: Plan[] = [
 		description: 'Full access to detailed reviews and analytics',
 		features: [
 			'Single user subscription',
-			'Browse forwarders and view aggregated company, country, branch level reviews and by category',
-			'Search reviews by company, country and branch',
-			'Compare multiple forwarders side-by-side by score, category, country, or branch',
+			'Search for Forwarders and view aggregated scores by company, country and branch locations',
+			'Search for reviews by country and location to view Forwarders reviews side-by-side',
 			'Full numerical score display (e.g., 4.2/5.0)'
 		],
 		billingCycle: 'month',
@@ -84,7 +83,7 @@ const forwarderPlans: Plan[] = [
 		price: 76,
 		description: 'Enhanced visibility and review management',
 		features: [
-			'Browse forwarders and view aggregated company, country, branch level reviews and by category'
+			'Search for Forwarders and view aggregated scores by company, country and branch locations'
 		],
 		billingCycle: 'month',
 		planType: 'monthly'
@@ -95,7 +94,7 @@ const forwarderPlans: Plan[] = [
 		price: 836,
 		description: 'Enhanced visibility and review management (annual billing)',
 		features: [
-			'Browse forwarders and view aggregated company, country and branch level reviews and by category',
+			'Search for Forwarders and view aggregated scores by company, country and branch locations',
 			'Save $76/year compared to monthly billing'
 		],
 		popular: true,
