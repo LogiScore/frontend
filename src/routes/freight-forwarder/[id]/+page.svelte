@@ -292,19 +292,19 @@
               class="tab-button {activeTab === 'overview' ? 'active' : ''}" 
               on:click={() => switchTab('overview')}
             >
-              Overview
-            </button>
-            <button 
-              class="tab-button {activeTab === 'locations' ? 'active' : ''}" 
-              on:click={() => switchTab('locations')}
-            >
-              Location Scores
+              Company Categories
             </button>
             <button 
               class="tab-button {activeTab === 'countries' ? 'active' : ''}" 
               on:click={() => switchTab('countries')}
             >
               Country Scores
+            </button>
+            <button 
+              class="tab-button {activeTab === 'locations' ? 'active' : ''}" 
+              on:click={() => switchTab('locations')}
+            >
+              Location Scores
             </button>
           </div>
 
