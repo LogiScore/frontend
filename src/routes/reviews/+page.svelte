@@ -11,6 +11,11 @@
   // UUIDs based on location identifiers to maintain consistency while meeting format requirements.
   
   let freightForwarders: any[] = [];
+  
+  // Create a sorted version of freightForwarders for the dropdown
+  $: sortedFreightForwarders = [...freightForwarders].sort((a, b) => 
+    a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+  );
   // Removed branches array - we don't use the branches table
   let selectedCompany: string = '';
   let selectedBranch = '';
@@ -1562,7 +1567,7 @@
                 console.log('🏢 canSubmitReview will be checked...');
               }} required>
                 <option value="">Select a company</option>
-                {#each freightForwarders as company}
+                {#each sortedFreightForwarders as company}
                   <option value={company.id}>{company.name}</option>
                 {/each}
               </select>
