@@ -605,6 +605,10 @@
   $: if (activeTab === 'reviews' && authState.token && authState.user?.user_type === 'admin') {
     console.log('Loading reviews data for admin user');
     loadReviews();
+    // Also load companies to enable company name lookup in reviews
+    if (companies.length === 0) {
+      loadCompanies();
+    }
   }
 
   $: if (activeTab === 'disputes' && authState.token && authState.user?.user_type === 'admin') {
@@ -687,6 +691,25 @@
   function getSubscriptionClass(tier: string): string {
     if (!tier) return 'free';
     return tier.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  // Utility function to get company name from freight_forwarder_id
+  function getCompanyName(review: any): string {
+    // First try to use the freight_forwarder_name if it exists and is not an ID
+    if (review.freight_forwarder_name && !review.freight_forwarder_name.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      return review.freight_forwarder_name;
+    }
+    
+    // If freight_forwarder_name is an ID or doesn't exist, try to find the company by ID
+    if (review.freight_forwarder_id && companies.length > 0) {
+      const company = companies.find(c => c.id === review.freight_forwarder_id);
+      if (company && company.name) {
+        return company.name;
+      }
+    }
+    
+    // Fallback to showing the ID if no name is found
+    return review.freight_forwarder_id || 'N/A';
   }
 
   // Notification functions
@@ -1153,7 +1176,7 @@
                 <tbody>
                   {#each pendingReviews as review}
                     <tr>
-                      <td>{review.freight_forwarder_name || 'N/A'}</td>
+                      <td>{getCompanyName(review)}</td>
                       <td>{review.branch_name || 'N/A'}</td>
                       <td>{review.reviewer_name || review.user_id || 'N/A'}</td>
                       <td><span class="status {review.status?.toLowerCase() || (review.is_active ? 'active' : 'inactive')}">{review.status || (review.is_active ? 'Active' : 'Inactive')}</span></td>
