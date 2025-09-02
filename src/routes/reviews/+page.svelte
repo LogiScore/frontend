@@ -572,6 +572,8 @@
       
       // Add to the list and select it
       freightForwarders.push(createdForwarder);
+      // Force reactive update by reassigning the array
+      freightForwarders = [...freightForwarders];
       selectedCompany = createdForwarder.id;
       
       // Reset form
