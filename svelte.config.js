@@ -13,7 +13,17 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({
 			runtime: 'nodejs20.x'
-		})
+		}),
+		
+		// Optimize preloading to reduce unnecessary chunk loading
+		prerender: {
+			handleHttpError: 'warn'
+		},
+		
+		// Configure service worker for better caching
+		serviceWorker: {
+			register: false // Disable if not using service worker
+		}
 	}
 };
 

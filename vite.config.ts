@@ -17,7 +17,34 @@ export default defineConfig({
 		sourcemap: false, // Disable source maps in production
 		rollupOptions: {
 			output: {
-				manualChunks: undefined // Let Vite handle chunking
+				// Optimize chunk splitting to reduce preload warnings
+				manualChunks: (id) => {
+					// Group vendor libraries
+					if (id.includes('node_modules')) {
+						if (id.includes('svelte') || id.includes('@sveltejs')) {
+							return 'svelte-vendor';
+						}
+						if (id.includes('stripe') || id.includes('@stripe')) {
+							return 'stripe-vendor';
+						}
+						return 'vendor';
+					}
+					
+					// Group auth-related modules
+					if (id.includes('$lib/auth') || id.includes('AuthModal') || id.includes('AdminLoginForm')) {
+						return 'auth';
+					}
+					
+					// Group subscription-related modules
+					if (id.includes('Subscription') || id.includes('Payment') || id.includes('stripe')) {
+						return 'subscription';
+					}
+					
+					// Group API-related modules
+					if (id.includes('$lib/api') || id.includes('api.ts')) {
+						return 'api';
+					}
+				}
 			}
 		}
 	},
