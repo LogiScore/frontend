@@ -937,27 +937,7 @@
     }
   }
 
-  async function approveReview(reviewId: string) {
-    if (!authState.token) return;
-    
-    try {
-      await apiClient.approveReview(authState.token, reviewId);
-      await loadReviews(); // Reload reviews
-    } catch (error) {
-      console.error('Failed to approve review:', error);
-    }
-  }
 
-  async function rejectReview(reviewId: string) {
-    if (!authState.token) return;
-    
-    try {
-      await apiClient.rejectReview(authState.token, reviewId);
-      await loadReviews(); // Reload reviews
-    } catch (error) {
-      console.error('Failed to reject review:', error);
-    }
-  }
 
   async function resolveDispute(disputeId: string) {
     if (!authState.token) return;
@@ -1163,28 +1143,21 @@
               <table>
                 <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Company</th>
                     <th>Branch</th>
                     <th>Reviewer</th>
                     <th>Status</th>
                     <th>Date</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {#each pendingReviews as review}
                     <tr>
-                      <td>{review.id}</td>
-                      <td>{review.freight_forwarder_name || review.freight_forwarder_id || 'N/A'}</td>
-                      <td>{review.branch_name || review.branch_id || 'N/A'}</td>
+                      <td>{review.freight_forwarder_name || 'N/A'}</td>
+                      <td>{review.branch_name || 'N/A'}</td>
                       <td>{review.reviewer_name || review.user_id || 'N/A'}</td>
                       <td><span class="status {review.status?.toLowerCase() || (review.is_active ? 'active' : 'inactive')}">{review.status || (review.is_active ? 'Active' : 'Inactive')}</span></td>
                       <td>{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'N/A'}</td>
-                      <td>
-                        <button class="btn-approve" on:click={() => approveReview(review.id)}>Approve</button>
-                        <button class="btn-reject" on:click={() => rejectReview(review.id)}>Reject</button>
-                      </td>
                     </tr>
                   {/each}
                 </tbody>
@@ -2292,24 +2265,7 @@
   }
 
   /* Buttons */
-  .btn-approve {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 5px;
-  }
 
-  .btn-reject {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
 
   .btn-danger {
     background: #dc3545;
