@@ -2113,6 +2113,7 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 11px;
     transition: all 0.3s;
     display: flex;
     align-items: center;
@@ -2274,6 +2275,7 @@
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 11px;
     margin-left: 5px;
   }
 
@@ -2291,11 +2293,11 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 11px;
     transition: all 0.3s;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.95rem;
   }
 
   .btn-primary:hover {
@@ -2312,11 +2314,11 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 11px;
     transition: all 0.3s;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.9rem;
     margin-right: 5px;
   }
 
