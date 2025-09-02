@@ -1169,6 +1169,7 @@
                     <th>Company</th>
                     <th>Branch</th>
                     <th>Reviewer</th>
+                    <th>Shipment Reference</th>
                     <th>Status</th>
                     <th>Date</th>
                   </tr>
@@ -1179,6 +1180,7 @@
                       <td>{getCompanyName(review)}</td>
                       <td>{review.branch_name || 'N/A'}</td>
                       <td>{review.reviewer_name || review.user_id || 'N/A'}</td>
+                      <td>{review.shipment_reference || 'N/A'}</td>
                       <td><span class="status {review.status?.toLowerCase() || (review.is_active ? 'active' : 'inactive')}">{review.status || (review.is_active ? 'Active' : 'Inactive')}</span></td>
                       <td>{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'N/A'}</td>
                     </tr>
