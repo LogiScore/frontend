@@ -468,13 +468,7 @@
       reviewsLoading = true;
       console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
       pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter) as any[];
-      
-      // Debug: Log the actual data structure returned by the API
       console.log('Reviews loaded:', pendingReviews.length, 'reviews');
-      if (pendingReviews.length > 0) {
-        console.log('Sample review data structure:', JSON.stringify(pendingReviews[0], null, 2));
-        console.log('Available fields in review:', Object.keys(pendingReviews[0]));
-      }
     } catch (error) {
       console.error('Failed to load reviews:', error);
       
@@ -1174,8 +1168,9 @@
                 <thead>
                   <tr>
                     <th>Company</th>
-                    <th>Branch</th>
                     <th>Reviewer</th>
+                    <th>Rating</th>
+                    <th>Location</th>
                     <th>Shipment Reference</th>
                     <th>Status</th>
                     <th>Date</th>
@@ -1184,11 +1179,30 @@
                 <tbody>
                   {#each pendingReviews as review}
                     <tr>
-                      <td>{getCompanyName(review)}</td>
-                      <td>{review.branch_name || 'N/A'}</td>
-                      <td>{review.reviewer_name || review.user_id || 'N/A'}</td>
+                      <td>{review.freight_forwarder_name || 'N/A'}</td>
+                      <td>{review.reviewer_name || 'Anonymous'}</td>
+                      <td>
+                        {#if review.rating}
+                          <span class="rating-display">
+                            {review.rating.toFixed(1)} ⭐
+                          </span>
+                        {:else}
+                          <span class="no-rating">N/A</span>
+                        {/if}
+                      </td>
+                      <td>
+                        {#if review.city && review.country}
+                          {review.city}, {review.country}
+                        {:else if review.city}
+                          {review.city}
+                        {:else if review.country}
+                          {review.country}
+                        {:else}
+                          N/A
+                        {/if}
+                      </td>
                       <td>{review.shipment_reference || 'N/A'}</td>
-                      <td><span class="status {review.status?.toLowerCase() || (review.is_active ? 'active' : 'inactive')}">{review.status || (review.is_active ? 'Active' : 'Inactive')}</span></td>
+                      <td><span class="status {review.status?.toLowerCase() || 'inactive'}">{review.status || 'Inactive'}</span></td>
                       <td>{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'N/A'}</td>
                     </tr>
                   {/each}
@@ -2479,6 +2493,23 @@
   }
 
   .no-data {
+    color: #999;
+    font-style: italic;
+  }
+
+  .rating-display {
+    background: #fff3cd;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .no-rating {
     color: #999;
     font-style: italic;
   }
