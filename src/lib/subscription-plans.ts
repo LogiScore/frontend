@@ -114,7 +114,7 @@ const forwarderPlans: Plan[] = [
 			'Comment on reviews',
 			'Receive email notification when a new review is posted',
 			'Shipper able to contact Freight Forwarder via LogiScore',
-			'Best in category per country badge',
+			'Best in location badge',
 			'Analytics',
 			'Access trend of scores over time (past 12-24 months, category-by-category)'
 		],
