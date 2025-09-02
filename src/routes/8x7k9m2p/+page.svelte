@@ -468,6 +468,13 @@
       reviewsLoading = true;
       console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
       pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter) as any[];
+      
+      // Debug: Log the actual data structure returned by the API
+      console.log('Reviews loaded:', pendingReviews.length, 'reviews');
+      if (pendingReviews.length > 0) {
+        console.log('Sample review data structure:', JSON.stringify(pendingReviews[0], null, 2));
+        console.log('Available fields in review:', Object.keys(pendingReviews[0]));
+      }
     } catch (error) {
       console.error('Failed to load reviews:', error);
       
