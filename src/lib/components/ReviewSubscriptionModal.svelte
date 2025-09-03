@@ -58,6 +58,7 @@
       error = '';
       const result = await apiClient.getReviewSubscriptions(authState.token);
       subscriptions = result.subscriptions;
+      console.log('Review Notifications Modal: Loaded subscriptions:', subscriptions);
     } catch (err: any) {
       console.error('Failed to load subscriptions:', err);
       error = err.message || 'Failed to load subscriptions';
