@@ -15,6 +15,7 @@
   let showAuthModal = false;
   let authModalMode: 'signin' | 'signup' = 'signin';
   let isTogglingNotification = false;
+  let isSubscribedToCompanyNotifications = false;
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
@@ -124,6 +125,65 @@
     }
   }
 
+  async function checkCompanyNotificationSubscription() {
+    if (!isAnnualSubscriber || !$auth?.token || !freightForwarderId) return;
+    
+    try {
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      const subscription = result.subscriptions.find(sub => 
+        sub.freight_forwarder_id === freightForwarderId && 
+        !sub.location_country && 
+        !sub.location_city
+      );
+      isSubscribedToCompanyNotifications = !!subscription;
+    } catch (err: any) {
+      console.error('Failed to check company notification subscription:', err);
+      isSubscribedToCompanyNotifications = false;
+    }
+  }
+
+  async function toggleCompanySubscription(forwarderId: string) {
+    if (!isAnnualSubscriber || !$auth?.token) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    try {
+      isTogglingNotification = true;
+      
+      // Check if already subscribed to this company (no location/country specified)
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      const subscription = result.subscriptions.find(sub => 
+        sub.freight_forwarder_id === forwarderId && 
+        !sub.location_country && 
+        !sub.location_city
+      );
+      
+      if (subscription) {
+        // Unsubscribe
+        console.log('Unsubscribing from company:', forwarderId);
+        await apiClient.deleteReviewSubscription($auth.token, subscription.id);
+        isSubscribedToCompanyNotifications = false;
+        console.log('Successfully unsubscribed from company notifications');
+      } else {
+        // Subscribe
+        console.log('Subscribing to company:', forwarderId);
+        const subscriptionData = {
+          freight_forwarder_id: forwarderId,
+          notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
+        };
+        await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        isSubscribedToCompanyNotifications = true;
+        console.log('Successfully subscribed to company notifications');
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle company notification subscription:', err);
+      alert('Failed to update notification settings. Please try again.');
+    } finally {
+      isTogglingNotification = false;
+    }
+  }
+
   // Function to format category names from snake_case to Title Case
   function formatCategoryName(categoryName: string): string {
     if (!categoryName) return '';
@@ -176,6 +236,10 @@
         await loadDetailedScores();
       }
       
+      // Check if user is subscribed to company notifications
+      if (isAnnualSubscriber && $auth?.token) {
+        await checkCompanyNotificationSubscription();
+      }
 
     } catch (err: any) {
       console.error('Error loading freight forwarder:', err);
@@ -581,9 +645,37 @@
         </section>
       {/if}
 
-      <!-- Submit Review Button - Only show for logged-in and subscribed users -->
+      <!-- Company Notification and Submit Review Buttons - Only show for logged-in and subscribed users -->
       {#if isLoggedIn && isSubscribed}
         <div class="review-section">
+          <!-- Company-wide Notification Button - Only for annual subscribers -->
+          {#if isAnnualSubscriber}
+            <div class="notification-section">
+              <button 
+                class="btn btn-outline notification-btn" 
+                class:btn-loading={isTogglingNotification}
+                on:click={() => toggleCompanySubscription(freightForwarder.id)}
+                disabled={isTogglingNotification}
+              >
+                {#if isTogglingNotification}
+                  <span class="spinner"></span>
+                  {isSubscribedToCompanyNotifications ? 'Unsubscribing...' : 'Subscribing...'}
+                {:else if isSubscribedToCompanyNotifications}
+                  🔔 Stop Company Notifications
+                {:else}
+                  🔔 Receive Company Notifications
+                {/if}
+              </button>
+              <p class="notification-help">
+                {isSubscribedToCompanyNotifications 
+                  ? 'You will receive notifications when new reviews are posted for this company.'
+                  : 'Get notified when new reviews are posted for this company.'
+                }
+              </p>
+            </div>
+          {/if}
+          
+          <!-- Submit Review Button -->
           <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
         </div>
       {:else if isLoggedIn}
@@ -1572,5 +1664,46 @@
   .country-notification-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  /* Company Notification Button Styles */
+  .notification-section {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .notification-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .notification-btn.btn-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .notification-help {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+    line-height: 1.4;
   }
 </style>
