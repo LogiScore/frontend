@@ -16,6 +16,18 @@
   let authModalMode: 'signin' | 'signup' = 'signin';
   let isTogglingNotification = false;
   let isSubscribedToCompanyNotifications = false;
+  let userSubscriptions: Array<{
+    id: string;
+    freight_forwarder_id?: string;
+    freight_forwarder_name?: string;
+    location_country?: string;
+    location_city?: string;
+    review_type?: string;
+    notification_frequency: string;
+    is_active: boolean;
+    created_at: string;
+  }> = [];
+  let showSubscriptionList = false;
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
@@ -90,6 +102,9 @@
         await apiClient.createReviewSubscription($auth.token, subscriptionData);
         console.log('Successfully subscribed to location notifications');
       }
+      
+      // Reload subscription list after changes
+      await loadUserSubscriptions();
     } catch (err: any) {
       console.error('Failed to toggle location notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
@@ -145,11 +160,42 @@
         await apiClient.createReviewSubscription($auth.token, subscriptionData);
         console.log('Successfully subscribed to country notifications');
       }
+      
+      // Reload subscription list after changes
+      await loadUserSubscriptions();
     } catch (err: any) {
       console.error('Failed to toggle country notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
+    }
+  }
+
+  async function loadUserSubscriptions() {
+    if (!isAnnualSubscriber || !$auth?.token) return;
+    
+    try {
+      console.log('Loading all user subscriptions...');
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      console.log('All subscriptions API response:', result);
+      
+      // Handle both response formats: direct array or object with subscriptions property
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format for loading subscriptions:', result);
+        userSubscriptions = [];
+        return;
+      }
+      
+      userSubscriptions = subscriptions;
+      console.log('Loaded user subscriptions:', userSubscriptions);
+    } catch (err: any) {
+      console.error('Failed to load user subscriptions:', err);
+      userSubscriptions = [];
     }
   }
 
@@ -233,11 +279,42 @@
         isSubscribedToCompanyNotifications = true;
         console.log('Successfully subscribed to company notifications');
       }
+      
+      // Reload subscription list after changes
+      await loadUserSubscriptions();
     } catch (err: any) {
       console.error('Failed to toggle company notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
+    }
+  }
+
+  async function deleteSubscription(subscriptionId: string) {
+    if (!isAnnualSubscriber || !$auth?.token) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this subscription?')) {
+      return;
+    }
+
+    try {
+      console.log('Deleting subscription:', subscriptionId);
+      await apiClient.deleteReviewSubscription($auth.token, subscriptionId);
+      console.log('Successfully deleted subscription');
+      
+      // Reload subscription list after deletion
+      await loadUserSubscriptions();
+      
+      // Also check company subscription status if this was a company subscription
+      if (freightForwarderId) {
+        await checkCompanyNotificationSubscription();
+      }
+    } catch (err: any) {
+      console.error('Failed to delete subscription:', err);
+      alert('Failed to delete subscription. Please try again.');
     }
   }
 
@@ -293,9 +370,10 @@
         await loadDetailedScores();
       }
       
-      // Check if user is subscribed to company notifications
+      // Check if user is subscribed to company notifications and load all subscriptions
       if (isAnnualSubscriber && $auth?.token) {
         await checkCompanyNotificationSubscription();
+        await loadUserSubscriptions();
       }
 
     } catch (err: any) {
@@ -729,12 +807,73 @@
                   : 'Get notified when new reviews are posted for this company.'
                 }
               </p>
+              
+              <!-- Subscription List Toggle -->
+              <button 
+                class="btn btn-outline btn-small subscription-list-toggle" 
+                on:click={() => showSubscriptionList = !showSubscriptionList}
+              >
+                {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
+              </button>
             </div>
           {/if}
           
           <!-- Submit Review Button -->
           <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
         </div>
+        
+        <!-- Subscription List Display -->
+        {#if isAnnualSubscriber && showSubscriptionList}
+          <div class="subscription-list-section">
+            <h3>Your Notification Subscriptions</h3>
+            {#if userSubscriptions && userSubscriptions.length > 0}
+              <div class="subscriptions-list">
+                {#each userSubscriptions as subscription}
+                  <div class="subscription-item">
+                    <div class="subscription-header">
+                      <h4>
+                        {#if subscription.freight_forwarder_name}
+                          {subscription.freight_forwarder_name}
+                        {:else}
+                          Company ID: {subscription.freight_forwarder_id}
+                        {/if}
+                      </h4>
+                      <div class="subscription-actions">
+                        <span class="subscription-status" class:active={subscription.is_active}>
+                          {subscription.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        <button 
+                          class="btn btn-outline btn-small btn-danger" 
+                          on:click={() => deleteSubscription(subscription.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div class="subscription-details">
+                      {#if subscription.location_country}
+                        <span class="badge">📍 {subscription.location_country}</span>
+                      {/if}
+                      {#if subscription.location_city}
+                        <span class="badge">🏙️ {subscription.location_city}</span>
+                      {/if}
+                      {#if !subscription.location_country && !subscription.location_city}
+                        <span class="badge">🌍 Company-wide</span>
+                      {/if}
+                      <span class="badge">Frequency: {subscription.notification_frequency}</span>
+                      <span class="badge">Created: {new Date(subscription.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {:else}
+              <div class="no-subscriptions">
+                <p>You don't have any notification subscriptions yet.</p>
+                <p>Subscribe to companies, locations, or countries to get notified of new reviews.</p>
+              </div>
+            {/if}
+          </div>
+        {/if}
       {:else if isLoggedIn}
         <div class="review-section">
           <div class="review-prompt">
@@ -1762,5 +1901,111 @@
     font-size: 0.9rem;
     color: #6c757d;
     line-height: 1.4;
+  }
+
+  /* Subscription List Styles */
+  .subscription-list-toggle {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .subscription-list-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+  }
+
+  .subscription-list-section h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+
+  .subscriptions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .subscription-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+  }
+
+  .subscription-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .subscription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .subscription-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1rem;
+  }
+
+  .subscription-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .subscription-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #dc3545;
+    color: white;
+  }
+
+  .subscription-status.active {
+    background: #28a745;
+  }
+
+  .subscription-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    padding: 0.25rem 0.5rem;
+    background: #e9ecef;
+    color: #495057;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .no-subscriptions {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+  }
+
+  .no-subscriptions p {
+    margin: 0.5rem 0;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+  }
+
+  .btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
   }
 </style>
