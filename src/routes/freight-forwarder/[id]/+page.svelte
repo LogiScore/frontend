@@ -248,6 +248,9 @@
         !sub.location_city
       );
       isSubscribedToCompanyNotifications = !!subscription;
+      console.log('Company subscription found:', subscription);
+      console.log('Company subscription status:', isSubscribedToCompanyNotifications);
+      console.log('Button should be green:', isSubscribedToCompanyNotifications);
     } catch (err: any) {
       console.error('Failed to check company notification subscription:', err);
       isSubscribedToCompanyNotifications = false;
@@ -821,6 +824,7 @@
             <div class="notification-section">
               <button 
                 class="btn btn-outline notification-btn" 
+                class:btn-active={isSubscribedToCompanyNotifications}
                 class:btn-loading={isTogglingNotification}
                 on:click={() => toggleCompanySubscription(freightForwarder.id)}
                 disabled={isTogglingNotification}
@@ -1365,6 +1369,18 @@
   }
 
   .btn-active:hover {
+    background: #218838 !important;
+    border-color: #1e7e34 !important;
+  }
+
+  /* More specific selector for notification buttons */
+  .notification-btn.btn-active {
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+  }
+
+  .notification-btn.btn-active:hover {
     background: #218838 !important;
     border-color: #1e7e34 !important;
   }

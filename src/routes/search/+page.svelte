@@ -1687,6 +1687,20 @@
     border-color: #1e7e34 !important;
   }
 
+  /* More specific selectors for notification buttons */
+  .country-notification-btn.btn-active,
+  .city-notification-btn.btn-active {
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+  }
+
+  .country-notification-btn.btn-active:hover,
+  .city-notification-btn.btn-active:hover {
+    background: #218838 !important;
+    border-color: #1e7e34 !important;
+  }
+
   .spinner {
     width: 12px;
     height: 12px;
