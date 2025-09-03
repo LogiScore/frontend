@@ -14,7 +14,6 @@
   let activeTab: 'overview' | 'locations' | 'countries' = 'overview';
   let showAuthModal = false;
   let authModalMode: 'signin' | 'signup' = 'signin';
-  let isSubscribedToNotifications = false;
   let isTogglingNotification = false;
   
   $: freightForwarderId = $page.params?.id;
@@ -40,22 +39,9 @@
     showAuthModal = false;
   }
 
-  async function checkNotificationSubscription() {
-    if (!freightForwarderId || !$auth?.token) return;
-    
-    try {
-      const result = await apiClient.getReviewSubscriptions($auth.token);
-      const subscription = result.subscriptions.find(sub => 
-        sub.freight_forwarder_id === freightForwarderId && sub.is_active
-      );
-      isSubscribedToNotifications = !!subscription;
-    } catch (err: any) {
-      console.error('Failed to check notification subscription:', err);
-      isSubscribedToNotifications = false;
-    }
-  }
 
-  async function toggleForwarderSubscription(forwarderId: string) {
+
+  async function toggleLocationSubscription(forwarderId: string, locationName: string, country: string, city?: string) {
     if (!isAnnualSubscriber || !$auth?.token) {
       alert('This feature is only available for annual subscribers.');
       return;
@@ -64,42 +50,74 @@
     try {
       isTogglingNotification = true;
       
-      if (isSubscribedToNotifications) {
-        // Find the subscription ID to delete
-        console.log('Attempting to unsubscribe from forwarder:', forwarderId);
-        const result = await apiClient.getReviewSubscriptions($auth.token);
-        console.log('All subscriptions:', result.subscriptions);
-        
-        const subscription = result.subscriptions.find(sub => 
-          sub.freight_forwarder_id === forwarderId
-        );
-        
-        console.log('Found subscription to delete:', subscription);
-        
-        if (subscription) {
-          console.log('Deleting subscription with ID:', subscription.id);
-          await apiClient.deleteReviewSubscription($auth.token, subscription.id);
-          isSubscribedToNotifications = false;
-          console.log('Successfully unsubscribed from notifications');
-        } else {
-          console.error('No subscription found for forwarder ID:', forwarderId);
-          throw new Error('Subscription not found for this freight forwarder');
-        }
+      // Check if already subscribed to this location
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      const subscription = result.subscriptions.find(sub => 
+        sub.freight_forwarder_id === forwarderId && 
+        sub.location_country === country && 
+        sub.location_city === city
+      );
+      
+      if (subscription) {
+        // Unsubscribe
+        console.log('Unsubscribing from location:', locationName, country, city);
+        await apiClient.deleteReviewSubscription($auth.token, subscription.id);
+        console.log('Successfully unsubscribed from location notifications');
       } else {
-        // Subscribe to notifications
-        console.log('Attempting to subscribe to forwarder:', forwarderId);
+        // Subscribe
+        console.log('Subscribing to location:', locationName, country, city);
         const subscriptionData = {
           freight_forwarder_id: forwarderId,
+          location_country: country,
+          location_city: city,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
-        console.log('Subscription data:', subscriptionData);
-        const result = await apiClient.createReviewSubscription($auth.token, subscriptionData);
-        console.log('Subscription created:', result);
-        isSubscribedToNotifications = true;
-        console.log('Successfully subscribed to notifications');
+        await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        console.log('Successfully subscribed to location notifications');
       }
     } catch (err: any) {
-      console.error('Failed to toggle notification subscription:', err);
+      console.error('Failed to toggle location notification subscription:', err);
+      alert('Failed to update notification settings. Please try again.');
+    } finally {
+      isTogglingNotification = false;
+    }
+  }
+
+  async function toggleCountrySubscription(forwarderId: string, country: string) {
+    if (!isAnnualSubscriber || !$auth?.token) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    try {
+      isTogglingNotification = true;
+      
+      // Check if already subscribed to this country
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      const subscription = result.subscriptions.find(sub => 
+        sub.freight_forwarder_id === forwarderId && 
+        sub.location_country === country && 
+        !sub.location_city
+      );
+      
+      if (subscription) {
+        // Unsubscribe
+        console.log('Unsubscribing from country:', country);
+        await apiClient.deleteReviewSubscription($auth.token, subscription.id);
+        console.log('Successfully unsubscribed from country notifications');
+      } else {
+        // Subscribe
+        console.log('Subscribing to country:', country);
+        const subscriptionData = {
+          freight_forwarder_id: forwarderId,
+          location_country: country,
+          notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
+        };
+        await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        console.log('Successfully subscribed to country notifications');
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle country notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -158,10 +176,7 @@
         await loadDetailedScores();
       }
       
-      // Check if user is subscribed to notifications for this freight forwarder
-      if (isAnnualSubscriber && $auth?.token) {
-        await checkNotificationSubscription();
-      }
+
     } catch (err: any) {
       console.error('Error loading freight forwarder:', err);
       error = err.message || 'Failed to load freight forwarder details';
@@ -314,27 +329,7 @@
             </div>
           {/if}
           
-          <!-- Review Notification Subscription -->
-          {#if isLoggedIn && isSubscribed && user && user.user_type === 'shipper' && user.subscription_tier === 'annual'}
-            <div class="detail-item full-width">
-              <h3>Review Notifications</h3>
-              <div class="subscription-checkbox">
-                <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    checked={false}
-                    on:change={() => toggleForwarderSubscription(freightForwarder.id)}
-                  />
-                  <span class="checkbox-text">
-                    🔔 Get notified when new reviews are submitted for {freightForwarder.name}
-                  </span>
-                </label>
-                <p class="subscription-note">
-                  You'll receive email notifications for new reviews about this forwarder.
-                </p>
-              </div>
-            </div>
-          {/if}
+
           {#if freightForwarder.headquarters_country}
             <div class="detail-item">
               <h3>Headquarters</h3>
@@ -445,6 +440,19 @@
                             </div>
                           </div>
                         {/if}
+                        
+                        <!-- Location Notification Button -->
+                        {#if isAnnualSubscriber}
+                          <div class="location-notification-section">
+                            <button 
+                              class="btn btn-outline btn-small location-notification-btn" 
+                              on:click={() => toggleLocationSubscription(freightForwarder.id, location.location_name, location.country, location.city)}
+                              disabled={isTogglingNotification}
+                            >
+                              🔔 Notifications
+                            </button>
+                          </div>
+                        {/if}
                       </div>
                     {/each}
                   </div>
@@ -486,6 +494,19 @@
                                 </div>
                               {/each}
                             </div>
+                          </div>
+                        {/if}
+                        
+                        <!-- Country Notification Button -->
+                        {#if isAnnualSubscriber}
+                          <div class="country-notification-section">
+                            <button 
+                              class="btn btn-outline btn-small country-notification-btn" 
+                              on:click={() => toggleCountrySubscription(freightForwarder.id, country.country)}
+                              disabled={isTogglingNotification}
+                            >
+                              🔔 Notifications
+                            </button>
                           </div>
                         {/if}
                       </div>
@@ -560,37 +581,9 @@
         </section>
       {/if}
 
-      <!-- Notification and Review Buttons - Only show for logged-in and subscribed users -->
+      <!-- Submit Review Button - Only show for logged-in and subscribed users -->
       {#if isLoggedIn && isSubscribed}
         <div class="review-section">
-          <!-- Notification Button - Only for annual subscribers -->
-          {#if isAnnualSubscriber}
-            <div class="notification-section">
-              <button 
-                class="btn btn-outline notification-btn" 
-                class:btn-loading={isTogglingNotification}
-                on:click={() => toggleForwarderSubscription(freightForwarder.id)}
-                disabled={isTogglingNotification}
-              >
-                {#if isTogglingNotification}
-                  <span class="spinner"></span>
-                  {isSubscribedToNotifications ? 'Unsubscribing...' : 'Subscribing...'}
-                {:else if isSubscribedToNotifications}
-                  🔔 Stop Notifications
-                {:else}
-                  🔔 Receive Notifications
-                {/if}
-              </button>
-              <p class="notification-help">
-                {isSubscribedToNotifications 
-                  ? 'You will receive notifications when new reviews are posted for this company.'
-                  : 'Get notified when new reviews are posted for this company.'
-                }
-              </p>
-            </div>
-          {/if}
-          
-          <!-- Submit Review Button -->
           <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
         </div>
       {:else if isLoggedIn}
@@ -1046,6 +1039,11 @@
   .btn-outline:hover {
     background: #667eea;
     color: white;
+  }
+
+  .btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
   }
 
   /* Tabbed Navigation */
@@ -1559,5 +1557,20 @@
     font-size: 0.9rem;
     color: #6c757d;
     line-height: 1.4;
+  }
+
+  /* Location and Country Notification Button Styles */
+  .location-notification-section,
+  .country-notification-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+  }
+
+  .location-notification-btn,
+  .country-notification-btn {
+    width: 100%;
+    justify-content: center;
   }
 </style>
