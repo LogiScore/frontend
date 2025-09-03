@@ -1519,6 +1519,8 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .notification-btn.btn-loading {
