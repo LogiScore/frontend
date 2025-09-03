@@ -118,24 +118,31 @@
     }
   }
   
-  $: aggregateRating = reviewCategories.reduce((sum, cat) => {
+  $: aggregateRating = reviewCategories && reviewCategories.length > 0 ? reviewCategories.reduce((sum, cat) => {
+    if (!cat.questions || !Array.isArray(cat.questions)) return sum;
     const categoryRating = cat.questions.reduce((qSum: number, q: any) => qSum + (q.rating || 0), 0) / cat.questions.filter((q: any) => (q.rating || 0) > 0).length || 0;
     return sum + categoryRating;
-  }, 0) / reviewCategories.filter(cat => cat.questions.some((q: any) => (q.rating || 0) > 0)).length || 0;
+  }, 0) / reviewCategories.filter(cat => cat.questions && Array.isArray(cat.questions) && cat.questions.some((q: any) => (q.rating || 0) > 0)).length || 0 : 0;
   
-  $: ratedQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.filter((q: any) => (q.rating || 0) > 0).length, 0);
-  $: totalQuestions = reviewCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
+  $: ratedQuestions = reviewCategories && reviewCategories.length > 0 ? reviewCategories.reduce((sum, cat) => {
+    if (!cat.questions || !Array.isArray(cat.questions)) return sum;
+    return sum + cat.questions.filter((q: any) => (q.rating || 0) > 0).length;
+  }, 0) : 0;
+  $: totalQuestions = reviewCategories && reviewCategories.length > 0 ? reviewCategories.reduce((sum, cat) => {
+    if (!cat.questions || !Array.isArray(cat.questions)) return sum;
+    return sum + cat.questions.length;
+  }, 0) : 0;
   $: reviewWeight = isAnonymous ? 0.5 : 1.0;
   $: weightedRating = aggregateRating * reviewWeight;
 
   // Computed property for filtered modal locations
-  $: filteredModalLocations = locationSearchTerm 
+  $: filteredModalLocations = locationSearchTerm && locationSuggestions && Array.isArray(locationSuggestions)
     ? locationSuggestions.filter(loc => 
         loc.name?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
         loc.city?.toLowerCase().includes(locationSearchTerm.toLowerCase()) ||
         loc.country?.toLowerCase().includes(locationSearchTerm.toLowerCase())
       )
-    : locationSuggestions;
+    : locationSuggestions || [];
 
   // Helper function to normalize text for search (remove accents, diacritics, etc.)
   function normalizeText(text: string): string {
@@ -1723,10 +1730,10 @@
 
                     <!-- Rating Categories -->
           <div class="form-section">
-            {#each reviewCategories as category}
+            {#each (reviewCategories || []) as category}
               <div class="rating-category">
                 <h3>{category.name}</h3>
-                {#each category.questions as question}
+                {#each (category.questions || []) as question}
                   <div class="question-item">
                     <p class="question-text">{question.text}</p>
                     <div class="star-rating">
