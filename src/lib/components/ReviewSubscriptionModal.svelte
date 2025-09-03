@@ -57,7 +57,13 @@
     authState = state;
   });
 
+  // Load subscriptions when modal opens
+  $: if (isOpen && authState.token) {
+    loadSubscriptions();
+  }
+
   onMount(async () => {
+    console.log('ReviewSubscriptionModal: onMount called, isOpen:', isOpen, 'hasToken:', !!authState.token);
     if (isOpen && authState.token) {
       await loadSubscriptions();
     }
@@ -80,6 +86,7 @@
   }
 
   function closeModal() {
+    console.log('ReviewSubscriptionModal: closeModal called');
     dispatch('close');
     // Reset form and state
     newSubscription = {
@@ -131,6 +138,7 @@
   }
 
   async function toggleSubscription(subscriptionId: string) {
+    console.log('ReviewSubscriptionModal: toggleSubscription called for ID:', subscriptionId);
     if (!authState.token) return;
     
     try {
@@ -144,6 +152,7 @@
   }
 
   async function deleteSubscription(subscriptionId: string) {
+    console.log('ReviewSubscriptionModal: deleteSubscription called for ID:', subscriptionId);
     if (!authState.token) return;
     
     if (!confirm('Are you sure you want to delete this subscription?')) return;
@@ -159,6 +168,7 @@
   }
 
   function toggleAddForm() {
+    console.log('ReviewSubscriptionModal: toggleAddForm called, current showAddForm:', showAddForm);
     showAddForm = !showAddForm;
     if (!showAddForm) {
       // Reset form when hiding
