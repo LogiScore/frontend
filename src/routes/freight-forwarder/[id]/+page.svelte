@@ -34,6 +34,7 @@
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
   $: isAnnualSubscriber = user && user.subscription_tier === 'annual';
+  $: hasExpiredSubscription = user && user.subscription_tier && user.subscription_tier !== 'annual' && user.subscription_tier !== 'free' && user.subscription_tier !== 'Basic';
   
   // Reactive statement to load detailed scores when auth state changes
   $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
@@ -816,6 +817,16 @@
                 {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
               </button>
             </div>
+          {:else if hasExpiredSubscription}
+            <!-- Show subscription list button for expired users -->
+            <div class="notification-section">
+              <button 
+                class="btn btn-outline btn-small subscription-list-toggle" 
+                on:click={() => showSubscriptionList = !showSubscriptionList}
+              >
+                {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
+              </button>
+            </div>
           {/if}
           
           <!-- Submit Review Button -->
@@ -872,6 +883,17 @@
                 <p>Subscribe to companies, locations, or countries to get notified of new reviews.</p>
               </div>
             {/if}
+          </div>
+        {:else if hasExpiredSubscription && showSubscriptionList}
+          <div class="subscription-list-section">
+            <h3>Your Notification Subscriptions</h3>
+            <div class="subscription-expired-notice">
+              <div class="expired-icon">⚠️</div>
+              <h4>Subscription Expired</h4>
+              <p>Your annual subscription has expired. Notification subscriptions are no longer available.</p>
+              <p>To continue receiving notifications, please renew your annual subscription.</p>
+              <a href="/pricing" class="btn btn-primary">Renew Subscription</a>
+            </div>
           </div>
         {/if}
       {:else if isLoggedIn}
@@ -2007,5 +2029,35 @@
   .btn-danger:hover {
     background: #c82333;
     border-color: #bd2130;
+  }
+
+  /* Subscription Expired Notice */
+  .subscription-expired-notice {
+    text-align: center;
+    padding: 2rem;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    color: #856404;
+  }
+
+  .expired-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .subscription-expired-notice h4 {
+    margin: 0 0 1rem 0;
+    color: #856404;
+    font-size: 1.2rem;
+  }
+
+  .subscription-expired-notice p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+  }
+
+  .subscription-expired-notice .btn {
+    margin-top: 1rem;
   }
 </style>
