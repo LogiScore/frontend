@@ -87,18 +87,22 @@
 
   function closeModal() {
     console.log('ReviewSubscriptionModal: closeModal called');
-    dispatch('close');
-    // Reset form and state
-    newSubscription = {
-      freight_forwarder_id: '',
-      location_country: '',
-      location_city: '',
-      review_type: '',
-      notification_frequency: 'immediate'
-    };
-    showAddForm = false;
-    error = '';
-    success = '';
+    try {
+      dispatch('close');
+      // Reset form and state
+      newSubscription = {
+        freight_forwarder_id: '',
+        location_country: '',
+        location_city: '',
+        review_type: '',
+        notification_frequency: 'immediate'
+      };
+      showAddForm = false;
+      error = '';
+      success = '';
+    } catch (err) {
+      console.error('Error in closeModal:', err);
+    }
   }
 
   async function saveSubscriptions() {
@@ -169,26 +173,31 @@
 
   function toggleAddForm() {
     console.log('ReviewSubscriptionModal: toggleAddForm called, current showAddForm:', showAddForm);
-    showAddForm = !showAddForm;
-    if (!showAddForm) {
-      // Reset form when hiding
-      newSubscription = {
-        freight_forwarder_id: '',
-        location_country: '',
-        location_city: '',
-        review_type: '',
-        notification_frequency: 'immediate'
-      };
+    try {
+      showAddForm = !showAddForm;
+      console.log('ReviewSubscriptionModal: showAddForm changed to:', showAddForm);
+      if (!showAddForm) {
+        // Reset form when hiding
+        newSubscription = {
+          freight_forwarder_id: '',
+          location_country: '',
+          location_city: '',
+          review_type: '',
+          notification_frequency: 'immediate'
+        };
+      }
+    } catch (err) {
+      console.error('Error in toggleAddForm:', err);
     }
   }
 </script>
 
 {#if isOpen}
-  <div class="modal-overlay" on:click|self={closeModal}>
-    <div class="modal-content" on:click|stopPropagation>
+  <div class="modal-overlay" on:click|self={closeModal} on:mousedown={() => console.log('Modal overlay mousedown')}>
+    <div class="modal-content" on:click|stopPropagation on:mousedown={() => console.log('Modal content mousedown')}>
       <div class="modal-header">
         <h2>Review Notifications</h2>
-        <button class="close-btn" on:click={closeModal}>&times;</button>
+        <button class="close-btn" on:click={closeModal} on:mousedown={() => console.log('Close button mousedown')} on:mouseup={() => console.log('Close button mouseup')}>&times;</button>
       </div>
       
       <div class="modal-body">
@@ -224,7 +233,7 @@
         {#if authState.user.user_type === 'shipper'}
           <!-- Shipper functionality: Full subscription management -->
           <div class="add-subscription-section">
-            <button class="btn-secondary" on:click={toggleAddForm}>
+            <button class="btn-secondary" on:click={toggleAddForm} on:mousedown={() => console.log('Add button mousedown')} on:mouseup={() => console.log('Add button mouseup')}>
               {showAddForm ? 'Cancel' : '+ Add New Subscription'}
             </button>
           </div>
@@ -292,7 +301,7 @@
             
             {#if isLoading}
               <div class="loading">Loading subscriptions...</div>
-            {:else if subscriptions.length === 0}
+            {:else if !subscriptions || subscriptions.length === 0}
               <div class="no-subscriptions">
                 <p>You don't have any review subscriptions yet.</p>
                 <p>Add a subscription above to get started!</p>
