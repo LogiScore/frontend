@@ -37,13 +37,7 @@
   $: isMonthlySubscriber = user && user.subscription_tier === 'monthly';
   $: hasExpiredSubscription = user && user.subscription_tier && user.subscription_tier !== 'annual' && user.subscription_tier !== 'free' && user.subscription_tier !== 'Basic';
   
-  // Debug subscription tier detection
-  $: if (user) {
-    console.log('User subscription tier:', user.subscription_tier);
-    console.log('Is annual subscriber:', isAnnualSubscriber);
-    console.log('Is monthly subscriber:', isMonthlySubscriber);
-    console.log('Is subscribed (any tier):', isSubscribed);
-  }
+
   
   // Reactive statement to load detailed scores when auth state changes
   $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
@@ -685,6 +679,13 @@
                               {/if}
                             </button>
                           </div>
+                        {:else if isMonthlySubscriber}
+                          <div class="location-notification-section">
+                            <div class="notification-upgrade-prompt">
+                              <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
+                              <a href="/pricing" class="btn btn-outline btn-small">Upgrade to Annual</a>
+                            </div>
+                          </div>
                         {/if}
                       </div>
                     {/each}
@@ -748,6 +749,13 @@
                                 🔔 Receive Notifications
                               {/if}
                             </button>
+                          </div>
+                        {:else if isMonthlySubscriber}
+                          <div class="country-notification-section">
+                            <div class="notification-upgrade-prompt">
+                              <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
+                              <a href="/pricing" class="btn btn-outline btn-small">Upgrade to Annual</a>
+                            </div>
                           </div>
                         {/if}
                       </div>
@@ -857,6 +865,15 @@
               >
                 {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
               </button>
+            </div>
+          {:else if isMonthlySubscriber}
+            <!-- Monthly subscriber upgrade prompt -->
+            <div class="notification-section">
+              <div class="notification-upgrade-prompt">
+                <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
+                <p class="upgrade-description">Get notified when new reviews are posted for companies, locations, and countries you care about.</p>
+                <a href="/pricing" class="btn btn-primary">Upgrade to Annual</a>
+              </div>
             </div>
           {:else if hasExpiredSubscription}
             <!-- Show subscription list button for expired users -->
@@ -2111,5 +2128,32 @@
 
   .subscription-expired-notice .btn {
     margin-top: 1rem;
+  }
+
+  /* Notification Upgrade Prompt */
+  .notification-upgrade-prompt {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+  }
+
+  .upgrade-text {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+  }
+
+  .upgrade-description {
+    margin: 0 0 1rem 0;
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .notification-upgrade-prompt .btn {
+    margin-top: 0.5rem;
   }
 </style>
