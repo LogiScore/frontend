@@ -66,25 +66,37 @@
       
       if (isSubscribedToNotifications) {
         // Find the subscription ID to delete
+        console.log('Attempting to unsubscribe from forwarder:', forwarderId);
         const result = await apiClient.getReviewSubscriptions($auth.token);
+        console.log('All subscriptions:', result.subscriptions);
+        
         const subscription = result.subscriptions.find(sub => 
           sub.freight_forwarder_id === forwarderId
         );
         
+        console.log('Found subscription to delete:', subscription);
+        
         if (subscription) {
+          console.log('Deleting subscription with ID:', subscription.id);
           await apiClient.deleteReviewSubscription($auth.token, subscription.id);
           isSubscribedToNotifications = false;
-          console.log('Unsubscribed from notifications');
+          console.log('Successfully unsubscribed from notifications');
+        } else {
+          console.error('No subscription found for forwarder ID:', forwarderId);
+          throw new Error('Subscription not found for this freight forwarder');
         }
       } else {
         // Subscribe to notifications
+        console.log('Attempting to subscribe to forwarder:', forwarderId);
         const subscriptionData = {
           freight_forwarder_id: forwarderId,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
-        await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        console.log('Subscription data:', subscriptionData);
+        const result = await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        console.log('Subscription created:', result);
         isSubscribedToNotifications = true;
-        console.log('Subscribed to notifications');
+        console.log('Successfully subscribed to notifications');
       }
     } catch (err: any) {
       console.error('Failed to toggle notification subscription:', err);
