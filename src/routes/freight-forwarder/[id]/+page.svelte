@@ -52,7 +52,15 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this location
+      console.log('Fetching review subscriptions...');
       const result = await apiClient.getReviewSubscriptions($auth.token);
+      console.log('API response:', result);
+      
+      if (!result || !result.subscriptions) {
+        console.error('Invalid API response:', result);
+        throw new Error('Invalid response from server');
+      }
+      
       const subscription = result.subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         sub.location_country === country && 
@@ -94,7 +102,15 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this country
+      console.log('Fetching review subscriptions...');
       const result = await apiClient.getReviewSubscriptions($auth.token);
+      console.log('API response:', result);
+      
+      if (!result || !result.subscriptions) {
+        console.error('Invalid API response:', result);
+        throw new Error('Invalid response from server');
+      }
+      
       const subscription = result.subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         sub.location_country === country && 
@@ -129,7 +145,16 @@
     if (!isAnnualSubscriber || !$auth?.token || !freightForwarderId) return;
     
     try {
+      console.log('Checking company notification subscription...');
       const result = await apiClient.getReviewSubscriptions($auth.token);
+      console.log('API response for company check:', result);
+      
+      if (!result || !result.subscriptions) {
+        console.error('Invalid API response for company check:', result);
+        isSubscribedToCompanyNotifications = false;
+        return;
+      }
+      
       const subscription = result.subscriptions.find(sub => 
         sub.freight_forwarder_id === freightForwarderId && 
         !sub.location_country && 
@@ -152,7 +177,15 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this company (no location/country specified)
+      console.log('Fetching review subscriptions for company...');
       const result = await apiClient.getReviewSubscriptions($auth.token);
+      console.log('API response for company toggle:', result);
+      
+      if (!result || !result.subscriptions) {
+        console.error('Invalid API response for company toggle:', result);
+        throw new Error('Invalid response from server');
+      }
+      
       const subscription = result.subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         !sub.location_country && 
