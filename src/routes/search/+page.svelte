@@ -19,15 +19,36 @@
   let showSubscriptionPrompt = false;
   let user: any = null;
   let userSubscription = 'free';
+  let userSubscriptions: Array<{
+    id: string;
+    freight_forwarder_id?: string;
+    freight_forwarder_name?: string;
+    location_country?: string;
+    location_city?: string;
+    review_type?: string;
+    notification_frequency: string;
+    is_active: boolean;
+    created_at: string;
+  }> = [];
+  let isTogglingNotification = false;
 
   // Initialize search type from URL only once on mount
   let initialSearchTypeSet = false;
+
+  // Subscription tier detection
+  $: isAnnualSubscriber = user && user.subscription_tier === 'annual';
+  $: isMonthlySubscriber = user && user.subscription_tier === 'monthly';
 
   onMount(() => {
     // Subscribe to auth store to get user info
     const unsubscribe = auth.subscribe(state => {
       user = state.user;
       userSubscription = state.user?.subscription_tier || 'free';
+      
+      // Load user subscriptions if annual subscriber
+      if (state.user && state.user.subscription_tier === 'annual' && state.token) {
+        loadUserSubscriptions(state.token);
+      }
     });
     
     // Set initial search type from URL only once
@@ -69,14 +90,164 @@
     return true;
   }
 
-  function toggleCitySubscription(city: string) {
-    // TODO: Implement API call to toggle city subscription
-    alert(`City subscription feature coming soon for ${city}!`);
+  async function loadUserSubscriptions(token: string) {
+    if (!isAnnualSubscriber) return;
+    
+    try {
+      console.log('Loading user subscriptions for search page...');
+      const result = await apiClient.getReviewSubscriptions(token);
+      console.log('Search page API response:', result);
+      
+      // Handle both response formats: direct array or object with subscriptions property
+      if (Array.isArray(result)) {
+        userSubscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        userSubscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format for search page:', result);
+        userSubscriptions = [];
+      }
+      
+      console.log('Loaded user subscriptions for search page:', userSubscriptions);
+    } catch (err: any) {
+      console.error('Failed to load user subscriptions for search page:', err);
+      userSubscriptions = [];
+    }
   }
 
-  function toggleCountrySubscription(country: string) {
-    // TODO: Implement API call to toggle country subscription
-    alert(`Country subscription feature coming soon for ${country}!`);
+  function isSubscribedToLocation(country: string, city: string): boolean {
+    return userSubscriptions.some(sub => 
+      sub.location_country === country && 
+      sub.location_city === city
+    );
+  }
+
+  function isSubscribedToCountry(country: string): boolean {
+    return userSubscriptions.some(sub => 
+      sub.location_country === country && 
+      !sub.location_city
+    );
+  }
+
+  async function toggleCitySubscription(city: string) {
+    if (!isAnnualSubscriber || !user) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    try {
+      isTogglingNotification = true;
+      
+      // Get auth token
+      let authToken = '';
+      auth.subscribe(state => {
+        authToken = state.token || '';
+      })();
+      
+      if (!authToken) {
+        alert('Authentication required. Please sign in again.');
+        return;
+      }
+      
+      // Check if already subscribed to this city
+      const result = await apiClient.getReviewSubscriptions(authToken);
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      }
+      
+      const subscription = subscriptions.find(sub => 
+        sub.location_country === selectedCountry && 
+        sub.location_city === city
+      );
+      
+      if (subscription) {
+        // Unsubscribe
+        console.log('Unsubscribing from city:', city, selectedCountry);
+        await apiClient.deleteReviewSubscription(authToken, subscription.id);
+        console.log('Successfully unsubscribed from city notifications');
+      } else {
+        // Subscribe
+        console.log('Subscribing to city:', city, selectedCountry);
+        const subscriptionData = {
+          location_country: selectedCountry,
+          location_city: city,
+          notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
+        };
+        await apiClient.createReviewSubscription(authToken, subscriptionData);
+        console.log('Successfully subscribed to city notifications');
+      }
+      
+      // Reload subscription list after changes
+      await loadUserSubscriptions(authToken);
+    } catch (err: any) {
+      console.error('Failed to toggle city notification subscription:', err);
+      alert('Failed to update notification settings. Please try again.');
+    } finally {
+      isTogglingNotification = false;
+    }
+  }
+
+  async function toggleCountrySubscription(country: string) {
+    if (!isAnnualSubscriber || !user) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    try {
+      isTogglingNotification = true;
+      
+      // Get auth token
+      let authToken = '';
+      auth.subscribe(state => {
+        authToken = state.token || '';
+      })();
+      
+      if (!authToken) {
+        alert('Authentication required. Please sign in again.');
+        return;
+      }
+      
+      // Check if already subscribed to this country
+      const result = await apiClient.getReviewSubscriptions(authToken);
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      }
+      
+      const subscription = subscriptions.find(sub => 
+        sub.location_country === country && 
+        !sub.location_city
+      );
+      
+      if (subscription) {
+        // Unsubscribe
+        console.log('Unsubscribing from country:', country);
+        await apiClient.deleteReviewSubscription(authToken, subscription.id);
+        console.log('Successfully unsubscribed from country notifications');
+      } else {
+        // Subscribe
+        console.log('Subscribing to country:', country);
+        const subscriptionData = {
+          location_country: country,
+          notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
+        };
+        await apiClient.createReviewSubscription(authToken, subscriptionData);
+        console.log('Successfully subscribed to country notifications');
+      }
+      
+      // Reload subscription list after changes
+      await loadUserSubscriptions(authToken);
+    } catch (err: any) {
+      console.error('Failed to toggle country notification subscription:', err);
+      alert('Failed to update notification settings. Please try again.');
+    } finally {
+      isTogglingNotification = false;
+    }
   }
 
   function goBackToCities() {
@@ -411,19 +582,24 @@
         <h2>Cities with Reviews in "{selectedCountry}"</h2>
         <p class="cities-subtitle">Click on a city to see companies with reviews there</p>
         
-        <!-- Country Subscription Checkbox -->
-        {#if user && user.subscription_tier === 'Subscription Annual'}
+        <!-- Country Subscription Button -->
+        {#if isAnnualSubscriber}
           <div class="country-subscription">
-            <label class="subscription-checkbox">
-              <input 
-                type="checkbox" 
-                checked={false}
-                on:change={() => toggleCountrySubscription(selectedCountry)}
-              />
-              <span class="checkbox-text">
-                🔔 Get notified when new reviews are submitted in {selectedCountry}
-              </span>
-            </label>
+            <button 
+              class="btn btn-outline btn-small country-notification-btn" 
+              class:btn-active={isSubscribedToCountry(selectedCountry)}
+              on:click={() => toggleCountrySubscription(selectedCountry)}
+              disabled={isTogglingNotification}
+            >
+              {#if isTogglingNotification}
+                <span class="spinner"></span>
+                {isSubscribedToCountry(selectedCountry) ? 'Unsubscribing...' : 'Subscribing...'}
+              {:else if isSubscribedToCountry(selectedCountry)}
+                🔔 Stop Country Notifications
+              {:else}
+                🔔 Get Country Notifications
+              {/if}
+            </button>
             <p class="subscription-note">
               You'll receive email notifications for new reviews in this country.
             </p>
@@ -439,17 +615,23 @@
                 <div class="city-name">{city}</div>
               </div>
               
-              <!-- City Subscription Checkbox -->
-              {#if user && user.subscription_tier === 'Subscription Annual'}
+              <!-- City Subscription Button -->
+              {#if isAnnualSubscriber}
                 <div class="city-subscription" on:click|stopPropagation>
-                  <label class="subscription-checkbox">
-                    <input 
-                      type="checkbox" 
-                      checked={false}
-                      on:change={() => toggleCitySubscription(city)}
-                    />
-                    <span class="checkbox-text">🔔</span>
-                  </label>
+                  <button 
+                    class="btn btn-outline btn-small city-notification-btn" 
+                    class:btn-active={isSubscribedToLocation(selectedCountry, city)}
+                    on:click={() => toggleCitySubscription(city)}
+                    disabled={isTogglingNotification}
+                  >
+                    {#if isTogglingNotification}
+                      <span class="spinner"></span>
+                    {:else if isSubscribedToLocation(selectedCountry, city)}
+                      🔔
+                    {:else}
+                      🔔
+                    {/if}
+                  </button>
                 </div>
               {/if}
             </div>
@@ -1447,6 +1629,79 @@
   /* Update city-card to support subscription positioning */
   .city-card {
     position: relative;
+  }
+
+  /* Notification Button Styles */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #667eea;
+    border-radius: 6px;
+    background: transparent;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-outline {
+    color: #667eea;
+    border-color: #667eea;
+    background: transparent;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+
+  .btn-active:hover {
+    background: #218838;
+    border-color: #1e7e34;
+  }
+
+  .spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .country-notification-btn {
+    margin-bottom: 1rem;
+  }
+
+  .city-notification-btn {
+    min-width: 40px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
   }
 
   @media (max-width: 768px) {
