@@ -56,12 +56,18 @@
       const result = await apiClient.getReviewSubscriptions($auth.token);
       console.log('API response:', result);
       
-      if (!result || !result.subscriptions) {
-        console.error('Invalid API response:', result);
+      // Handle both response formats: direct array or object with subscriptions property
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format:', result);
         throw new Error('Invalid response from server');
       }
       
-      const subscription = result.subscriptions.find(sub => 
+      const subscription = subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         sub.location_country === country && 
         sub.location_city === city
@@ -106,12 +112,18 @@
       const result = await apiClient.getReviewSubscriptions($auth.token);
       console.log('API response:', result);
       
-      if (!result || !result.subscriptions) {
-        console.error('Invalid API response:', result);
+      // Handle both response formats: direct array or object with subscriptions property
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format:', result);
         throw new Error('Invalid response from server');
       }
       
-      const subscription = result.subscriptions.find(sub => 
+      const subscription = subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         sub.location_country === country && 
         !sub.location_city
@@ -149,13 +161,19 @@
       const result = await apiClient.getReviewSubscriptions($auth.token);
       console.log('API response for company check:', result);
       
-      if (!result || !result.subscriptions) {
-        console.error('Invalid API response for company check:', result);
+      // Handle both response formats: direct array or object with subscriptions property
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format for company check:', result);
         isSubscribedToCompanyNotifications = false;
         return;
       }
       
-      const subscription = result.subscriptions.find(sub => 
+      const subscription = subscriptions.find(sub => 
         sub.freight_forwarder_id === freightForwarderId && 
         !sub.location_country && 
         !sub.location_city
@@ -181,12 +199,18 @@
       const result = await apiClient.getReviewSubscriptions($auth.token);
       console.log('API response for company toggle:', result);
       
-      if (!result || !result.subscriptions) {
-        console.error('Invalid API response for company toggle:', result);
+      // Handle both response formats: direct array or object with subscriptions property
+      let subscriptions = [];
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format for company toggle:', result);
         throw new Error('Invalid response from server');
       }
       
-      const subscription = result.subscriptions.find(sub => 
+      const subscription = subscriptions.find(sub => 
         sub.freight_forwarder_id === forwarderId && 
         !sub.location_country && 
         !sub.location_city
