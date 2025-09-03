@@ -20,29 +20,10 @@
     created_at: string;
   }> = [];
 
-  // New subscription form
-  let newSubscription = {
-    freight_forwarder_id: '',
-    location_country: '',
-    location_city: '',
-    review_type: '',
-    notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
-  };
-
-  // Form options
-  const reviewTypes = ['general', 'import', 'export', 'domestic', 'warehousing'];
-  const notificationFrequencies = [
-    { value: 'immediate', label: 'Immediate' },
-    { value: 'daily', label: 'Daily Summary' },
-    { value: 'weekly', label: 'Weekly Summary' }
-  ];
-
   // UI state
   let isLoading = false;
-  let isSaving = false;
   let error = '';
   let success = '';
-  let showAddForm = false;
 
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -89,15 +70,7 @@
     console.log('ReviewSubscriptionModal: closeModal called');
     try {
       dispatch('close');
-      // Reset form and state
-      newSubscription = {
-        freight_forwarder_id: '',
-        location_country: '',
-        location_city: '',
-        review_type: '',
-        notification_frequency: 'immediate'
-      };
-      showAddForm = false;
+      // Reset state
       error = '';
       success = '';
     } catch (err) {
@@ -105,41 +78,7 @@
     }
   }
 
-  async function saveSubscriptions() {
-    if (!authState.token) return;
-    
-    try {
-      isSaving = true;
-      error = '';
-      success = '';
 
-      // Create new subscription if form is filled
-      if (newSubscription.freight_forwarder_id || newSubscription.location_country || newSubscription.location_city) {
-        const result = await apiClient.createReviewSubscription(authState.token, newSubscription);
-        success = 'Subscription created successfully!';
-        
-        // Reset form
-        newSubscription = {
-          freight_forwarder_id: '',
-          location_country: '',
-          location_city: '',
-          review_type: '',
-          notification_frequency: 'immediate'
-        };
-        showAddForm = false;
-        
-        // Reload subscriptions
-        await loadSubscriptions();
-      } else {
-        success = 'No changes to save';
-      }
-    } catch (err: any) {
-      console.error('Failed to save subscriptions:', err);
-      error = err.message || 'Failed to save subscriptions';
-    } finally {
-      isSaving = false;
-    }
-  }
 
   async function toggleSubscription(subscriptionId: string) {
     console.log('ReviewSubscriptionModal: toggleSubscription called for ID:', subscriptionId);
@@ -171,25 +110,7 @@
     }
   }
 
-  function toggleAddForm() {
-    console.log('ReviewSubscriptionModal: toggleAddForm called, current showAddForm:', showAddForm);
-    try {
-      showAddForm = !showAddForm;
-      console.log('ReviewSubscriptionModal: showAddForm changed to:', showAddForm);
-      if (!showAddForm) {
-        // Reset form when hiding
-        newSubscription = {
-          freight_forwarder_id: '',
-          location_country: '',
-          location_city: '',
-          review_type: '',
-          notification_frequency: 'immediate'
-        };
-      }
-    } catch (err) {
-      console.error('Error in toggleAddForm:', err);
-    }
-  }
+
 </script>
 
 {#if isOpen}
@@ -202,21 +123,21 @@
       
       <div class="modal-body">
         <div class="subscription-info">
-          <p>🔔 Get notified when new reviews are submitted for your subscribed forwarders, countries, or cities.</p>
+          <p>🔔 Manage your review notification subscriptions below.</p>
           {#if authState.user.user_type === 'shipper'}
             <p><strong>Note:</strong> This feature is available with the Annual Subscription plan.</p>
-            <p>As a shipper, you can:</p>
+            <p>You can:</p>
             <ul>
-              <li>Subscribe to specific forwarders to get notified of new reviews</li>
-              <li>Subscribe to countries/cities to get notified of reviews in those regions</li>
-              <li>Get notified if a forwarder's score drops significantly</li>
+              <li>View your current notification subscriptions</li>
+              <li>Enable or disable notifications for specific subscriptions</li>
+              <li>Delete subscriptions you no longer need</li>
             </ul>
           {:else if authState.user.user_type === 'forwarder'}
             <p><strong>Note:</strong> This feature is available with the Enterprise Annual Plus plan.</p>
-            <p>As a forwarder, you can:</p>
+            <p>You can:</p>
             <ul>
-              <li>Get notified when new reviews are posted about your company</li>
-              <li>Monitor review activity for your business</li>
+              <li>View your notification status</li>
+              <li>Monitor your review notification settings</li>
             </ul>
           {/if}
         </div>
@@ -231,71 +152,7 @@
 
         <!-- Different functionality for shippers vs forwarders -->
         {#if authState.user.user_type === 'shipper'}
-          <!-- Shipper functionality: Full subscription management -->
-          <div class="add-subscription-section">
-            <button class="btn-secondary" on:click={toggleAddForm} on:mousedown={() => console.log('Add button mousedown')} on:mouseup={() => console.log('Add button mouseup')}>
-              {showAddForm ? 'Cancel' : '+ Add New Subscription'}
-            </button>
-          </div>
-
-          <!-- Add New Subscription Form -->
-          {#if showAddForm}
-            <div class="subscription-form">
-              <h3>New Subscription</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="forwarder-id">Freight Forwarder ID (optional):</label>
-                  <input 
-                    type="text" 
-                    id="forwarder-id" 
-                    bind:value={newSubscription.freight_forwarder_id}
-                    placeholder="Leave empty for all forwarders"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="country">Country (optional):</label>
-                  <input 
-                    type="text" 
-                    id="country" 
-                    bind:value={newSubscription.location_country}
-                    placeholder="e.g., United States"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="city">City (optional):</label>
-                  <input 
-                    type="text" 
-                    id="city" 
-                    bind:value={newSubscription.location_city}
-                    placeholder="e.g., New York"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="review-type">Review Type (optional):</label>
-                  <select id="review-type" bind:value={newSubscription.review_type}>
-                    <option value="">All Types</option>
-                    {#each reviewTypes as type}
-                      <option value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
-                    {/each}
-                  </select>
-                </div>
-                
-                <div class="form-group">
-                  <label for="frequency">Notification Frequency:</label>
-                  <select id="frequency" bind:value={newSubscription.notification_frequency}>
-                    {#each notificationFrequencies as freq}
-                      <option value={freq.value}>{freq.label}</option>
-                    {/each}
-                  </select>
-                </div>
-              </div>
-            </div>
-          {/if}
-
-          <!-- Current Subscriptions -->
+          <!-- Shipper functionality: View and manage existing subscriptions -->
           <div class="subscriptions-section">
             <h3>Your Subscriptions</h3>
             
@@ -304,7 +161,7 @@
             {:else if !subscriptions || subscriptions.length === 0}
               <div class="no-subscriptions">
                 <p>You don't have any review subscriptions yet.</p>
-                <p>Add a subscription above to get started!</p>
+                <p>Subscriptions are created automatically when you submit reviews or can be set up through your account settings.</p>
               </div>
             {:else}
               <div class="subscriptions-list">
@@ -383,16 +240,6 @@
         <button type="button" class="btn-secondary" on:click={closeModal}>
           Close
         </button>
-        {#if authState.user.user_type === 'shipper' && showAddForm}
-          <button 
-            type="button" 
-            class="btn-primary" 
-            on:click={saveSubscriptions}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Subscription'}
-          </button>
-        {/if}
       </div>
     </div>
   </div>
@@ -607,54 +454,7 @@
     font-size: 0.75rem;
   }
 
-  .add-subscription-section {
-    margin-bottom: 20px;
-  }
 
-  .subscription-form {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  .subscription-form h3 {
-    margin: 0 0 16px 0;
-    color: #333;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .form-group label {
-    margin-bottom: 4px;
-    font-weight: 500;
-    color: #333;
-  }
-
-  .form-group input,
-  .form-group select {
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 0.9rem;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-  }
 
   .alert {
     padding: 12px 16px;
