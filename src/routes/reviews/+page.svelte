@@ -1782,19 +1782,11 @@
             <div class="summary-grid">
               <div class="summary-item">
                 <span class="label">Aggregate Rating:</span>
-                <span class="value">{aggregateRating.toFixed(1)}/4.0</span>
+                <span class="value">{aggregateRating.toFixed(1)}/5</span>
               </div>
               <div class="summary-item">
                 <span class="label">Rated Questions:</span>
                 <span class="value">{ratedQuestions} out of {totalQuestions}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Review Weight:</span>
-                <span class="value">{isAnonymous ? '50% (Anonymous)' : '100% (Authenticated)'}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Weighted Rating:</span>
-                <span class="value">{weightedRating.toFixed(1)}/4.0</span>
               </div>
               <div class="summary-item">
                 <span class="label">Review Scope:</span>
