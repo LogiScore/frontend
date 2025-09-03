@@ -1009,6 +1009,7 @@
     text-decoration: none;
     border-radius: 6px;
     font-weight: 600;
+    font-size: 1rem;
     transition: all 0.3s ease;
     border: 2px solid;
   }
