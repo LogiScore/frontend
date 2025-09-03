@@ -984,7 +984,7 @@
       const response = await apiClient.createComprehensiveReview(reviewData, authState.token);
       
       // Show success message
-      alert('Review submitted successfully! A thank you email has been sent to your email address.');
+      alert('Review submitted successfully!');
       console.log('Review submitted:', response);
       console.log('Review ID for email:', response.id);
       
