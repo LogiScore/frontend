@@ -1,0 +1,35 @@
+User-agent: *
+Allow: /
+
+# Allow search engines to crawl all public content
+Allow: /about
+Allow: /reviews
+Allow: /search
+Allow: /freight-forwarders
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /api/
+Disallow: /auth/
+
+# Disallow development and build files
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /.svelte-kit/
+Disallow: /build/
+Disallow: /dist/
+
+# Disallow sensitive files
+Disallow: /*.json$
+Disallow: /*.env$
+Disallow: /*.log$
+Disallow: /logs/
+Disallow: /Docs/
+
+# Sitemap location (update when sitemap is created)
+# Sitemap: https://logiscore.net/sitemap.xml
+
+# Crawl delay (optional - be respectful to server resources)
+Crawl-delay: 1
