@@ -838,13 +838,7 @@
                 }
               </p>
               
-              <!-- Subscription List Toggle -->
-              <button 
-                class="btn btn-outline btn-small subscription-list-toggle" 
-                on:click={() => showSubscriptionList = !showSubscriptionList}
-              >
-                {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
-              </button>
+
             </div>
           {/if}
           
