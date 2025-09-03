@@ -34,7 +34,16 @@
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
   $: isAnnualSubscriber = user && user.subscription_tier === 'annual';
+  $: isMonthlySubscriber = user && user.subscription_tier === 'monthly';
   $: hasExpiredSubscription = user && user.subscription_tier && user.subscription_tier !== 'annual' && user.subscription_tier !== 'free' && user.subscription_tier !== 'Basic';
+  
+  // Debug subscription tier detection
+  $: if (user) {
+    console.log('User subscription tier:', user.subscription_tier);
+    console.log('Is annual subscriber:', isAnnualSubscriber);
+    console.log('Is monthly subscriber:', isMonthlySubscriber);
+    console.log('Is subscribed (any tier):', isSubscribed);
+  }
   
   // Reactive statement to load detailed scores when auth state changes
   $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
