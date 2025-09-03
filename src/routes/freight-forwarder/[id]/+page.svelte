@@ -14,11 +14,14 @@
   let activeTab: 'overview' | 'locations' | 'countries' = 'overview';
   let showAuthModal = false;
   let authModalMode: 'signin' | 'signup' = 'signin';
+  let isSubscribedToNotifications = false;
+  let isTogglingNotification = false;
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
   $: isLoggedIn = !!user;
+  $: isAnnualSubscriber = user && user.subscription_tier === 'annual';
   
   // Reactive statement to load detailed scores when auth state changes
   $: if (freightForwarder && isSubscribed && $auth?.token && !isLoadingScores && locationScores.length === 0) {
@@ -37,9 +40,58 @@
     showAuthModal = false;
   }
 
-  function toggleForwarderSubscription(forwarderId: string) {
-    // TODO: Implement API call to toggle forwarder subscription
-    alert('Forwarder subscription feature coming soon!');
+  async function checkNotificationSubscription() {
+    if (!freightForwarderId || !$auth?.token) return;
+    
+    try {
+      const result = await apiClient.getReviewSubscriptions($auth.token);
+      const subscription = result.subscriptions.find(sub => 
+        sub.freight_forwarder_id === freightForwarderId && sub.is_active
+      );
+      isSubscribedToNotifications = !!subscription;
+    } catch (err: any) {
+      console.error('Failed to check notification subscription:', err);
+      isSubscribedToNotifications = false;
+    }
+  }
+
+  async function toggleForwarderSubscription(forwarderId: string) {
+    if (!isAnnualSubscriber || !$auth?.token) {
+      alert('This feature is only available for annual subscribers.');
+      return;
+    }
+
+    try {
+      isTogglingNotification = true;
+      
+      if (isSubscribedToNotifications) {
+        // Find the subscription ID to delete
+        const result = await apiClient.getReviewSubscriptions($auth.token);
+        const subscription = result.subscriptions.find(sub => 
+          sub.freight_forwarder_id === forwarderId
+        );
+        
+        if (subscription) {
+          await apiClient.deleteReviewSubscription($auth.token, subscription.id);
+          isSubscribedToNotifications = false;
+          console.log('Unsubscribed from notifications');
+        }
+      } else {
+        // Subscribe to notifications
+        const subscriptionData = {
+          freight_forwarder_id: forwarderId,
+          notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
+        };
+        await apiClient.createReviewSubscription($auth.token, subscriptionData);
+        isSubscribedToNotifications = true;
+        console.log('Subscribed to notifications');
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle notification subscription:', err);
+      alert('Failed to update notification settings. Please try again.');
+    } finally {
+      isTogglingNotification = false;
+    }
   }
 
   // Function to format category names from snake_case to Title Case
@@ -92,6 +144,11 @@
       // If user is subscribed, fetch location and country scores
       if (isSubscribed && $auth?.token) {
         await loadDetailedScores();
+      }
+      
+      // Check if user is subscribed to notifications for this freight forwarder
+      if (isAnnualSubscriber && $auth?.token) {
+        await checkNotificationSubscription();
       }
     } catch (err: any) {
       console.error('Error loading freight forwarder:', err);
@@ -491,9 +548,37 @@
         </section>
       {/if}
 
-      <!-- Submit Review Button - Only show for logged-in and subscribed users -->
+      <!-- Notification and Review Buttons - Only show for logged-in and subscribed users -->
       {#if isLoggedIn && isSubscribed}
         <div class="review-section">
+          <!-- Notification Button - Only for annual subscribers -->
+          {#if isAnnualSubscriber}
+            <div class="notification-section">
+              <button 
+                class="btn btn-outline notification-btn" 
+                class:btn-loading={isTogglingNotification}
+                on:click={() => toggleForwarderSubscription(freightForwarder.id)}
+                disabled={isTogglingNotification}
+              >
+                {#if isTogglingNotification}
+                  <span class="spinner"></span>
+                  {isSubscribedToNotifications ? 'Unsubscribing...' : 'Subscribing...'}
+                {:else if isSubscribedToNotifications}
+                  🔔 Stop Notifications
+                {:else}
+                  🔔 Receive Notifications
+                {/if}
+              </button>
+              <p class="notification-help">
+                {isSubscribedToNotifications 
+                  ? 'You will receive notifications when new reviews are posted for this company.'
+                  : 'Get notified when new reviews are posted for this company.'
+                }
+              </p>
+            </div>
+          {/if}
+          
+          <!-- Submit Review Button -->
           <a href="/reviews?company={freightForwarder.id}" class="btn btn-primary">Submit Review</a>
         </div>
       {:else if isLoggedIn}
@@ -1417,5 +1502,47 @@
     .score-value {
       font-size: 2.5rem;
     }
+  }
+
+  /* Notification Button Styles */
+  .notification-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .notification-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .notification-btn.btn-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .notification-help {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+    line-height: 1.4;
   }
 </style>
