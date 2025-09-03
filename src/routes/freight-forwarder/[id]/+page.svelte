@@ -200,6 +200,22 @@
     }
   }
 
+  function isSubscribedToLocation(forwarderId: string, country: string, city?: string): boolean {
+    return userSubscriptions.some(sub => 
+      sub.freight_forwarder_id === forwarderId && 
+      sub.location_country === country && 
+      sub.location_city === city
+    );
+  }
+
+  function isSubscribedToCountry(forwarderId: string, country: string): boolean {
+    return userSubscriptions.some(sub => 
+      sub.freight_forwarder_id === forwarderId && 
+      sub.location_country === country && 
+      !sub.location_city
+    );
+  }
+
   async function checkCompanyNotificationSubscription() {
     if (!isAnnualSubscriber || !$auth?.token || !freightForwarderId) return;
     
@@ -646,10 +662,18 @@
                           <div class="location-notification-section">
                             <button 
                               class="btn btn-outline btn-small location-notification-btn" 
+                              class:btn-active={isSubscribedToLocation(freightForwarder.id, location.country, location.city)}
                               on:click={() => toggleLocationSubscription(freightForwarder.id, location.location_name, location.country, location.city)}
                               disabled={isTogglingNotification}
                             >
-                              🔔 Notifications
+                              {#if isTogglingNotification}
+                                <span class="spinner"></span>
+                                {isSubscribedToLocation(freightForwarder.id, location.country, location.city) ? 'Unsubscribing...' : 'Subscribing...'}
+                              {:else if isSubscribedToLocation(freightForwarder.id, location.country, location.city)}
+                                🔔 Stop Notifications
+                              {:else}
+                                🔔 Receive Notifications
+                              {/if}
                             </button>
                           </div>
                         {/if}
@@ -702,10 +726,18 @@
                           <div class="country-notification-section">
                             <button 
                               class="btn btn-outline btn-small country-notification-btn" 
+                              class:btn-active={isSubscribedToCountry(freightForwarder.id, country.country)}
                               on:click={() => toggleCountrySubscription(freightForwarder.id, country.country)}
                               disabled={isTogglingNotification}
                             >
-                              🔔 Notifications
+                              {#if isTogglingNotification}
+                                <span class="spinner"></span>
+                                {isSubscribedToCountry(freightForwarder.id, country.country) ? 'Unsubscribing...' : 'Subscribing...'}
+                              {:else if isSubscribedToCountry(freightForwarder.id, country.country)}
+                                🔔 Stop Notifications
+                              {:else}
+                                🔔 Receive Notifications
+                              {/if}
                             </button>
                           </div>
                         {/if}
@@ -1354,6 +1386,17 @@
   .btn-small {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
+  }
+
+  .btn-active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+
+  .btn-active:hover {
+    background: #218838;
+    border-color: #1e7e34;
   }
 
   /* Tabbed Navigation */

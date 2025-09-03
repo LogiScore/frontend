@@ -38,9 +38,16 @@
     authState = state;
   });
 
-  // Load subscriptions when modal opens
-  $: if (isOpen && authState.token) {
+  // Load subscriptions when modal opens (only once per open)
+  let hasLoadedForCurrentOpen = false;
+  $: if (isOpen && authState.token && !hasLoadedForCurrentOpen) {
+    hasLoadedForCurrentOpen = true;
     loadSubscriptions();
+  }
+  
+  // Reset the flag when modal closes
+  $: if (!isOpen) {
+    hasLoadedForCurrentOpen = false;
   }
 
   onMount(async () => {
@@ -57,11 +64,24 @@
       isLoading = true;
       error = '';
       const result = await apiClient.getReviewSubscriptions(authState.token);
-      subscriptions = result.subscriptions;
+      console.log('Review Notifications Modal: API response:', result);
+      
+      // Handle both response formats: direct array or object with subscriptions property
+      if (Array.isArray(result)) {
+        subscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        subscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid API response format:', result);
+        subscriptions = [];
+        error = 'Invalid response from server';
+      }
+      
       console.log('Review Notifications Modal: Loaded subscriptions:', subscriptions);
     } catch (err: any) {
       console.error('Failed to load subscriptions:', err);
       error = err.message || 'Failed to load subscriptions';
+      subscriptions = [];
     } finally {
       isLoading = false;
     }
