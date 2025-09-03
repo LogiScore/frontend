@@ -670,11 +670,8 @@
                             >
                               {#if isTogglingNotification}
                                 <span class="spinner"></span>
-                                {isSubscribedToLocation(freightForwarder.id, location.country, location.city) ? 'Unsubscribing...' : 'Subscribing...'}
-                              {:else if isSubscribedToLocation(freightForwarder.id, location.country, location.city)}
-                                🔔 Stop Notifications
                               {:else}
-                                🔔 Receive Notifications
+                                🔔
                               {/if}
                             </button>
                           </div>
@@ -734,11 +731,8 @@
                             >
                               {#if isTogglingNotification}
                                 <span class="spinner"></span>
-                                {isSubscribedToCountry(freightForwarder.id, country.country) ? 'Unsubscribing...' : 'Subscribing...'}
-                              {:else if isSubscribedToCountry(freightForwarder.id, country.country)}
-                                🔔 Stop Notifications
                               {:else}
-                                🔔 Receive Notifications
+                                🔔
                               {/if}
                             </button>
                           </div>
@@ -829,11 +823,8 @@
               >
                 {#if isTogglingNotification}
                   <span class="spinner"></span>
-                  {isSubscribedToCompanyNotifications ? 'Unsubscribing...' : 'Subscribing...'}
-                {:else if isSubscribedToCompanyNotifications}
-                  🔔 Stop Company Notifications
                 {:else}
-                  🔔 Receive Company Notifications
+                  🔔
                 {/if}
               </button>
               <p class="notification-help">

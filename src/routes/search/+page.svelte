@@ -593,11 +593,8 @@
             >
               {#if isTogglingNotification}
                 <span class="spinner"></span>
-                {isSubscribedToCountry(selectedCountry) ? 'Unsubscribing...' : 'Subscribing...'}
-              {:else if isSubscribedToCountry(selectedCountry)}
-                🔔 Stop Country Notifications
               {:else}
-                🔔 Get Country Notifications
+                🔔
               {/if}
             </button>
             <p class="subscription-note">
@@ -626,8 +623,6 @@
                   >
                     {#if isTogglingNotification}
                       <span class="spinner"></span>
-                    {:else if isSubscribedToLocation(selectedCountry, city)}
-                      🔔
                     {:else}
                       🔔
                     {/if}
