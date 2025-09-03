@@ -120,7 +120,9 @@
       sub.location_country === country && 
       sub.location_city === city
     );
-    console.log(`Checking location subscription for ${city}, ${country}:`, isSubscribed, userSubscriptions);
+    console.log(`Search page - Checking location subscription for ${city}, ${country}:`, isSubscribed);
+    console.log('Search page - Location button should be green:', isSubscribed);
+    console.log('Search page - User subscriptions:', userSubscriptions);
     return isSubscribed;
   }
 
@@ -129,7 +131,9 @@
       sub.location_country === country && 
       !sub.location_city
     );
-    console.log(`Checking country subscription for ${country}:`, isSubscribed, userSubscriptions);
+    console.log(`Search page - Checking country subscription for ${country}:`, isSubscribed);
+    console.log('Search page - Country button should be green:', isSubscribed);
+    console.log('Search page - User subscriptions:', userSubscriptions);
     return isSubscribed;
   }
 
