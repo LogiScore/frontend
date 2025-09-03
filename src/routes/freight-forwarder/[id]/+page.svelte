@@ -35,7 +35,6 @@
   $: isLoggedIn = !!user;
   $: isAnnualSubscriber = user && user.subscription_tier === 'annual';
   $: isMonthlySubscriber = user && user.subscription_tier === 'monthly';
-  $: hasExpiredSubscription = user && user.subscription_tier && user.subscription_tier !== 'annual' && user.subscription_tier !== 'free' && user.subscription_tier !== 'Basic';
   
 
   
@@ -852,16 +851,6 @@
                 {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
               </button>
             </div>
-          {:else if hasExpiredSubscription}
-            <!-- Show subscription list button for expired users -->
-            <div class="notification-section">
-              <button 
-                class="btn btn-outline btn-small subscription-list-toggle" 
-                on:click={() => showSubscriptionList = !showSubscriptionList}
-              >
-                {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
-              </button>
-            </div>
           {/if}
           
           <!-- Submit Review Button -->
@@ -918,17 +907,6 @@
                 <p>Subscribe to companies, locations, or countries to get notified of new reviews.</p>
               </div>
             {/if}
-          </div>
-        {:else if hasExpiredSubscription && showSubscriptionList}
-          <div class="subscription-list-section">
-            <h3>Your Notification Subscriptions</h3>
-            <div class="subscription-expired-notice">
-              <div class="expired-icon">⚠️</div>
-              <h4>Subscription Expired</h4>
-              <p>Your annual subscription has expired. Notification subscriptions are no longer available.</p>
-              <p>To continue receiving notifications, please renew your annual subscription.</p>
-              <a href="/pricing" class="btn btn-primary">Renew Subscription</a>
-            </div>
           </div>
         {/if}
       {:else if isLoggedIn}
