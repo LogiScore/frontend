@@ -116,17 +116,21 @@
   }
 
   function isSubscribedToLocation(country: string, city: string): boolean {
-    return userSubscriptions.some(sub => 
+    const isSubscribed = userSubscriptions.some(sub => 
       sub.location_country === country && 
       sub.location_city === city
     );
+    console.log(`Checking location subscription for ${city}, ${country}:`, isSubscribed, userSubscriptions);
+    return isSubscribed;
   }
 
   function isSubscribedToCountry(country: string): boolean {
-    return userSubscriptions.some(sub => 
+    const isSubscribed = userSubscriptions.some(sub => 
       sub.location_country === country && 
       !sub.location_city
     );
+    console.log(`Checking country subscription for ${country}:`, isSubscribed, userSubscriptions);
+    return isSubscribed;
   }
 
   async function toggleCitySubscription(city: string) {
@@ -1665,14 +1669,14 @@
   }
 
   .btn-active {
-    background: #28a745;
-    color: white;
-    border-color: #28a745;
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
   }
 
   .btn-active:hover {
-    background: #218838;
-    border-color: #1e7e34;
+    background: #218838 !important;
+    border-color: #1e7e34 !important;
   }
 
   .spinner {
