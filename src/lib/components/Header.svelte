@@ -79,21 +79,25 @@
   function openSubscriptionModal() {
     console.log('Opening subscription modal');
     showSubscriptionModal = true;
+    showUserDropdown = false; // Close dropdown when opening modal
   }
   
   function openProfileModal() {
     console.log('Opening profile modal');
     showProfileModal = true;
+    showUserDropdown = false; // Close dropdown when opening modal
   }
   
   function openChangePasswordModal() {
     console.log('Opening change password modal');
     showChangePasswordModal = true;
+    showUserDropdown = false; // Close dropdown when opening modal
   }
 
   function openReviewSubscriptionModal() {
     console.log('Opening review subscription modal');
     showReviewSubscriptionModal = true;
+    showUserDropdown = false; // Close dropdown when opening modal
   }
   
   function closeSubscriptionModal() {
