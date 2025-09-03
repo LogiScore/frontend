@@ -936,6 +936,12 @@
     }
 
     // Prepare review data for API
+    // TEMPORARY: Convert 0-5 scale to 0-4 scale until backend is updated
+    const convertRating = (rating: number): number => {
+      if (rating === 0) return 0; // N/A stays 0
+      return Math.max(0, rating - 1); // Convert 1-5 to 0-4
+    };
+
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
       location_id: selectedBranch.trim(), // Changed from branch_id to location_id
@@ -946,11 +952,11 @@
         category: cat.id,
         questions: cat.questions.map(q => ({
           question: q.id,
-          rating: q.rating || 0
+          rating: convertRating(q.rating || 0)
         }))
       })),
-      aggregate_rating: aggregateRating,
-      weighted_rating: weightedRating
+      aggregate_rating: convertRating(aggregateRating),
+      weighted_rating: convertRating(weightedRating)
     };
 
     // Debug: Log the review data being sent
@@ -1719,36 +1725,7 @@
 
 
 
-          <!-- Rating Instructions -->
-          <div class="form-section rating-instructions">
-            <h2>Rating Instructions</h2>
-            <p>Please rate each question based on your experience with this freight forwarder. Each question has specific rating definitions that will appear when you select a rating.</p>
-            <div class="rating-scale-info">
-              <div class="scale-grid">
-                <div class="scale-item">
-                  <strong>N/A</strong> - Not applicable to your experience
-                </div>
-                <div class="scale-item">
-                  <strong>1 Star</strong> - Lowest rating (e.g., Never, Not available, Seldom)
-                </div>
-                <div class="scale-item">
-                  <strong>2 Stars</strong> - Below average (e.g., Seldom, Occasionally, Limited availability)
-                </div>
-                <div class="scale-item">
-                  <strong>3 Stars</strong> - Average (e.g., Usually, Some availability, Basic capability)
-                </div>
-                <div class="scale-item">
-                  <strong>4 Stars</strong> - Good (e.g., Most of the time, Standard capability, Often)
-                </div>
-                <div class="scale-item">
-                  <strong>5 Stars</strong> - Excellent (e.g., Every time, Advanced capabilities, Always)
-                </div>
-              </div>
-              <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; font-style: italic;">
-                💡 <strong>Tip:</strong> Click on any star rating to see the specific definition for that question. Different questions may have different rating criteria.
-              </p>
-            </div>
-          </div>
+
 
                     <!-- Rating Categories -->
           <div class="form-section">
