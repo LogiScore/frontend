@@ -1551,16 +1551,7 @@
             <a href="/?auth=signin" class="btn btn-primary">Sign In</a>
             <a href="/?auth=signup" class="btn btn-secondary">Create Account</a>
           </div>
-          <div class="auth-benefits">
-            <h3>Why Create an Account?</h3>
-            <ul>
-              <li>Submit reviews with full weight (100% vs 50% for anonymous)</li>
-              <li>Track your review history</li>
-              <li>Earn reputation points</li>
-              <li>Get notified about responses to your reviews</li>
-              <li>Access to comprehensive 35-question review system</li>
-            </ul>
-          </div>
+
         </div>
       {:else}
         <form on:submit|preventDefault={submitReview}>
