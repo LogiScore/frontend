@@ -679,13 +679,6 @@
                               {/if}
                             </button>
                           </div>
-                        {:else if isMonthlySubscriber}
-                          <div class="location-notification-section">
-                            <div class="notification-upgrade-prompt">
-                              <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
-                              <a href="/pricing" class="btn btn-outline btn-small">Upgrade to Annual</a>
-                            </div>
-                          </div>
                         {/if}
                       </div>
                     {/each}
@@ -749,13 +742,6 @@
                                 🔔 Receive Notifications
                               {/if}
                             </button>
-                          </div>
-                        {:else if isMonthlySubscriber}
-                          <div class="country-notification-section">
-                            <div class="notification-upgrade-prompt">
-                              <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
-                              <a href="/pricing" class="btn btn-outline btn-small">Upgrade to Annual</a>
-                            </div>
                           </div>
                         {/if}
                       </div>
@@ -865,15 +851,6 @@
               >
                 {showSubscriptionList ? '📋 Hide My Subscriptions' : '📋 View My Subscriptions'}
               </button>
-            </div>
-          {:else if isMonthlySubscriber}
-            <!-- Monthly subscriber upgrade prompt -->
-            <div class="notification-section">
-              <div class="notification-upgrade-prompt">
-                <p class="upgrade-text">🔔 Notifications available with Annual subscription</p>
-                <p class="upgrade-description">Get notified when new reviews are posted for companies, locations, and countries you care about.</p>
-                <a href="/pricing" class="btn btn-primary">Upgrade to Annual</a>
-              </div>
             </div>
           {:else if hasExpiredSubscription}
             <!-- Show subscription list button for expired users -->
