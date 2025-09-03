@@ -208,7 +208,8 @@
       sub.location_country === country && 
       sub.location_city === city
     );
-    console.log(`Checking location subscription for ${forwarderId}, ${city}, ${country}:`, isSubscribed, userSubscriptions);
+    console.log(`Checking location subscription for ${forwarderId}, ${city}, ${country}:`, isSubscribed);
+    console.log('Location button should be green:', isSubscribed);
     return isSubscribed;
   }
 
@@ -218,7 +219,8 @@
       sub.location_country === country && 
       !sub.location_city
     );
-    console.log(`Checking country subscription for ${forwarderId}, ${country}:`, isSubscribed, userSubscriptions);
+    console.log(`Checking country subscription for ${forwarderId}, ${country}:`, isSubscribed);
+    console.log('Country button should be green:', isSubscribed);
     return isSubscribed;
   }
 
@@ -1911,6 +1913,20 @@
   .country-notification-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  /* Active state for location and country notification buttons */
+  .location-notification-btn.btn-active,
+  .country-notification-btn.btn-active {
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+  }
+
+  .location-notification-btn.btn-active:hover,
+  .country-notification-btn.btn-active:hover {
+    background: #218838 !important;
+    border-color: #1e7e34 !important;
   }
 
   /* Company Notification Button Styles */
