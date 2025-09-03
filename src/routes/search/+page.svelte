@@ -356,8 +356,16 @@
         searchResults = results.sort((a, b) => a.name.localeCompare(b.name));
       } else if (searchType === 'country') {
         // Country search - get cities with reviews
-        selectedCountry = countryQuery;
         const reviews = await apiClient.getReviewsByCountry(countryQuery);
+        
+        if (reviews.length > 0) {
+          // Use the actual country name from the first review instead of the search query
+          selectedCountry = reviews[0].country || countryQuery;
+          console.log(`Search query: "${countryQuery}", Actual country name: "${selectedCountry}"`);
+        } else {
+          selectedCountry = countryQuery;
+          console.log(`No reviews found, using search query: "${selectedCountry}"`);
+        }
         
         // Extract unique cities from reviews
         const cities = [...new Set(reviews.map(review => review.city).filter((city): city is string => city !== undefined))];
