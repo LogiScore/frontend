@@ -1737,7 +1737,7 @@
                   <div class="question-item">
                     <p class="question-text">{question.text}</p>
                     <div class="star-rating">
-                      {#each Array(5) as _, i}
+                      {#each Array(6) as _, i}
                         <button
                           type="button"
                           class="star {i === 0 ? 'not-applicable' : ''} {i <= (question.rating || 0) ? 'filled' : ''}"

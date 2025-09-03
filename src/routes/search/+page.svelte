@@ -768,7 +768,7 @@
                               color: {categoryScore.average_score >= 3 ? '#155724' : categoryScore.average_score >= 2 ? '#856404' : categoryScore.average_score >= 1 ? '#721c24' : '#6c757d'};
                               border: 1px solid {categoryScore.average_score >= 3 ? '#c3e6cb' : categoryScore.average_score >= 2 ? '#ffeaa7' : categoryScore.average_score >= 1 ? '#f5c6cb' : '#dee2e6'};
                             ">
-                              {categoryScore.average_score.toFixed(1)}
+                              {categoryScore.average_score.toFixed(1)}/5
                             </div>
                           </div>
                         {:else}
