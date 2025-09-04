@@ -936,12 +936,6 @@
     }
 
     // Prepare review data for API
-    // TEMPORARY: Convert 0-5 scale to 0-4 scale until backend is updated
-    const convertRating = (rating: number): number => {
-      if (rating === 0) return 0; // N/A stays 0
-      return Math.max(0, rating - 1); // Convert 1-5 to 0-4
-    };
-
     const reviewData: ReviewCreate = {
       freight_forwarder_id: selectedCompany,
       location_id: selectedBranch.trim(), // Changed from branch_id to location_id
@@ -952,11 +946,11 @@
         category: cat.id,
         questions: cat.questions.map(q => ({
           question: q.id,
-          rating: convertRating(q.rating || 0)
+          rating: q.rating || 0
         }))
       })),
-      aggregate_rating: convertRating(aggregateRating),
-      weighted_rating: convertRating(weightedRating)
+      aggregate_rating: aggregateRating,
+      weighted_rating: weightedRating
     };
 
     // Debug: Log the review data being sent
