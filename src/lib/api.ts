@@ -109,6 +109,7 @@ export interface User {
   company_name?: string;
   user_type: string;
   subscription_tier: string;
+  subscription_end_date?: string;
   is_verified: boolean;
   is_active: boolean;
   created_at?: string;

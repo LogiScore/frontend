@@ -713,6 +713,57 @@
     return review.freight_forwarder_id || 'N/A';
   }
 
+  // Utility function to format subscription expiry date
+  function formatSubscriptionExpiry(endDate: string | undefined): string {
+    if (!endDate) return 'N/A';
+    
+    try {
+      const date = new Date(endDate);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  }
+
+  // Utility function to get subscription expiry status
+  function getSubscriptionExpiryStatus(endDate: string | undefined): 'active' | 'expiring' | 'expired' | 'no-date' {
+    if (!endDate) return 'no-date';
+    
+    try {
+      const expiryDate = new Date(endDate);
+      const now = new Date();
+      const diffTime = expiryDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return 'expired';
+      if (diffDays <= 7) return 'expiring';
+      return 'active';
+    } catch (error) {
+      console.error('Error calculating expiry status:', error);
+      return 'no-date';
+    }
+  }
+
+  // Utility function to get days remaining
+  function getDaysRemaining(endDate: string | undefined): number {
+    if (!endDate) return 0;
+    
+    try {
+      const expiryDate = new Date(endDate);
+      const now = new Date();
+      const diffTime = expiryDate.getTime() - now.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      console.error('Error calculating days remaining:', error);
+      return 0;
+    }
+  }
+
   // Notification functions
   function addNotification(type: 'success' | 'error' | 'info' | 'warning', message: string) {
     const id = `notification-${++notificationId}`;
@@ -1407,6 +1458,7 @@
                     <th>Role</th>
                     <th>Company Name</th>
                     <th>Subscription</th>
+                    <th>Expiry Date</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -1431,6 +1483,18 @@
                             Enterprise
                           {:else}
                             {user.subscription_tier}
+                          {/if}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="expiry-date {getSubscriptionExpiryStatus(user.subscription_end_date)}">
+                          {#if user.subscription_end_date}
+                            {formatSubscriptionExpiry(user.subscription_end_date)}
+                            {#if getSubscriptionExpiryStatus(user.subscription_end_date) === 'expiring'}
+                              <span class="days-remaining">({getDaysRemaining(user.subscription_end_date)} days)</span>
+                            {/if}
+                          {:else}
+                            N/A
                           {/if}
                         </span>
                       </td>
@@ -2565,6 +2629,46 @@
   .subscription.enterprise {
     background: #f3e5f5;
     color: #7b1fa2;
+  }
+
+  /* Expiry Date Styles */
+  .expiry-date {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .expiry-date.active {
+    background: #e8f5e8;
+    color: #388e3c;
+  }
+
+  .expiry-date.expiring {
+    background: #fff3e0;
+    color: #f57c00;
+    font-weight: 600;
+  }
+
+  .expiry-date.expired {
+    background: #ffebee;
+    color: #d32f2f;
+    font-weight: 600;
+  }
+
+  .expiry-date.no-date {
+    background: #f5f5f5;
+    color: #757575;
+    font-style: italic;
+  }
+
+  .days-remaining {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.8;
   }
 
   /* Subscription Modal */
