@@ -1979,7 +1979,7 @@ class ApiClient {
   // Admin methods (for the 8x7k9m2p dashboard)
   async getDashboardStats(token: string) {
     try {
-      return await this.request('/admin/dashboard', {
+      return await this.request('/api/admin/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2002,7 +2002,7 @@ class ApiClient {
       if (search) params.append('search', search);
       if (filter) params.append('filter', filter);
       
-      return await this.request(`/admin/users?${params}`, {
+      return await this.request(`/api/admin/users?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2017,7 +2017,7 @@ class ApiClient {
       const params = new URLSearchParams();
       if (status) params.append('status', status);
       
-      return await this.request(`/admin/reviews?${params}`, {
+      return await this.request(`/api/admin/reviews?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2032,7 +2032,7 @@ class ApiClient {
       const params = new URLSearchParams();
       if (status) params.append('status', status);
       
-      return await this.request(`/admin/disputes?${params}`, {
+      return await this.request(`/api/admin/disputes?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2047,7 +2047,7 @@ class ApiClient {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       
-      return await this.request(`/admin/companies?${params}`, {
+      return await this.request(`/api/admin/companies?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2059,7 +2059,7 @@ class ApiClient {
   // ===== METHOD: getAdminCompany =====
   async getAdminCompany(token: string, companyId: string) {
     try {
-      return await this.request(`/admin/companies/${companyId}`, {
+      return await this.request(`/api/admin/companies/${companyId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2071,7 +2071,7 @@ class ApiClient {
   // ===== METHOD: updateCompany =====
   async updateCompany(token: string, companyId: string, companyData: any) {
     try {
-      const result = await this.request(`/admin/companies/${companyId}`, {
+      const result = await this.request(`/api/admin/companies/${companyId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -2097,7 +2097,7 @@ class ApiClient {
   // ===== METHOD: deleteCompany =====
   async deleteCompany(token: string, companyId: string) {
     try {
-      return await this.request(`/admin/companies/${companyId}`, {
+      return await this.request(`/api/admin/companies/${companyId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2110,7 +2110,7 @@ class ApiClient {
   // ===== METHOD: createCompany =====
   async createCompany(token: string, companyData: any) {
     try {
-      return await this.request('/admin/companies', {
+      return await this.request('/api/admin/companies', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -2127,7 +2127,7 @@ class ApiClient {
   // ===== METHOD: updateUserSubscription =====
   async updateUserSubscription(token: string, userId: string, subscriptionData: any) {
     try {
-      return await this.request(`/admin/users/${userId}/subscription`, {
+      return await this.request(`/api/admin/users/${userId}/subscription`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -2144,7 +2144,7 @@ class ApiClient {
   // ===== METHOD: approveReview =====
   async approveReview(token: string, reviewId: string) {
     try {
-      return await this.request(`/admin/reviews/${reviewId}/approve`, {
+      return await this.request(`/api/admin/reviews/${reviewId}/approve`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2157,7 +2157,7 @@ class ApiClient {
   // ===== METHOD: rejectReview =====
   async rejectReview(token: string, reviewId: string) {
     try {
-      return await this.request(`/admin/reviews/${reviewId}/reject`, {
+      return await this.request(`/api/admin/reviews/${reviewId}/reject`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2170,7 +2170,7 @@ class ApiClient {
   // ===== METHOD: resolveDispute =====
   async resolveDispute(token: string, disputeId: string) {
     try {
-      return await this.request(`/admin/disputes/${disputeId}/resolve`, {
+      return await this.request(`/api/admin/disputes/${disputeId}/resolve`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2183,7 +2183,7 @@ class ApiClient {
   // ===== METHOD: getRecentActivity =====
   async getRecentActivity(token: string) {
     try {
-      return await this.request('/admin/recent-activity', {
+      return await this.request('/api/admin/recent-activity', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2195,7 +2195,7 @@ class ApiClient {
   // ===== METHOD: getAdminAnalytics =====
   async getAdminAnalytics(token: string) {
     try {
-      return await this.request('/admin/analytics', {
+      return await this.request('/api/admin/analytics', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
@@ -2683,7 +2683,7 @@ class ApiClient {
     company_name?: string;
   }): Promise<any> {
     try {
-      return await this.request(`/admin/users/${userId}`, {
+      return await this.request(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
