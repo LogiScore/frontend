@@ -56,6 +56,9 @@
     // Cleanup function
     return () => {
       stopAutoRefresh();
+      if (userSearchTimeout) {
+        clearTimeout(userSearchTimeout);
+      }
     };
   });
 
@@ -157,6 +160,21 @@
   let companySearch = '';
   let reviewStatusFilter = '';
   let disputeStatusFilter = '';
+  
+  // Debounce timers
+  let userSearchTimeout: number | null = null;
+
+  // Debounced search function
+  function debouncedUserSearch() {
+    if (userSearchTimeout) {
+      clearTimeout(userSearchTimeout);
+    }
+    userSearchTimeout = setTimeout(() => {
+      if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
+        loadUsers();
+      }
+    }, 500); // 500ms debounce for search
+  }
 
   // Loading states for different sections
   let dashboardLoading = false;
@@ -428,6 +446,12 @@
       return;
     }
     
+    // Prevent multiple simultaneous calls
+    if (usersLoading) {
+      console.log('Users already loading, skipping duplicate call');
+      return;
+    }
+    
     try {
       usersLoading = true;
       console.log('Loading users with token:', authState.token.substring(0, 20) + '...');
@@ -598,9 +622,28 @@
     stopAutoRefresh();
   }
 
+  // Track previous values to prevent unnecessary reloads
+  let previousUserSearch = '';
+  let previousUserTypeFilter = '';
+  let previousActiveTab = '';
+  
   $: if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading users data for admin user');
-    loadUsers();
+    // Only load if tab changed to users or filter values actually changed
+    const filterChanged = userTypeFilter !== previousUserTypeFilter;
+    const tabChanged = activeTab !== previousActiveTab;
+    
+    if (tabChanged || filterChanged) {
+      console.log('Loading users data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+      previousUserTypeFilter = userTypeFilter;
+      previousActiveTab = activeTab;
+      loadUsers();
+    }
+  }
+  
+  // Handle search input changes with debouncing
+  $: if (userSearch !== previousUserSearch && activeTab === 'users') {
+    previousUserSearch = userSearch;
+    debouncedUserSearch();
   }
 
   $: if (activeTab === 'reviews' && authState.token && authState.user?.user_type === 'admin') {
@@ -632,14 +675,6 @@
     loadPromotionData();
   }
 
-  // Watch for search changes
-  $: if (userSearch !== undefined && activeTab === 'users') {
-    loadUsers();
-  }
-
-  $: if (userTypeFilter !== undefined && activeTab === 'users') {
-    loadUsers();
-  }
 
   $: if (companySearch !== undefined && activeTab === 'companies') {
     loadCompanies();
