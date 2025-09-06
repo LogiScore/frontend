@@ -397,6 +397,12 @@
       return;
     }
     
+    // Prevent multiple simultaneous calls
+    if (dashboardLoading) {
+      console.log('Dashboard stats already loading, skipping duplicate call');
+      return;
+    }
+    
     // Test authentication first
     const isTokenValid = await testAuthToken();
     if (!isTokenValid) {
@@ -488,6 +494,12 @@
       return;
     }
     
+    // Prevent multiple simultaneous calls
+    if (reviewsLoading) {
+      console.log('Reviews already loading, skipping duplicate call');
+      return;
+    }
+    
     try {
       reviewsLoading = true;
       console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
@@ -513,6 +525,12 @@
       return;
     }
     
+    // Prevent multiple simultaneous calls
+    if (disputesLoading) {
+      console.log('Disputes already loading, skipping duplicate call');
+      return;
+    }
+    
     try {
       disputesLoading = true;
       console.log('Loading disputes with token:', authState.token.substring(0, 20) + '...');
@@ -534,6 +552,12 @@
   async function loadCompanies() {
     if (!authState.token) {
       console.log('Cannot load companies: No authentication token');
+      return;
+    }
+    
+    // Prevent multiple simultaneous calls
+    if (companiesLoading) {
+      console.log('Companies already loading, skipping duplicate call');
       return;
     }
     
@@ -595,6 +619,12 @@
   async function loadAnalytics() {
     if (!authState.token) return;
     
+    // Prevent multiple simultaneous calls
+    if (analyticsLoading) {
+      console.log('Analytics already loading, skipping duplicate call');
+      return;
+    }
+    
     try {
       analyticsLoading = true;
       analyticsError = null;
@@ -608,11 +638,18 @@
     }
   }
 
+  // Track previous values for dashboard
+  let previousDashboardTab = '';
+  
   // Load data when tab changes - only if properly authenticated
   $: if (activeTab === 'dashboard' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading dashboard data for admin user');
-    loadDashboardStats();
-    loadRecentActivity();
+    // Only load if tab actually changed to dashboard
+    if (activeTab !== previousDashboardTab) {
+      console.log('Loading dashboard data for admin user - tab changed');
+      previousDashboardTab = activeTab;
+      loadDashboardStats();
+      loadRecentActivity();
+    }
   }
 
   // Start auto-refresh when user is authenticated
@@ -646,47 +683,88 @@
     debouncedUserSearch();
   }
 
+  // Track previous values for reviews
+  let previousReviewsTab = '';
+  let previousReviewStatusFilter = '';
+  
   $: if (activeTab === 'reviews' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading reviews data for admin user');
-    loadReviews();
-    // Also load companies to enable company name lookup in reviews
-    if (companies.length === 0) {
+    // Only load if tab changed to reviews or filter values actually changed
+    const tabChanged = activeTab !== previousReviewsTab;
+    const filterChanged = reviewStatusFilter !== previousReviewStatusFilter;
+    
+    if (tabChanged || filterChanged) {
+      console.log('Loading reviews data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+      previousReviewsTab = activeTab;
+      previousReviewStatusFilter = reviewStatusFilter;
+      loadReviews();
+      // Also load companies to enable company name lookup in reviews
+      if (companies.length === 0) {
+        loadCompanies();
+      }
+    }
+  }
+
+  // Track previous values for disputes
+  let previousDisputesTab = '';
+  let previousDisputeStatusFilter = '';
+  
+  $: if (activeTab === 'disputes' && authState.token && authState.user?.user_type === 'admin') {
+    // Only load if tab changed to disputes or filter values actually changed
+    const tabChanged = activeTab !== previousDisputesTab;
+    const filterChanged = disputeStatusFilter !== previousDisputeStatusFilter;
+    
+    if (tabChanged || filterChanged) {
+      console.log('Loading disputes data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+      previousDisputesTab = activeTab;
+      previousDisputeStatusFilter = disputeStatusFilter;
+      loadDisputes();
+    }
+  }
+
+  // Track previous values for companies
+  let previousCompaniesTab = '';
+  let previousCompanySearch = '';
+  
+  $: if (activeTab === 'companies' && authState.token && authState.user?.user_type === 'admin') {
+    // Only load if tab changed to companies or search values actually changed
+    const tabChanged = activeTab !== previousCompaniesTab;
+    const searchChanged = companySearch !== previousCompanySearch;
+    
+    if (tabChanged || searchChanged) {
+      console.log('Loading companies data for admin user - tab:', tabChanged, 'search:', searchChanged);
+      previousCompaniesTab = activeTab;
+      previousCompanySearch = companySearch;
       loadCompanies();
     }
   }
 
-  $: if (activeTab === 'disputes' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading disputes data for admin user');
-    loadDisputes();
-  }
-
-  $: if (activeTab === 'companies' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading companies data for admin user');
-    loadCompanies();
-  }
-
+  // Track previous values for analytics
+  let previousAnalyticsTab = '';
+  
   $: if (activeTab === 'analytics' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading analytics data for admin user');
-    loadAnalytics();
+    // Only load if tab actually changed to analytics
+    if (activeTab !== previousAnalyticsTab) {
+      console.log('Loading analytics data for admin user - tab changed');
+      previousAnalyticsTab = activeTab;
+      loadAnalytics();
+    }
   }
   
+  // Track previous values for promotions
+  let previousPromotionsTab = '';
+  
   $: if (activeTab === 'promotions' && authState.token && authState.user?.user_type === 'admin') {
-    console.log('Loading promotions data for admin user');
-    loadPromotionData();
+    // Only load if tab actually changed to promotions
+    if (activeTab !== previousPromotionsTab) {
+      console.log('Loading promotions data for admin user - tab changed');
+      previousPromotionsTab = activeTab;
+      loadPromotionData();
+    }
   }
 
 
-  $: if (companySearch !== undefined && activeTab === 'companies') {
-    loadCompanies();
-  }
 
-  $: if (reviewStatusFilter !== undefined && activeTab === 'reviews') {
-    loadReviews();
-  }
 
-  $: if (disputeStatusFilter !== undefined && activeTab === 'disputes') {
-    loadDisputes();
-  }
 
   // Company standardization
   let newCompany = {
