@@ -1020,6 +1020,32 @@
     showSubscriptionModal = true;
   }
 
+  function getCommentPlaceholder() {
+    const duration = Number(subscriptionData.duration);
+    const isPaid = subscriptionData.isPaid;
+    const tier = subscriptionData.tier;
+    
+    if (tier === 'free') {
+      return isPaid ? 
+        `Paid trial for ${duration} month${duration > 1 ? 's' : ''} - ` : 
+        `Free trial for ${duration} month${duration > 1 ? 's' : ''} - `;
+    } else if (tier === 'monthly') {
+      return isPaid ? 
+        `Paid monthly subscription for ${duration} month${duration > 1 ? 's' : ''} - ` : 
+        `Monthly subscription for ${duration} month${duration > 1 ? 's' : ''} - `;
+    } else if (tier === 'annual') {
+      return isPaid ? 
+        `Paid annual subscription for ${duration} year${duration > 1 ? 's' : ''} - ` : 
+        `Annual subscription for ${duration} year${duration > 1 ? 's' : ''} - `;
+    } else if (tier === 'enterprise') {
+      return isPaid ? 
+        `Paid enterprise subscription for ${duration} year${duration > 1 ? 's' : ''} - ` : 
+        `Enterprise subscription for ${duration} year${duration > 1 ? 's' : ''} - `;
+    }
+    
+    return 'Add a comment about this subscription...';
+  }
+
   function closeSubscriptionModal() {
     showSubscriptionModal = false;
     selectedUserId = null;
@@ -1051,10 +1077,17 @@
     console.log('New subscription data:', subscriptionData);
     
     try {
+      // Convert duration to months based on subscription tier
+      let durationInMonths = Number(subscriptionData.duration);
+      if (subscriptionData.tier === 'annual' || subscriptionData.tier === 'enterprise') {
+        // Convert years to months
+        durationInMonths = Number(subscriptionData.duration) * 12;
+      }
+      
       const requestData = {
         tier: subscriptionData.tier,
         comment: subscriptionData.comment,
-        duration: Number(subscriptionData.duration),
+        duration: durationInMonths,
         is_paid: subscriptionData.isPaid
       };
       
@@ -1887,10 +1920,32 @@
           {/if}
         </div>
         
-        <div class="form-group">
-          <label for="subscription-duration">Duration (months):</label>
-          <input type="number" id="subscription-duration" bind:value={subscriptionData.duration} min="1" max="12" />
-        </div>
+        <!-- Duration field - contextual based on subscription tier -->
+        {#if subscriptionData.tier === 'free'}
+          <div class="form-group">
+            <label for="subscription-duration">Trial Duration (months):</label>
+            <input type="number" id="subscription-duration" bind:value={subscriptionData.duration} min="1" max="12" />
+            <small class="field-help">How many months should the free trial last?</small>
+          </div>
+        {:else if subscriptionData.tier === 'monthly'}
+          <div class="form-group">
+            <label for="subscription-duration">Number of Months:</label>
+            <input type="number" id="subscription-duration" bind:value={subscriptionData.duration} min="1" max="12" />
+            <small class="field-help">How many months to apply the monthly rate?</small>
+          </div>
+        {:else if subscriptionData.tier === 'annual'}
+          <div class="form-group">
+            <label for="subscription-duration">Number of Years:</label>
+            <input type="number" id="subscription-duration" bind:value={subscriptionData.duration} min="1" max="5" step="1" />
+            <small class="field-help">How many years should the annual subscription last?</small>
+          </div>
+        {:else if subscriptionData.tier === 'enterprise'}
+          <div class="form-group">
+            <label for="subscription-duration">Number of Years:</label>
+            <input type="number" id="subscription-duration" bind:value={subscriptionData.duration} min="1" max="10" step="1" />
+            <small class="field-help">How many years should the enterprise subscription last?</small>
+          </div>
+        {/if}
         
         <div class="form-group">
           <label>
@@ -1904,9 +1959,7 @@
           <textarea 
             id="subscription-comment" 
             bind:value={subscriptionData.comment}
-            placeholder={subscriptionData.isPaid ? 
-              `Paid subscription for ${subscriptionData.duration} month${Number(subscriptionData.duration) > 1 ? 's' : ''} - ` : 
-              `Free subscription for ${subscriptionData.duration} month${Number(subscriptionData.duration) > 1 ? 's' : ''} - `}
+            placeholder={getCommentPlaceholder()}
             rows="3"
           ></textarea>
         </div>
@@ -2881,6 +2934,14 @@
   .form-group input[type="checkbox"] {
     width: auto;
     margin-right: 8px;
+  }
+
+  .field-help {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
   }
 
   .pricing-note {
