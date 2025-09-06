@@ -474,18 +474,6 @@
       }
       
       users = usersData;
-      
-      // Debug: Log user data to check subscription_end_date field
-      console.log('Users loaded with subscription data:');
-      usersData.forEach((user, index) => {
-        console.log(`User ${index + 1}:`, {
-          id: user.id,
-          name: user.full_name || user.username,
-          subscription_tier: user.subscription_tier,
-          subscription_end_date: user.subscription_end_date,
-          has_subscription_end_date: !!user.subscription_end_date
-        });
-      });
     } catch (error) {
       console.error('Failed to load users:', error);
       
@@ -652,13 +640,18 @@
 
   // Track previous values for dashboard
   let previousDashboardTab = '';
+  let hasDashboardInitialLoad = false;
   
   // Load data when tab changes - only if properly authenticated
   $: if (activeTab === 'dashboard' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab actually changed to dashboard
-    if (activeTab !== previousDashboardTab) {
-      console.log('Loading dashboard data for admin user - tab changed');
+    // Load on initial authentication or when tab changes
+    const tabChanged = activeTab !== previousDashboardTab;
+    const isInitialLoad = !hasDashboardInitialLoad;
+    
+    if (isInitialLoad || tabChanged) {
+      console.log('Loading dashboard data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
       previousDashboardTab = activeTab;
+      hasDashboardInitialLoad = true;
       loadDashboardStats();
       loadRecentActivity();
     }
@@ -675,16 +668,19 @@
   let previousUserSearch = '';
   let previousUserTypeFilter = '';
   let previousActiveTab = '';
+  let hasInitialLoad = false;
   
   $: if (activeTab === 'users' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab changed to users or filter values actually changed
+    // Load on initial authentication or when tab/filter changes
     const filterChanged = userTypeFilter !== previousUserTypeFilter;
     const tabChanged = activeTab !== previousActiveTab;
+    const isInitialLoad = !hasInitialLoad;
     
-    if (tabChanged || filterChanged) {
-      console.log('Loading users data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+    if (isInitialLoad || tabChanged || filterChanged) {
+      console.log('Loading users data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
       previousUserTypeFilter = userTypeFilter;
       previousActiveTab = activeTab;
+      hasInitialLoad = true;
       loadUsers();
     }
   }
@@ -698,16 +694,19 @@
   // Track previous values for reviews
   let previousReviewsTab = '';
   let previousReviewStatusFilter = '';
+  let hasReviewsInitialLoad = false;
   
   $: if (activeTab === 'reviews' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab changed to reviews or filter values actually changed
+    // Load on initial authentication or when tab/filter changes
     const tabChanged = activeTab !== previousReviewsTab;
     const filterChanged = reviewStatusFilter !== previousReviewStatusFilter;
+    const isInitialLoad = !hasReviewsInitialLoad;
     
-    if (tabChanged || filterChanged) {
-      console.log('Loading reviews data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+    if (isInitialLoad || tabChanged || filterChanged) {
+      console.log('Loading reviews data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
       previousReviewsTab = activeTab;
       previousReviewStatusFilter = reviewStatusFilter;
+      hasReviewsInitialLoad = true;
       loadReviews();
       // Also load companies to enable company name lookup in reviews
       if (companies.length === 0) {
@@ -719,16 +718,19 @@
   // Track previous values for disputes
   let previousDisputesTab = '';
   let previousDisputeStatusFilter = '';
+  let hasDisputesInitialLoad = false;
   
   $: if (activeTab === 'disputes' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab changed to disputes or filter values actually changed
+    // Load on initial authentication or when tab/filter changes
     const tabChanged = activeTab !== previousDisputesTab;
     const filterChanged = disputeStatusFilter !== previousDisputeStatusFilter;
+    const isInitialLoad = !hasDisputesInitialLoad;
     
-    if (tabChanged || filterChanged) {
-      console.log('Loading disputes data for admin user - tab:', tabChanged, 'filter:', filterChanged);
+    if (isInitialLoad || tabChanged || filterChanged) {
+      console.log('Loading disputes data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
       previousDisputesTab = activeTab;
       previousDisputeStatusFilter = disputeStatusFilter;
+      hasDisputesInitialLoad = true;
       loadDisputes();
     }
   }
@@ -736,40 +738,53 @@
   // Track previous values for companies
   let previousCompaniesTab = '';
   let previousCompanySearch = '';
+  let hasCompaniesInitialLoad = false;
   
   $: if (activeTab === 'companies' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab changed to companies or search values actually changed
+    // Load on initial authentication or when tab/search changes
     const tabChanged = activeTab !== previousCompaniesTab;
     const searchChanged = companySearch !== previousCompanySearch;
+    const isInitialLoad = !hasCompaniesInitialLoad;
     
-    if (tabChanged || searchChanged) {
-      console.log('Loading companies data for admin user - tab:', tabChanged, 'search:', searchChanged);
+    if (isInitialLoad || tabChanged || searchChanged) {
+      console.log('Loading companies data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'search:', searchChanged);
       previousCompaniesTab = activeTab;
       previousCompanySearch = companySearch;
+      hasCompaniesInitialLoad = true;
       loadCompanies();
     }
   }
 
   // Track previous values for analytics
   let previousAnalyticsTab = '';
+  let hasAnalyticsInitialLoad = false;
   
   $: if (activeTab === 'analytics' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab actually changed to analytics
-    if (activeTab !== previousAnalyticsTab) {
-      console.log('Loading analytics data for admin user - tab changed');
+    // Load on initial authentication or when tab changes
+    const tabChanged = activeTab !== previousAnalyticsTab;
+    const isInitialLoad = !hasAnalyticsInitialLoad;
+    
+    if (isInitialLoad || tabChanged) {
+      console.log('Loading analytics data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
       previousAnalyticsTab = activeTab;
+      hasAnalyticsInitialLoad = true;
       loadAnalytics();
     }
   }
   
   // Track previous values for promotions
   let previousPromotionsTab = '';
+  let hasPromotionsInitialLoad = false;
   
   $: if (activeTab === 'promotions' && authState.token && authState.user?.user_type === 'admin') {
-    // Only load if tab actually changed to promotions
-    if (activeTab !== previousPromotionsTab) {
-      console.log('Loading promotions data for admin user - tab changed');
+    // Load on initial authentication or when tab changes
+    const tabChanged = activeTab !== previousPromotionsTab;
+    const isInitialLoad = !hasPromotionsInitialLoad;
+    
+    if (isInitialLoad || tabChanged) {
+      console.log('Loading promotions data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
       previousPromotionsTab = activeTab;
+      hasPromotionsInitialLoad = true;
       loadPromotionData();
     }
   }
@@ -1653,10 +1668,6 @@
                             {/if}
                           {:else}
                             N/A
-                            <!-- Debug: Show raw data -->
-                            <small style="display: block; font-size: 0.7rem; color: #999;">
-                              Debug: {JSON.stringify({subscription_end_date: user.subscription_end_date, subscription_tier: user.subscription_tier})}
-                            </small>
                           {/if}
                         </span>
                       </td>
