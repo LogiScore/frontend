@@ -474,6 +474,18 @@
       }
       
       users = usersData;
+      
+      // Debug: Log user data to check subscription_end_date field
+      console.log('Users loaded with subscription data:');
+      usersData.forEach((user, index) => {
+        console.log(`User ${index + 1}:`, {
+          id: user.id,
+          name: user.full_name || user.username,
+          subscription_tier: user.subscription_tier,
+          subscription_end_date: user.subscription_end_date,
+          has_subscription_end_date: !!user.subscription_end_date
+        });
+      });
     } catch (error) {
       console.error('Failed to load users:', error);
       
@@ -1641,6 +1653,10 @@
                             {/if}
                           {:else}
                             N/A
+                            <!-- Debug: Show raw data -->
+                            <small style="display: block; font-size: 0.7rem; color: #999;">
+                              Debug: {JSON.stringify({subscription_end_date: user.subscription_end_date, subscription_tier: user.subscription_tier})}
+                            </small>
                           {/if}
                         </span>
                       </td>
