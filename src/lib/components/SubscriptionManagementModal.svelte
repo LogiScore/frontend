@@ -77,9 +77,28 @@
       error = '';
       success = '';
 
+      // Map plan names to tier names that the backend expects
+      let tierName = '';
+      if (plan.name === 'Subscription Monthly') {
+        tierName = 'monthly';
+      } else if (plan.name === 'Subscription Annual') {
+        tierName = 'annual';
+      } else if (plan.name === 'Subscription Annual Plus') {
+        tierName = 'enterprise';
+      } else {
+        // Fallback to plan name if no mapping found
+        tierName = plan.name.toLowerCase().replace(' ', '_');
+      }
+
+      console.log('Upgrading subscription:', {
+        planName: plan.name,
+        tierName: tierName,
+        price: plan.price
+      });
+
       const result = await apiClient.upgradeSubscription(
         authState.token,
-        plan.id || plan.name,
+        tierName,
         plan.name
       );
 

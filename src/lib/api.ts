@@ -1954,15 +1954,11 @@ class ApiClient {
     newPlanId: string, 
     newPlanName: string
   ): Promise<{ message: string; subscription_id: string }> {
-    return this.request<{ message: string; subscription_id: string }>('/api/subscriptions/upgrade', {
+    return this.request<{ message: string; subscription_id: string }>(`/api/subscriptions/upgrade?new_tier=${encodeURIComponent(newPlanId)}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        plan_id: newPlanId,
-        plan_name: newPlanName
-      }),
     });
   }
 
