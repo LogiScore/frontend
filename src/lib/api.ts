@@ -1975,6 +1975,20 @@ class ApiClient {
     });
   }
 
+  // ===== NEW METHOD: toggleAutoRenewal =====
+  async toggleAutoRenewal(token: string, enabled: boolean): Promise<{ message: string; auto_renew: boolean }> {
+    return this.request<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        auto_renew: enabled
+      }),
+    });
+  }
+
   // ===== METHOD: getDashboardStats =====
   // Admin methods (for the 8x7k9m2p dashboard)
   async getDashboardStats(token: string) {

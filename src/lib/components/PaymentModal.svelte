@@ -152,11 +152,13 @@
                 </div>
                 <div class="trial-notice">
                   <strong>No charge today!</strong> You'll be charged ${selectedPlan.price} after {TRIAL_DURATION} days unless you cancel.
+                  <br><small>Subscription will auto-renew. You can cancel anytime in your profile.</small>
                 </div>
               {:else}
                 <div class="plan-price">${selectedPlan.price}/{selectedPlan.billingCycle}</div>
                 <div class="existing-user-notice">
                   <strong>Immediate billing:</strong> You'll be charged ${selectedPlan.price} today.
+                  <br><small>Subscription will auto-renew. You can manage this in your profile.</small>
                 </div>
               {/if}
               <div class="plan-description">{selectedPlan.description}</div>
@@ -336,6 +338,14 @@
     font-size: 0.85rem;
     color: #856404;
     margin-top: 10px;
+  }
+
+  .trial-notice small,
+  .existing-user-notice small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.75rem;
+    opacity: 0.8;
   }
 
   .payment-form {

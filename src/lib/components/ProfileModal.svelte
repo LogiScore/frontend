@@ -21,6 +21,7 @@
   let subscriptionError = '';
   let isCanceling = false;
   let isReactivating = false;
+  let isTogglingAutoRenewal = false;
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -125,6 +126,40 @@
     } catch (err: any) {
       console.error('Failed to get billing portal:', err);
       alert(err.message || 'Failed to access billing portal');
+    }
+  }
+
+  async function handleToggleAutoRenewal() {
+    if (!authState.token) {
+      alert('Authentication required');
+      return;
+    }
+
+    if (!subscriptionData) {
+      alert('No subscription data available');
+      return;
+    }
+
+    const newAutoRenewalState = !subscriptionData.auto_renew;
+    const action = newAutoRenewalState ? 'enable' : 'disable';
+    
+    if (!confirm(`Are you sure you want to ${action} auto-renewal?`)) {
+      return;
+    }
+
+    try {
+      isTogglingAutoRenewal = true;
+      const result = await apiClient.toggleAutoRenewal(authState.token, newAutoRenewalState);
+      
+      // Update local subscription data
+      subscriptionData.auto_renew = result.auto_renew;
+      
+      alert(result.message);
+    } catch (err: any) {
+      console.error('Failed to toggle auto-renewal:', err);
+      alert(err.message || 'Failed to update auto-renewal setting');
+    } finally {
+      isTogglingAutoRenewal = false;
     }
   }
 
@@ -286,6 +321,14 @@
                     <span class="auto-renew" class:enabled={subscriptionData.auto_renew}>
                       {subscriptionData.auto_renew ? 'Enabled' : 'Disabled'}
                     </span>
+                    <button 
+                      class="btn-toggle" 
+                      on:click={handleToggleAutoRenewal} 
+                      disabled={isTogglingAutoRenewal}
+                      title={subscriptionData.auto_renew ? 'Disable auto-renewal' : 'Enable auto-renewal'}
+                    >
+                      {isTogglingAutoRenewal ? '...' : (subscriptionData.auto_renew ? 'Disable' : 'Enable')}
+                    </button>
                   </div>
                 </div>
               {/if}
@@ -509,6 +552,28 @@
   .auto-renew:not(.enabled) {
     background: #f8d7da;
     color: #721c24;
+  }
+
+  .btn-toggle {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+  }
+
+  .btn-toggle:hover:not(:disabled) {
+    background: #138496;
+  }
+
+  .btn-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .subscription-actions {
