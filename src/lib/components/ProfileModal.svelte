@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { auth } from '$lib/auth';
   import { apiClient } from '$lib/api';
+  import SubscriptionManagementModal from './SubscriptionManagementModal.svelte';
 
   export let isOpen = false;
 
@@ -24,6 +25,7 @@
   let isTogglingAutoRenewal = false;
   let isOpeningBillingPortal = false;
   let hasLoadedSubscription = false;
+  let showSubscriptionManagement = false;
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -129,45 +131,17 @@
     }
   }
 
-  async function handleBillingPortal() {
-    if (!authState.token) {
-      alert('Authentication required');
-      return;
-    }
+  function handleBillingPortal() {
+    showSubscriptionManagement = true;
+  }
 
-    try {
-      isOpeningBillingPortal = true;
-      console.log('Requesting billing portal...');
-      const result = await apiClient.getBillingPortal(authState.token);
-      console.log('Billing portal response:', result);
-      
-      if (result && result.url) {
-        console.log('Opening billing portal URL:', result.url);
-        window.open(result.url, '_blank');
-      } else {
-        console.error('No URL in billing portal response:', result);
-        // Fallback: try to open Stripe customer portal directly
-        const fallbackUrl = 'https://billing.stripe.com/p/login';
-        console.log('Using fallback billing portal URL:', fallbackUrl);
-        window.open(fallbackUrl, '_blank');
-        alert('Opening billing portal. If you need to manage your LogiScore subscription specifically, please contact support.');
-      }
-    } catch (err: any) {
-      console.error('Failed to get billing portal:', err);
-      console.error('Error details:', {
-        message: err.message,
-        status: err.status,
-        response: err.response
-      });
-      
-      // Try fallback URL
-      const fallbackUrl = 'https://billing.stripe.com/p/login';
-      console.log('API failed, using fallback billing portal URL:', fallbackUrl);
-      window.open(fallbackUrl, '_blank');
-      alert(`Billing portal API unavailable. Opening general Stripe portal. If you need to manage your LogiScore subscription specifically, please contact support. Error: ${err.message || 'Unknown error'}`);
-    } finally {
-      isOpeningBillingPortal = false;
-    }
+  function closeSubscriptionManagement() {
+    showSubscriptionManagement = false;
+  }
+
+  function handleSubscriptionUpdated(event: CustomEvent) {
+    // Reload subscription data when subscription is updated
+    loadSubscriptionData();
   }
 
   async function handleToggleAutoRenewal() {
@@ -379,8 +353,8 @@
             <!-- Subscription Actions -->
             <div class="subscription-actions">
               {#if subscriptionData.status === 'active'}
-                <button class="btn-secondary" on:click={handleBillingPortal} disabled={isOpeningBillingPortal}>
-                  {isOpeningBillingPortal ? 'Opening...' : 'Manage Billing'}
+                <button class="btn-secondary" on:click={handleBillingPortal}>
+                  Manage Billing
                 </button>
                 <button class="btn-danger" on:click={handleCancelSubscription} disabled={isCanceling}>
                   {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
@@ -390,8 +364,8 @@
                   {isReactivating ? 'Reactivating...' : 'Reactivate Subscription'}
                 </button>
               {:else if subscriptionData.status === 'trial'}
-                <button class="btn-secondary" on:click={handleBillingPortal} disabled={isOpeningBillingPortal}>
-                  {isOpeningBillingPortal ? 'Opening...' : 'Manage Billing'}
+                <button class="btn-secondary" on:click={handleBillingPortal}>
+                  Manage Billing
                 </button>
                 <button class="btn-danger" on:click={handleCancelSubscription} disabled={isCanceling}>
                   {isCanceling ? 'Canceling...' : 'Cancel Trial'}
@@ -422,6 +396,13 @@
     </div>
   </div>
 {/if}
+
+<!-- Subscription Management Modal -->
+<SubscriptionManagementModal 
+  bind:isOpen={showSubscriptionManagement}
+  on:close={closeSubscriptionManagement}
+  on:subscriptionUpdated={handleSubscriptionUpdated}
+/>
 
 <style>
   .modal-overlay {
