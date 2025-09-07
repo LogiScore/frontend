@@ -3,7 +3,6 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import AuthModal from '$lib/components/AuthModal.svelte';
-  import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import ProfileModal from '$lib/components/ProfileModal.svelte';
   import ChangePasswordModal from '$lib/components/ChangePasswordModal.svelte';
   import ReviewSubscriptionModal from '$lib/components/ReviewSubscriptionModal.svelte';
@@ -20,7 +19,6 @@
   
   let showUserDropdown = false;
   let showAuthModal = false;
-  let showSubscriptionModal = false;
   let showProfileModal = false;
   let showChangePasswordModal = false;
   let showReviewSubscriptionModal = false;
@@ -76,11 +74,6 @@
     showAuthModal = false;
   }
   
-  function openSubscriptionModal() {
-    console.log('Opening subscription modal');
-    showSubscriptionModal = true;
-    showUserDropdown = false; // Close dropdown when opening modal
-  }
   
   function openProfileModal() {
     console.log('Opening profile modal');
@@ -100,9 +93,6 @@
     showUserDropdown = false; // Close dropdown when opening modal
   }
   
-  function closeSubscriptionModal() {
-    showSubscriptionModal = false;
-  }
   
   function closeProfileModal() {
     showProfileModal = false;
@@ -180,12 +170,6 @@
                   </svg>
                   View Profile
                 </button>
-                <button class="dropdown-item" on:click={openSubscriptionModal}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  Upgrade Subscription
-                </button>
                 
                 <!-- Review Notifications Management -->
                 {#if (authState.user.user_type === 'shipper' && authState.user.subscription_tier === 'annual') || 
@@ -252,13 +236,6 @@
   />
 {/if}
 
-{#if showSubscriptionModal}
-  <SubscriptionModal 
-    isOpen={showSubscriptionModal}
-    userType={authState.user?.user_type || 'shipper'}
-    on:close={closeSubscriptionModal}
-  />
-{/if}
 
 {#if showProfileModal}
   <ProfileModal 
