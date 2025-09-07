@@ -144,6 +144,14 @@
     loadSubscriptionData();
   }
 
+  function handleUpgrade(event: CustomEvent) {
+    // Close the subscription management modal
+    showSubscriptionManagement = false;
+    
+    // Redirect to pricing page for payment
+    window.location.href = '/pricing';
+  }
+
   async function handleToggleAutoRenewal() {
     if (!authState.token) {
       alert('Authentication required');
@@ -402,6 +410,7 @@
   bind:isOpen={showSubscriptionManagement}
   on:close={closeSubscriptionManagement}
   on:subscriptionUpdated={handleSubscriptionUpdated}
+  on:upgrade={handleUpgrade}
 />
 
 <style>

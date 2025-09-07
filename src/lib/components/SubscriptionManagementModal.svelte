@@ -68,65 +68,75 @@
       return;
     }
 
-    if (!confirm(`Are you sure you want to upgrade to ${plan.name} for $${plan.price}/${plan.billingCycle}?`)) {
-      return;
-    }
-
-    try {
-      isUpgrading = true;
-      error = '';
-      success = '';
-
-      // Map plan names to tier names that the backend expects
-      let tierName = '';
-      if (plan.name === 'Subscription Monthly') {
-        tierName = 'monthly';
-      } else if (plan.name === 'Subscription Annual') {
-        tierName = 'annual';
-      } else if (plan.name === 'Subscription Annual Plus') {
-        tierName = 'enterprise';
-      } else {
-        // Fallback to plan name if no mapping found
-        tierName = plan.name.toLowerCase().replace(' ', '_');
+    // Check if user has an active paid subscription
+    const hasActivePaidSubscription = subscriptionData.status === 'active' && subscriptionData.price > 0;
+    
+    if (hasActivePaidSubscription) {
+      // For existing paid subscribers, do direct upgrade
+      if (!confirm(`Are you sure you want to upgrade to ${plan.name} for $${plan.price}/${plan.billingCycle}?`)) {
+        return;
       }
 
-      console.log('Upgrading subscription:', {
-        planName: plan.name,
-        tierName: tierName,
-        price: plan.price
-      });
+      try {
+        isUpgrading = true;
+        error = '';
+        success = '';
 
-      const result = await apiClient.upgradeSubscription(
-        authState.token,
-        tierName,
-        plan.name
-      );
+        // Map plan names to tier names that the backend expects
+        let tierName = '';
+        if (plan.name === 'Subscription Monthly') {
+          tierName = 'monthly';
+        } else if (plan.name === 'Subscription Annual') {
+          tierName = 'annual';
+        } else if (plan.name === 'Subscription Annual Plus') {
+          tierName = 'enterprise';
+        } else {
+          // Fallback to plan name if no mapping found
+          tierName = plan.name.toLowerCase().replace(' ', '_');
+        }
 
-      success = result.message || 'Subscription upgraded successfully!';
-      
-      // Reload subscription data
-      await loadSubscriptionData();
-      
-      // Update user in auth store
-      if (authState.user) {
-        const updatedUser = {
-          ...authState.user,
-          subscription_tier: plan.name.toLowerCase().replace(' ', '_')
-        };
+        console.log('Upgrading subscription:', {
+          planName: plan.name,
+          tierName: tierName,
+          price: plan.price
+        });
+
+        const result = await apiClient.upgradeSubscription(
+          authState.token,
+          tierName,
+          plan.name
+        );
+
+        success = result.message || 'Subscription upgraded successfully!';
         
-        auth.update(state => ({
-          ...state,
-          user: updatedUser
-        }));
-      }
+        // Reload subscription data
+        await loadSubscriptionData();
+        
+        // Update user in auth store
+        if (authState.user) {
+          const updatedUser = {
+            ...authState.user,
+            subscription_tier: plan.name.toLowerCase().replace(' ', '_')
+          };
+          
+          auth.update(state => ({
+            ...state,
+            user: updatedUser
+          }));
+        }
 
-      // Notify parent
-      dispatch('subscriptionUpdated', { action: 'upgraded', plan: plan.name });
-    } catch (err: any) {
-      console.error('Failed to upgrade subscription:', err);
-      error = err.message || 'Failed to upgrade subscription';
-    } finally {
-      isUpgrading = false;
+        // Notify parent
+        dispatch('subscriptionUpdated', { action: 'upgraded', plan: plan.name });
+      } catch (err: any) {
+        console.error('Failed to upgrade subscription:', err);
+        error = err.message || 'Failed to upgrade subscription';
+      } finally {
+        isUpgrading = false;
+      }
+    } else {
+      // For free users or trial users, redirect to payment page
+      dispatch('upgrade', { plan: plan });
+      closeModal();
     }
   }
 
@@ -227,7 +237,7 @@
         {:else if error}
           <div class="error-state">
             <p class="error-message">{error}</p>
-            <button class="btn-retry" on:click={loadSubscriptionData}>Retry</button>
+            <button type="button" class="btn-retry" on:click={loadSubscriptionData}>Retry</button>
           </div>
         {:else if success}
           <div class="success-state">
@@ -286,9 +296,10 @@
                       
                       <div class="plan-actions">
                         {#if plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}
-                          <button class="btn-current" disabled>Current Plan</button>
+                          <button type="button" class="btn-current" disabled>Current Plan</button>
                         {:else if plan.price > (subscriptionData.price || 0)}
                           <button 
+                            type="button"
                             class="btn-upgrade" 
                             on:click={() => handleUpgrade(plan)}
                             disabled={isUpgrading}
@@ -296,7 +307,7 @@
                             {isUpgrading ? 'Upgrading...' : 'Upgrade'}
                           </button>
                         {:else}
-                          <button class="btn-downgrade" disabled>
+                          <button type="button" class="btn-downgrade" disabled>
                             Downgrade (Contact Support)
                           </button>
                         {/if}
@@ -312,6 +323,7 @@
           <div class="subscription-actions">
             {#if subscriptionData.status === 'active' || subscriptionData.status === 'trial'}
               <button 
+                type="button"
                 class="btn-danger" 
                 on:click={handleCancel}
                 disabled={isCanceling}
