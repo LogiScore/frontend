@@ -22,6 +22,7 @@
   let isCanceling = false;
   let isReactivating = false;
   let isTogglingAutoRenewal = false;
+  let hasLoadedSubscription = false;
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -53,8 +54,17 @@
       company_name: authState.user.company_name || '',
       user_type: authState.user.user_type || 'shipper'
     };
-    // Load subscription data when modal opens
-    loadSubscriptionData();
+    
+    // Load subscription data only once when modal opens
+    if (!hasLoadedSubscription && authState.token) {
+      hasLoadedSubscription = true;
+      loadSubscriptionData();
+    }
+  }
+
+  // Reset flag when modal closes
+  $: if (!isOpen) {
+    hasLoadedSubscription = false;
   }
 
   async function loadSubscriptionData() {
@@ -63,6 +73,10 @@
     try {
       isLoadingSubscription = true;
       subscriptionError = '';
+      
+      // Small delay to prevent rapid re-renders
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       subscriptionData = await apiClient.getCurrentSubscription(authState.token);
     } catch (err: any) {
       console.error('Failed to load subscription:', err);
@@ -258,7 +272,8 @@
         <div class="subscription-section">
           <h3>Subscription Details</h3>
           
-          {#if isLoadingSubscription}
+          {#key isOpen}
+            {#if isLoadingSubscription}
             <div class="loading-state">
               <div class="spinner"></div>
               <p>Loading subscription information...</p>
@@ -368,6 +383,7 @@
               </button>
             </div>
           {/if}
+          {/key}
         </div>
 
         <div class="form-actions">
