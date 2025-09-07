@@ -18,6 +18,13 @@
   // Get plans based on user type
   $: userPlans = authState.user ? getPlansForUserType(authState.user.user_type) : [];
   $: userType = authState.user?.user_type || 'shipper';
+  
+  // Check if user is eligible for trial (new user with no previous paid subscription)
+  $: isNewUser = authState.user && (
+    !authState.user.subscription_tier || 
+    authState.user.subscription_tier === 'free' || 
+    authState.user.subscription_tier === ''
+  );
 
   // Get all plans for non-logged-in users
   $: allPlans = getAllPlans();
@@ -25,6 +32,7 @@
   // Subscription modal state
   let showSubscriptionModal = false;
   let selectedPlanForModal: any = null;
+  let trialDuration = 7; // Default 7-day trial
 
   function openSubscriptionModal(plan?: any) {
     if (!authState.user) {
@@ -87,6 +95,20 @@
         <!-- Shipper Plans -->
         <div class="plan-type-section">
           <h2 class="section-title">Shipper Plans</h2>
+          
+          <!-- Trial Duration Selector (only for new users) -->
+          {#if isNewUser}
+            <div class="trial-selector">
+              <label for="trial-duration">Free Trial Duration:</label>
+              <select id="trial-duration" bind:value={trialDuration}>
+                <option value="7">7 Days</option>
+                <option value="14">14 Days</option>
+                <option value="30">30 Days</option>
+              </select>
+              <p class="trial-info">Enter payment details now, get charged after {trialDuration} days unless cancelled</p>
+            </div>
+          {/if}
+          
           <div class="plans-row">
             {#each userPlans as plan}
               <div class="plan-card" class:featured={plan.popular}>
@@ -118,7 +140,9 @@
                   {#if plan.price === 0}
                     <button class="btn-secondary" on:click={() => openSubscriptionModal(plan)}>Get Started Free</button>
                   {:else}
-                    <button class="btn-primary" on:click={() => openSubscriptionModal(plan)}>Start {plan.name} Trial</button>
+                    <button class="btn-primary" on:click={() => openSubscriptionModal(plan)}>
+                      {isNewUser ? `Start ${trialDuration}-Day Free Trial` : `Subscribe to ${plan.name}`}
+                    </button>
                   {/if}
                 </div>
               </div>
@@ -543,6 +567,38 @@
     text-align: center;
   }
 
+  .trial-selector {
+    background: #f8f9ff;
+    border: 2px solid #e3f2fd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .trial-selector label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .trial-selector select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    background: white;
+  }
+
+  .trial-info {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+    font-style: italic;
+  }
+
   /* Plan Selection for Non-Logged-In Users */
   .plan-selection {
     padding: 80px 0;
@@ -716,5 +772,6 @@
   bind:isOpen={showSubscriptionModal}
   userType={userType}
   selectedPlan={selectedPlanForModal}
+  trialDuration={trialDuration}
   on:close={closeSubscriptionModal}
 /> 

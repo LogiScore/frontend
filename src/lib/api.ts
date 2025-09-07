@@ -2953,6 +2953,48 @@ class ApiClient {
       }
     });
   }
+
+  // ===== TRIAL REMINDER METHODS =====
+  
+  // Send trial ending warning email
+  async sendTrialWarning(userId: string, trialData: any): Promise<{success: boolean; message: string; email_sent_to: string}> {
+    return this.request<{success: boolean; message: string; email_sent_to: string}>('/api/notifications/send-trial-warning', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        ...trialData
+      }),
+    });
+  }
+
+  // Send trial ended notification email
+  async sendTrialEndedNotification(userId: string, trialData: any): Promise<{success: boolean; message: string; email_sent_to: string}> {
+    return this.request<{success: boolean; message: string; email_sent_to: string}>('/api/notifications/send-trial-ended', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        ...trialData
+      }),
+    });
+  }
+
+  // Get users with trials ending soon
+  async getTrialsEndingSoon(hoursAhead: number = 24): Promise<{success: boolean; trials_ending: any[]; count: number}> {
+    return this.request<{success: boolean; trials_ending: any[]; count: number}>(`/api/notifications/trials-ending-soon?hours_ahead=${hoursAhead}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+  }
 }
 
 // Export singleton instance

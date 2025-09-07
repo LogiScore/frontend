@@ -7,6 +7,7 @@
 
   export let isOpen: boolean = false;
   export let selectedPlan: any = null;
+  export let trialDuration: number = 7; // Trial duration in days
 
   const dispatch = createEventDispatcher();
 
@@ -17,6 +18,13 @@
   let elements: any = null;
   let stripe: any = null;
   let cardContainer: HTMLElement;
+
+  // Check if user is eligible for trial (new user with no previous paid subscription)
+  $: isNewUser = $auth.user && (
+    !$auth.user.subscription_tier || 
+    $auth.user.subscription_tier === 'free' || 
+    $auth.user.subscription_tier === ''
+  );
 
   onMount(async () => {
     // Initialize Stripe
@@ -78,14 +86,14 @@
         throw new Error(getPaymentErrorMessage(paymentError));
       }
 
-      // Create subscription with payment method
+      // Create subscription with payment method and trial (only for new users)
       const result = await apiClient.createSubscription(
         selectedPlan.id,
         selectedPlan.name,
         currentAuth.user.user_type,
         currentAuth.token,
         paymentMethod.id,
-        0 // No trial days for paid plans
+        isNewUser ? trialDuration : 0 // Only give trial to new users
       );
 
       success = result.message || 'Subscription created successfully!';
@@ -127,17 +135,30 @@
   <div class="modal-overlay" on:click={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>Complete Your Payment</h2>
+        <h2>{isNewUser ? `Start Your ${trialDuration}-Day Free Trial` : 'Complete Your Payment'}</h2>
         <button class="close-btn" on:click={closeModal}>&times;</button>
       </div>
       
       <div class="modal-body">
         {#if selectedPlan}
           <div class="plan-summary">
-            <h3>Order Summary</h3>
+            <h3>{isNewUser ? 'Trial Summary' : 'Order Summary'}</h3>
             <div class="plan-details">
               <div class="plan-name">{selectedPlan.name}</div>
-              <div class="plan-price">${selectedPlan.price}/{selectedPlan.billingCycle}</div>
+              {#if isNewUser}
+                <div class="trial-info">
+                  <div class="trial-period">🆓 {trialDuration}-Day Free Trial</div>
+                  <div class="trial-charge">Then ${selectedPlan.price}/{selectedPlan.billingCycle}</div>
+                </div>
+                <div class="trial-notice">
+                  <strong>No charge today!</strong> You'll be charged ${selectedPlan.price} after {trialDuration} days unless you cancel.
+                </div>
+              {:else}
+                <div class="plan-price">${selectedPlan.price}/{selectedPlan.billingCycle}</div>
+                <div class="existing-user-notice">
+                  <strong>Immediate billing:</strong> You'll be charged ${selectedPlan.price} today.
+                </div>
+              {/if}
               <div class="plan-description">{selectedPlan.description}</div>
             </div>
           </div>
@@ -175,7 +196,7 @@
             Cancel
           </button>
           <button class="btn-primary" on:click={handlePayment} disabled={isLoading}>
-            {isLoading ? 'Processing...' : `Subscribe for $${selectedPlan.price}`}
+            {isLoading ? 'Processing...' : (isNewUser ? `Start ${trialDuration}-Day Free Trial` : `Subscribe for $${selectedPlan.price}`)}
           </button>
         </div>
       {/if}
@@ -278,6 +299,43 @@
   .plan-description {
     color: #666;
     font-size: 0.9rem;
+  }
+
+  .trial-info {
+    margin: 10px 0;
+  }
+
+  .trial-period {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 5px;
+  }
+
+  .trial-charge {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  .trial-notice {
+    background: #e8f5e9;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #155724;
+    margin-top: 10px;
+  }
+
+  .existing-user-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #856404;
+    margin-top: 10px;
   }
 
   .payment-form {
