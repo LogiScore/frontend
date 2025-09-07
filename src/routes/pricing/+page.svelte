@@ -32,7 +32,7 @@
   // Subscription modal state
   let showSubscriptionModal = false;
   let selectedPlanForModal: any = null;
-  let trialDuration = 7; // Default 7-day trial
+  const TRIAL_DURATION = 7; // Standard 7-day trial period
 
   function openSubscriptionModal(plan?: any) {
     if (!authState.user) {
@@ -96,16 +96,12 @@
         <div class="plan-type-section">
           <h2 class="section-title">Shipper Plans</h2>
           
-          <!-- Trial Duration Selector (only for new users) -->
+          <!-- Trial Information (only for new users) -->
           {#if isNewUser}
-            <div class="trial-selector">
-              <label for="trial-duration">Free Trial Duration:</label>
-              <select id="trial-duration" bind:value={trialDuration}>
-                <option value="7">7 Days</option>
-                <option value="14">14 Days</option>
-                <option value="30">30 Days</option>
-              </select>
-              <p class="trial-info">Enter payment details now, get charged after {trialDuration} days unless cancelled</p>
+            <div class="trial-info-banner">
+              <h3>🆓 Start Your Free Trial</h3>
+              <p>Get {TRIAL_DURATION} days free, then ${userPlans.find(p => p.price > 0)?.price || 38}/{userPlans.find(p => p.price > 0)?.billingCycle || 'month'}</p>
+              <p class="trial-note">Enter payment details now, get charged after {TRIAL_DURATION} days unless cancelled</p>
             </div>
           {/if}
           
@@ -141,7 +137,7 @@
                     <button class="btn-secondary" on:click={() => openSubscriptionModal(plan)}>Get Started Free</button>
                   {:else}
                     <button class="btn-primary" on:click={() => openSubscriptionModal(plan)}>
-                      {isNewUser ? `Start ${trialDuration}-Day Free Trial` : `Subscribe to ${plan.name}`}
+                      {isNewUser ? `Start ${TRIAL_DURATION}-Day Free Trial` : `Subscribe to ${plan.name}`}
                     </button>
                   {/if}
                 </div>
@@ -567,35 +563,32 @@
     text-align: center;
   }
 
-  .trial-selector {
-    background: #f8f9ff;
-    border: 2px solid #e3f2fd;
+  .trial-info-banner {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    border: 2px solid #4caf50;
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
   }
 
-  .trial-selector label {
-    display: block;
+  .trial-info-banner h3 {
+    margin: 0 0 0.5rem 0;
+    color: #2e7d32;
+    font-size: 1.3rem;
     font-weight: 600;
+  }
+
+  .trial-info-banner p {
+    margin: 0.5rem 0;
     color: #333;
-    margin-bottom: 0.5rem;
-  }
-
-  .trial-selector select {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     font-size: 1rem;
-    margin-bottom: 0.5rem;
-    background: white;
   }
 
-  .trial-info {
+  .trial-note {
     color: #666;
     font-size: 0.9rem;
-    margin: 0;
     font-style: italic;
   }
 
@@ -772,6 +765,5 @@
   bind:isOpen={showSubscriptionModal}
   userType={userType}
   selectedPlan={selectedPlanForModal}
-  trialDuration={trialDuration}
   on:close={closeSubscriptionModal}
 /> 

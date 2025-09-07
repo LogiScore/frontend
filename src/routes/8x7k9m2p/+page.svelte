@@ -3,6 +3,7 @@
   import { apiClient } from '$lib/api';
   import { onMount } from 'svelte';
   import AdminLoginForm from '$lib/components/AdminLoginForm.svelte';
+  import TrialReminderTest from '$lib/components/TrialReminderTest.svelte';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -1373,6 +1374,11 @@
             </div>
           {/if}
           {/if}
+          
+          <!-- Trial Reminder Test Component -->
+          <div class="trial-test-section">
+            <TrialReminderTest />
+          </div>
         </div>
       {/if}
 
@@ -3390,5 +3396,13 @@
   .btn-primary:disabled:hover {
     transform: none;
     box-shadow: none;
+  }
+
+  .trial-test-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
   }
 </style> 

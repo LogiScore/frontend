@@ -6,7 +6,7 @@
   export let isOpen = false;
   export let userType: 'shipper' | 'forwarder' = 'shipper';
   export let selectedPlan: Plan | null = null; // Pre-selected plan from parent
-  export let trialDuration: number = 7; // Trial duration in days
+  const TRIAL_DURATION = 7; // Standard 7-day trial period
 
   const dispatch = createEventDispatcher();
 
@@ -120,7 +120,6 @@
   <PaymentModal 
     isOpen={showPaymentModal} 
     selectedPlan={selectedPlan} 
-    trialDuration={trialDuration}
     on:close={handlePaymentClose} 
   />
 {/if}

@@ -7,7 +7,7 @@
 
   export let isOpen: boolean = false;
   export let selectedPlan: any = null;
-  export let trialDuration: number = 7; // Trial duration in days
+  const TRIAL_DURATION = 7; // Standard 7-day trial period
 
   const dispatch = createEventDispatcher();
 
@@ -93,7 +93,7 @@
         currentAuth.user.user_type,
         currentAuth.token,
         paymentMethod.id,
-        isNewUser ? trialDuration : 0 // Only give trial to new users
+        isNewUser ? TRIAL_DURATION : 0 // Only give trial to new users
       );
 
       success = result.message || 'Subscription created successfully!';
@@ -135,7 +135,7 @@
   <div class="modal-overlay" on:click={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>{isNewUser ? `Start Your ${trialDuration}-Day Free Trial` : 'Complete Your Payment'}</h2>
+        <h2>{isNewUser ? `Start Your ${TRIAL_DURATION}-Day Free Trial` : 'Complete Your Payment'}</h2>
         <button class="close-btn" on:click={closeModal}>&times;</button>
       </div>
       
@@ -147,11 +147,11 @@
               <div class="plan-name">{selectedPlan.name}</div>
               {#if isNewUser}
                 <div class="trial-info">
-                  <div class="trial-period">🆓 {trialDuration}-Day Free Trial</div>
+                  <div class="trial-period">🆓 {TRIAL_DURATION}-Day Free Trial</div>
                   <div class="trial-charge">Then ${selectedPlan.price}/{selectedPlan.billingCycle}</div>
                 </div>
                 <div class="trial-notice">
-                  <strong>No charge today!</strong> You'll be charged ${selectedPlan.price} after {trialDuration} days unless you cancel.
+                  <strong>No charge today!</strong> You'll be charged ${selectedPlan.price} after {TRIAL_DURATION} days unless you cancel.
                 </div>
               {:else}
                 <div class="plan-price">${selectedPlan.price}/{selectedPlan.billingCycle}</div>
@@ -196,7 +196,7 @@
             Cancel
           </button>
           <button class="btn-primary" on:click={handlePayment} disabled={isLoading}>
-            {isLoading ? 'Processing...' : (isNewUser ? `Start ${trialDuration}-Day Free Trial` : `Subscribe for $${selectedPlan.price}`)}
+            {isLoading ? 'Processing...' : (isNewUser ? `Start ${TRIAL_DURATION}-Day Free Trial` : `Subscribe for $${selectedPlan.price}`)}
           </button>
         </div>
       {/if}
