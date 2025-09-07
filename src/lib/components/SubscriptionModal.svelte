@@ -5,25 +5,37 @@
 
   export let isOpen = false;
   export let userType: 'shipper' | 'forwarder' = 'shipper';
+  export let selectedPlan: Plan | null = null; // Pre-selected plan from parent
 
   const dispatch = createEventDispatcher();
 
-  let selectedPlan: Plan | null = null;
   let isLoading = false;
   let showPaymentModal = false;
+  let localSelectedPlan: Plan | null = null; // Local plan selection
 
   // Get the correct plans from subscription-plans.ts
   $: plans = getPlansForUserType(userType);
+  
+  // If a plan is pre-selected, automatically proceed to payment for paid plans
+  $: if (selectedPlan && isOpen) {
+    if (selectedPlan.price > 0) {
+      // For paid plans, go directly to payment
+      showPaymentModal = true;
+    } else {
+      // For free plans, just close the modal
+      closeModal();
+    }
+  }
 
   function closeModal() {
     dispatch('close');
   }
 
   async function handleSubscribe() {
-    if (!selectedPlan) return;
+    if (!localSelectedPlan) return;
     
     // For free plans, just close the modal
-    if (selectedPlan.price === 0) {
+    if (localSelectedPlan.price === 0) {
       closeModal();
       return;
     }
@@ -33,7 +45,7 @@
   }
 
   function selectPlan(plan: Plan) {
-    selectedPlan = plan;
+    localSelectedPlan = plan;
   }
 
   function handlePaymentClose() {
@@ -44,7 +56,7 @@
   }
 </script>
 
-{#if isOpen}
+{#if isOpen && !selectedPlan}
   <div class="modal-overlay" on:click={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
@@ -55,7 +67,7 @@
       <div class="modal-body">
         <div class="plans-grid">
           {#each plans as plan}
-            <div class="plan-card {selectedPlan?.id === plan.id ? 'selected' : ''} {plan.popular ? 'popular' : ''}">
+            <div class="plan-card {localSelectedPlan?.id === plan.id ? 'selected' : ''} {plan.popular ? 'popular' : ''}">
               {#if plan.popular}
                 <div class="popular-badge">Most Popular</div>
               {/if}
@@ -65,7 +77,7 @@
                   type="radio"
                   name="plan"
                   value={plan.id.toString()}
-                  checked={selectedPlan?.id === plan.id}
+                  checked={localSelectedPlan?.id === plan.id}
                   on:change={() => selectPlan(plan)}
                   id={plan.id.toString()}
                 />
@@ -94,8 +106,8 @@
           <button type="button" class="btn-secondary" on:click={closeModal} disabled={isLoading}>
             Cancel
           </button>
-          <button type="button" class="btn-primary" on:click={handleSubscribe} disabled={isLoading || !selectedPlan}>
-            {isLoading ? 'Processing...' : selectedPlan ? (selectedPlan.price === 0 ? 'Get Started Free' : `Subscribe to ${selectedPlan.name}`) : 'Select a Plan'}
+          <button type="button" class="btn-primary" on:click={handleSubscribe} disabled={isLoading || !localSelectedPlan}>
+            {isLoading ? 'Processing...' : localSelectedPlan ? (localSelectedPlan.price === 0 ? 'Get Started Free' : `Subscribe to ${localSelectedPlan.name}`) : 'Select a Plan'}
           </button>
         </div>
       </div>

@@ -24,18 +24,21 @@
 
   // Subscription modal state
   let showSubscriptionModal = false;
+  let selectedPlanForModal: any = null;
 
-  function openSubscriptionModal() {
+  function openSubscriptionModal(plan?: any) {
     if (!authState.user) {
       // Redirect to sign in if not logged in
       window.location.href = '/';
       return;
     }
+    selectedPlanForModal = plan || null;
     showSubscriptionModal = true;
   }
 
   function closeSubscriptionModal() {
     showSubscriptionModal = false;
+    selectedPlanForModal = null;
   }
 
   function handlePlanSelection(planType: 'shipper' | 'forwarder') {
@@ -113,9 +116,9 @@
                 
                 <div class="plan-actions">
                   {#if plan.price === 0}
-                    <button class="btn-secondary" on:click={openSubscriptionModal}>Get Started Free</button>
+                    <button class="btn-secondary" on:click={() => openSubscriptionModal(plan)}>Get Started Free</button>
                   {:else}
-                    <button class="btn-primary" on:click={openSubscriptionModal}>Start {plan.name} Trial</button>
+                    <button class="btn-primary" on:click={() => openSubscriptionModal(plan)}>Start {plan.name} Trial</button>
                   {/if}
                 </div>
               </div>
@@ -712,5 +715,6 @@
 <SubscriptionModal 
   bind:isOpen={showSubscriptionModal}
   userType={userType}
+  selectedPlan={selectedPlanForModal}
   on:close={closeSubscriptionModal}
 /> 
