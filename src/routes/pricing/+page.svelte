@@ -96,14 +96,6 @@
         <div class="plan-type-section">
           <h2 class="section-title">Shipper Plans</h2>
           
-          <!-- Trial Information (only for new users) -->
-          {#if isNewUser}
-            <div class="trial-info-banner">
-              <h3>🆓 Start Your Free Trial</h3>
-              <p>Get {TRIAL_DURATION} days free, then ${userPlans.find(p => p.price > 0)?.price || 38}/{userPlans.find(p => p.price > 0)?.billingCycle || 'month'}</p>
-              <p class="trial-note">Enter payment details now, get charged after {TRIAL_DURATION} days unless cancelled</p>
-            </div>
-          {/if}
           
           <div class="plans-row">
             {#each userPlans as plan}
@@ -563,34 +555,6 @@
     text-align: center;
   }
 
-  .trial-info-banner {
-    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-    border: 2px solid #4caf50;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
-  }
-
-  .trial-info-banner h3 {
-    margin: 0 0 0.5rem 0;
-    color: #2e7d32;
-    font-size: 1.3rem;
-    font-weight: 600;
-  }
-
-  .trial-info-banner p {
-    margin: 0.5rem 0;
-    color: #333;
-    font-size: 1rem;
-  }
-
-  .trial-note {
-    color: #666;
-    font-size: 0.9rem;
-    font-style: italic;
-  }
 
   /* Plan Selection for Non-Logged-In Users */
   .plan-selection {
