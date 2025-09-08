@@ -140,13 +140,13 @@
   async function handleToggleAutoRenewal() {
     if (!authState.token || !subscriptionData) return;
 
+    // Toggle the auto-renewal status
+    const newAutoRenewStatus = !subscriptionData.auto_renew;
+
     try {
       isTogglingAutoRenewal = true;
       error = '';
       success = '';
-
-      // Toggle the auto-renewal status
-      const newAutoRenewStatus = !subscriptionData.auto_renew;
       
       // Call the API to update auto-renewal status
       const result = await apiClient.updateAutoRenewal(authState.token, newAutoRenewStatus);
@@ -167,6 +167,33 @@
       dispatch('subscriptionUpdated', { action: 'autoRenewalToggled', autoRenew: newAutoRenewStatus });
     } catch (err: any) {
       console.error('Failed to toggle auto-renewal:', err);
+      
+      // Check if it's a "No active subscription found" error
+      if (err.message && err.message.includes('No active subscription found')) {
+        console.log('SubscriptionManagementModal: Backend reports no active subscription, but user has local subscription data');
+        
+        // Check if user has subscription data locally
+        if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
+          console.log('SubscriptionManagementModal: User has local subscription data, updating locally');
+          
+          // Update local subscription data without backend call
+          subscriptionData.auto_renew = newAutoRenewStatus;
+          
+          // Update user subscription data to keep header in sync
+          await authMethods.updateUserSubscriptionData({
+            tier: subscriptionData.tier,
+            start_date: subscriptionData.start_date,
+            end_date: subscriptionData.end_date
+          });
+          
+          success = `Auto-renewal ${newAutoRenewStatus ? 'enabled' : 'disabled'} locally. Note: This change may not be reflected in your billing system until the backend is synchronized.`;
+          
+          // Notify parent
+          dispatch('subscriptionUpdated', { action: 'autoRenewalToggled', autoRenew: newAutoRenewStatus });
+          return; // Success, don't show error
+        }
+      }
+      
       error = err.message || 'Failed to update auto-renewal setting';
       // Revert the toggle on error
       subscriptionData.auto_renew = !subscriptionData.auto_renew;

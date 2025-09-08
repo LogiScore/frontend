@@ -1977,21 +1977,28 @@ class ApiClient {
       auto_renew_enabled: autoRenew
     };
     
-    console.log('Sending updateAutoRenewal request to /api/subscriptions/auto-renewal');
-    console.log('Request data:', requestData);
-    console.log('Authorization token:', token.substring(0, 20) + '...');
+    console.log('updateAutoRenewal: Making API call to /api/subscriptions/auto-renewal');
+    console.log('updateAutoRenewal: Token (first 20 chars):', token.substring(0, 20) + '...');
+    console.log('updateAutoRenewal: Request data:', requestData);
     
-    const response = await this.request<{ message: string }>('/api/subscriptions/auto-renewal', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log('UpdateAutoRenewal response:', response);
-    return response;
+    try {
+      const response = await this.request<{ message: string }>('/api/subscriptions/auto-renewal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      console.log('updateAutoRenewal: API call successful, response:', response);
+      return response;
+    } catch (error: any) {
+      console.error('updateAutoRenewal: API call failed:', error);
+      console.error('updateAutoRenewal: Error message:', error.message);
+      console.error('updateAutoRenewal: Error details:', error);
+      throw error;
+    }
   }
 
   // ===== NEW METHOD: reactivateSubscription =====
@@ -2029,16 +2036,30 @@ class ApiClient {
 
   // ===== NEW METHOD: toggleAutoRenewal =====
   async toggleAutoRenewal(token: string, enabled: boolean): Promise<{ message: string; auto_renew: boolean }> {
-    return this.request<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        auto_renew_enabled: enabled
-      }),
-    });
+    console.log('toggleAutoRenewal: Making API call to /api/subscriptions/toggle-auto-renewal');
+    console.log('toggleAutoRenewal: Token (first 20 chars):', token.substring(0, 20) + '...');
+    console.log('toggleAutoRenewal: Enabled:', enabled);
+    
+    try {
+      const result = await this.request<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          auto_renew_enabled: enabled
+        }),
+      });
+      
+      console.log('toggleAutoRenewal: API call successful, result:', result);
+      return result;
+    } catch (error: any) {
+      console.error('toggleAutoRenewal: API call failed:', error);
+      console.error('toggleAutoRenewal: Error message:', error.message);
+      console.error('toggleAutoRenewal: Error details:', error);
+      throw error;
+    }
   }
 
   // ===== METHOD: getDashboardStats =====
