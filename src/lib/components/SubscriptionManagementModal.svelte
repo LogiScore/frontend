@@ -14,7 +14,6 @@
   let error = '';
   let success = '';
   let isUpgrading = false;
-  let isTogglingAutoRenewal = false;
   let hasLoadedData = false; // Flag to prevent multiple loads
 
   // Get user data from auth store
@@ -178,70 +177,6 @@
     }
   }
 
-  async function handleToggleAutoRenewal() {
-    if (!authState.token || !subscriptionData) return;
-
-    // Toggle the auto-renewal status
-    const newAutoRenewStatus = !subscriptionData.auto_renew;
-
-    try {
-      isTogglingAutoRenewal = true;
-      error = '';
-      success = '';
-      
-      // Call the API to update auto-renewal status
-      const result = await apiClient.updateAutoRenewal(authState.token, newAutoRenewStatus);
-      
-      // Update local subscription data
-      subscriptionData.auto_renew = newAutoRenewStatus;
-      
-      // Update user subscription data to keep header in sync
-      await authMethods.updateUserSubscriptionData({
-        tier: subscriptionData.tier,
-        start_date: subscriptionData.start_date,
-        end_date: subscriptionData.end_date
-      });
-      
-      success = result.message || `Auto-renewal ${newAutoRenewStatus ? 'enabled' : 'disabled'} successfully!`;
-      
-      // Notify parent
-      dispatch('subscriptionUpdated', { action: 'autoRenewalToggled', autoRenew: newAutoRenewStatus });
-    } catch (err: any) {
-      console.error('Failed to toggle auto-renewal:', err);
-      
-      // Check if it's a "No active subscription found" error
-      if (err.message && err.message.includes('No active subscription found')) {
-        console.log('SubscriptionManagementModal: Backend reports no active subscription, but user has local subscription data');
-        
-        // Check if user has subscription data locally
-        if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
-          console.log('SubscriptionManagementModal: User has local subscription data, updating locally');
-          
-          // Update local subscription data without backend call
-          subscriptionData.auto_renew = newAutoRenewStatus;
-          
-          // Update user subscription data to keep header in sync
-          await authMethods.updateUserSubscriptionData({
-            tier: subscriptionData.tier,
-            start_date: subscriptionData.start_date,
-            end_date: subscriptionData.end_date
-          });
-          
-          success = `Auto-renewal ${newAutoRenewStatus ? 'enabled' : 'disabled'} locally. Note: This change may not be reflected in your billing system until the backend is synchronized.`;
-          
-          // Notify parent
-          dispatch('subscriptionUpdated', { action: 'autoRenewalToggled', autoRenew: newAutoRenewStatus });
-          return; // Success, don't show error
-        }
-      }
-      
-      error = err.message || 'Failed to update auto-renewal setting';
-      // Revert the toggle on error
-      subscriptionData.auto_renew = !subscriptionData.auto_renew;
-    } finally {
-      isTogglingAutoRenewal = false;
-    }
-  }
 
   function closeModal() {
     dispatch('close');
@@ -351,31 +286,6 @@
                 </div>
               {/if}
               
-              <!-- Auto-Renewal Toggle -->
-              {#if subscriptionData.status === 'active'}
-                <div class="auto-renewal-section">
-                  <div class="auto-renewal-toggle">
-                    <label class="toggle-label">
-                      <input 
-                        type="checkbox" 
-                        bind:checked={subscriptionData.auto_renew}
-                        on:change={handleToggleAutoRenewal}
-                        disabled={isTogglingAutoRenewal}
-                      />
-                      <span class="toggle-slider"></span>
-                      <span class="toggle-text">
-                        {subscriptionData.auto_renew ? 'Auto-Renewal: ON' : 'Auto-Renewal: OFF'}
-                      </span>
-                    </label>
-                    <p class="toggle-description">
-                      {subscriptionData.auto_renew 
-                        ? 'Your subscription will automatically renew on the next billing date.'
-                        : 'Your subscription will end on ' + formatDate(subscriptionData.end_date) + '. You will be charged the same amount on this date to continue your current tier.'
-                      }
-                    </p>
-                  </div>
-                </div>
-              {/if}
             </div>
           </div>
 
@@ -699,72 +609,6 @@
     cursor: not-allowed;
   }
 
-  .auto-renewal-section {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-  }
-
-  .auto-renewal-toggle {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    font-weight: 500;
-  }
-
-  .toggle-label input[type="checkbox"] {
-    display: none;
-  }
-
-  .toggle-slider {
-    position: relative;
-    width: 50px;
-    height: 24px;
-    background: #cbd5e1;
-    border-radius: 12px;
-    transition: background-color 0.3s ease;
-  }
-
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-  }
-
-  .toggle-label input[type="checkbox"]:checked + .toggle-slider {
-    background: #10b981;
-  }
-
-  .toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
-    transform: translateX(26px);
-  }
-
-  .toggle-text {
-    font-size: 0.875rem;
-    color: #374151;
-  }
-
-  .toggle-description {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin: 0;
-    line-height: 1.4;
-  }
 
   @media (max-width: 768px) {
     .plans-grid {
