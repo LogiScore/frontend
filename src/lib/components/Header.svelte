@@ -146,7 +146,9 @@
           <a href="/search" class="nav-link">Search</a>
           <a href="/about" class="nav-link">About</a>
           <a href="/how-it-works" class="nav-link">How It Works</a>
-          <a href="/reviews" class="nav-link">Reviews</a>
+          {#if !authState.user || authState.user.user_type !== 'forwarder'}
+            <a href="/reviews" class="nav-link">Reviews</a>
+          {/if}
           <a href="/contact" class="nav-link">Contact</a>
         </div>
       {/if}
