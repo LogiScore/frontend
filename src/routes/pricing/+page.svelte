@@ -152,9 +152,9 @@
     {#if authState.user}
       <!-- Personalized plans for logged-in user -->
       <div class="plans-grid">
-        <!-- Shipper Plans -->
+        <!-- User Plans -->
         <div class="plan-type-section">
-          <h2 class="section-title">Shipper Plans</h2>
+          <h2 class="section-title">{userType === 'forwarder' ? 'Forwarder Plans' : 'Shipper Plans'}</h2>
           
           
           <div class="plans-row">
@@ -473,7 +473,7 @@
     flex-direction: row !important;
     gap: 30px !important;
     justify-content: center !important;
-    align-items: stretch !important;
+    align-items: flex-start !important;
     max-width: 1200px !important;
     margin: 0 auto !important;
     width: 100% !important;
@@ -482,6 +482,8 @@
   .plans-row > * {
     flex: 1 !important;
     min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .annual-plus-row {
@@ -554,6 +556,9 @@
     border: 2px solid #e9ecef;
     position: relative;
     transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .plan-card:hover {
@@ -614,9 +619,16 @@
     font-size: 1rem;
   }
 
+  .plan-features {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
   .plan-features ul {
     list-style: none;
     margin-bottom: 30px;
+    flex-grow: 1;
   }
 
   .plan-features li {
