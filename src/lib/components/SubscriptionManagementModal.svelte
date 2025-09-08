@@ -14,7 +14,6 @@
   let error = '';
   let success = '';
   let isUpgrading = false;
-  let isCanceling = false;
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -137,62 +136,6 @@
     }
   }
 
-  async function handleCancel() {
-    if (!authState.token || !subscriptionData) return;
-
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
-      return;
-    }
-
-    try {
-      isCanceling = true;
-      error = '';
-      success = '';
-
-      const result = await apiClient.cancelSubscription(authState.token);
-      success = result.message || 'Subscription canceled successfully!';
-      
-      // Reload subscription data
-      await loadSubscriptionData();
-      
-      console.log('After cancellation - subscriptionData:', subscriptionData);
-      console.log('After cancellation - subscription status:', subscriptionData?.status);
-      console.log('After cancellation - subscription tier:', subscriptionData?.tier);
-      
-      // Determine the appropriate tier and dates based on subscription status
-      let updateTier = subscriptionData?.tier;
-      let updateStartDate = subscriptionData?.start_date;
-      let updateEndDate = subscriptionData?.end_date;
-      
-      // If subscription is canceled, clear the subscription data
-      if (subscriptionData?.status === 'canceled') {
-        updateTier = null;
-        updateStartDate = null;
-        updateEndDate = null;
-        console.log('Subscription canceled - clearing subscription data');
-      }
-      
-      console.log('Updating subscription data:', { tier: updateTier, start_date: updateStartDate, end_date: updateEndDate });
-      
-      // Update user subscription data locally as fallback
-      await authMethods.updateUserSubscriptionData({
-        tier: updateTier,
-        start_date: updateStartDate,
-        end_date: updateEndDate
-      });
-      
-      // Refresh user data from backend to get updated subscription_tier
-      await authMethods.refreshUserData();
-      
-      // Notify parent
-      dispatch('subscriptionUpdated', { action: 'canceled' });
-    } catch (err: any) {
-      console.error('Failed to cancel subscription:', err);
-      error = err.message || 'Failed to cancel subscription';
-    } finally {
-      isCanceling = false;
-    }
-  }
 
   function closeModal() {
     dispatch('close');
@@ -296,6 +239,32 @@
                   <p><strong>Subscription ends:</strong> {formatDate(subscriptionData.end_date)}</p>
                 </div>
               {/if}
+              
+              <!-- Auto-Renewal Toggle -->
+              {#if subscriptionData.status === 'active'}
+                <div class="auto-renewal-section">
+                  <div class="auto-renewal-toggle">
+                    <label class="toggle-label">
+                      <input 
+                        type="checkbox" 
+                        bind:checked={subscriptionData.auto_renew}
+                        on:change={handleToggleAutoRenewal}
+                        disabled={isTogglingAutoRenewal}
+                      />
+                      <span class="toggle-slider"></span>
+                      <span class="toggle-text">
+                        {subscriptionData.auto_renew ? 'Auto-Renewal: ON' : 'Auto-Renewal: OFF'}
+                      </span>
+                    </label>
+                    <p class="toggle-description">
+                      {subscriptionData.auto_renew 
+                        ? 'Your subscription will automatically renew on the next billing date.'
+                        : 'Your subscription will end on ' + formatDate(subscriptionData.end_date) + '. You can turn auto-renewal back on anytime before then.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              {/if}
             </div>
           </div>
 
@@ -346,18 +315,6 @@
           {/if}
 
           <!-- Subscription Actions -->
-          <div class="subscription-actions">
-            {#if subscriptionData.status === 'active' || subscriptionData.status === 'trial'}
-              <button 
-                type="button"
-                class="btn-danger" 
-                on:click={handleCancel}
-                disabled={isCanceling}
-              >
-                {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-              </button>
-            {/if}
-          </div>
         {/if}
       </div>
     </div>
@@ -628,10 +585,71 @@
     cursor: not-allowed;
   }
 
-  .subscription-actions {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #e9ecef;
+  .auto-renewal-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .auto-renewal-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .toggle-label input[type="checkbox"] {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background: #cbd5e1;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-label input[type="checkbox"]:checked + .toggle-slider {
+    background: #10b981;
+  }
+
+  .toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(26px);
+  }
+
+  .toggle-text {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  .toggle-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
   }
 
   @media (max-width: 768px) {

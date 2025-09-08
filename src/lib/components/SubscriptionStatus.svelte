@@ -10,8 +10,6 @@
   let currentSubscription: any = null;
   let isLoading = true;
   let error = '';
-  let isCanceling = false;
-  let isReactivating = false;
   let isUpgrading = false;
 
   onMount(async () => {
@@ -38,90 +36,6 @@
     }
   }
 
-  async function handleCancel() {
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
-      return;
-    }
-
-    try {
-      isCanceling = true;
-      const currentAuth = $auth;
-      if (!currentAuth.token) {
-        throw new Error('User not authenticated');
-      }
-
-      const result = await apiClient.cancelSubscription(currentAuth.token);
-      
-      // Reload subscription data
-      await loadCurrentSubscription();
-      
-      // Determine the appropriate tier and dates based on subscription status
-      let updateTier = currentSubscription?.tier;
-      let updateStartDate = currentSubscription?.start_date;
-      let updateEndDate = currentSubscription?.end_date;
-      
-      // If subscription is canceled, clear the subscription data
-      if (currentSubscription?.status === 'canceled') {
-        updateTier = null;
-        updateStartDate = null;
-        updateEndDate = null;
-        console.log('Subscription canceled - clearing subscription data');
-      }
-      
-      console.log('Updating subscription data:', { tier: updateTier, start_date: updateStartDate, end_date: updateEndDate });
-      
-      // Update user subscription data locally as fallback
-      await authMethods.updateUserSubscriptionData({
-        tier: updateTier,
-        start_date: updateStartDate,
-        end_date: updateEndDate
-      });
-      
-      // Refresh user data from backend to get updated subscription_tier
-      await authMethods.refreshUserData();
-      
-      // Notify parent component
-      dispatch('subscriptionUpdated', { action: 'canceled', message: result.message });
-    } catch (err: any) {
-      console.error('Failed to cancel subscription:', err);
-      error = err.message || 'Failed to cancel subscription';
-    } finally {
-      isCanceling = false;
-    }
-  }
-
-  async function handleReactivate() {
-    try {
-      isReactivating = true;
-      const currentAuth = $auth;
-      if (!currentAuth.token) {
-        throw new Error('User not authenticated');
-      }
-
-      const result = await apiClient.reactivateSubscription(currentAuth.token);
-      
-      // Reload subscription data
-      await loadCurrentSubscription();
-      
-      // Update user subscription data locally as fallback
-      await authMethods.updateUserSubscriptionData({
-        tier: currentSubscription?.tier,
-        start_date: currentSubscription?.start_date,
-        end_date: currentSubscription?.end_date
-      });
-      
-      // Refresh user data from backend to get updated subscription_tier
-      await authMethods.refreshUserData();
-      
-      // Notify parent component
-      dispatch('subscriptionUpdated', { action: 'reactivated', message: result.message });
-    } catch (err: any) {
-      console.error('Failed to reactivate subscription:', err);
-      error = err.message || 'Failed to reactivate subscription';
-    } finally {
-      isReactivating = false;
-    }
-  }
 
   async function handleBillingPortal() {
     try {
@@ -251,13 +165,6 @@
           {#if currentSubscription.status === 'active'}
             <button class="btn-secondary" on:click={handleBillingPortal}>
               Manage Billing
-            </button>
-            <button class="btn-danger" on:click={handleCancel} disabled={isCanceling}>
-              {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-            </button>
-          {:else if currentSubscription.status === 'canceled'}
-            <button class="btn-primary" on:click={handleReactivate} disabled={isReactivating}>
-              {isReactivating ? 'Reactivating...' : 'Reactivate'}
             </button>
           {:else if currentSubscription.status === 'expired'}
             <button class="btn-primary" on:click={() => dispatch('upgrade')}>
