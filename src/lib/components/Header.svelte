@@ -36,8 +36,16 @@
   
   // Subscribe to auth store
   auth.subscribe(state => {
-    console.log('Header: Auth store updated:', state);
-    console.log('Header: User subscription_tier:', state.user?.subscription_tier);
+    // Only log significant changes, not every update
+    if (authState.user?.id !== state.user?.id || 
+        authState.user?.subscription_tier !== state.user?.subscription_tier ||
+        authState.isLoading !== state.isLoading) {
+      console.log('Header: Auth store updated:', {
+        userId: state.user?.id,
+        subscriptionTier: state.user?.subscription_tier,
+        isLoading: state.isLoading
+      });
+    }
     authState = state;
   });
   

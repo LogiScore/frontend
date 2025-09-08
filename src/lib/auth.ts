@@ -227,10 +227,15 @@ export const auth = writable<AuthState>({
   showInactivityPrompt: false
 });
 
-// Subscribe to auth changes for debugging
-if (typeof window !== 'undefined') {
+// Subscribe to auth changes for debugging (only in development)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   auth.subscribe(state => {
-    // Auth state changed
+    // Auth state changed - only log in development
+    console.log('Auth store updated:', {
+      hasUser: !!state.user,
+      hasToken: !!state.token,
+      isLoading: state.isLoading
+    });
   });
 }
 
@@ -452,6 +457,17 @@ export const authMethods = {
         return;
       }
 
+      // Check if the update is actually needed to prevent unnecessary updates
+      const needsUpdate = 
+        (subscriptionData.tier !== undefined && currentState.user.subscription_tier !== subscriptionData.tier) ||
+        (subscriptionData.start_date !== undefined && currentState.user.subscription_start_date !== subscriptionData.start_date) ||
+        (subscriptionData.end_date !== undefined && currentState.user.subscription_end_date !== subscriptionData.end_date);
+
+      if (!needsUpdate) {
+        console.log('No subscription data changes needed, skipping update');
+        return;
+      }
+
       // Update fields that are provided (including null values for clearing)
       const updatedUser = {
         ...currentState.user,
@@ -460,9 +476,10 @@ export const authMethods = {
         ...(subscriptionData.end_date !== undefined && { subscription_end_date: subscriptionData.end_date })
       };
       
-      console.log('Before local update - current user subscription_tier:', currentState.user.subscription_tier);
-      console.log('Local update data:', subscriptionData);
-      console.log('After local update - new user subscription_tier:', updatedUser.subscription_tier);
+      console.log('Updating user subscription data:', {
+        from: currentState.user.subscription_tier,
+        to: updatedUser.subscription_tier
+      });
       
       // Update auth store with new subscription data
       saveUser(updatedUser);
@@ -471,7 +488,6 @@ export const authMethods = {
         user: updatedUser
       }));
       
-      console.log('User subscription data updated locally:', subscriptionData);
     } catch (error: any) {
       console.error('Failed to update user subscription data:', error.message);
     }
