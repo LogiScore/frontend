@@ -156,8 +156,12 @@
                 </div>
                 <div class="subscription-info">
                   <span class="subscription-label">Plan:</span>
-                  <span class="subscription-value" class:premium={authState.user.subscription_tier !== 'free'}>
-                    {authState.user.subscription_tier === 'free' ? 'Free Plan' : authState.user.subscription_tier}
+                  <span class="subscription-value" class:premium={authState.user.subscription_tier && authState.user.subscription_tier !== 'free'}>
+                    {authState.user.subscription_tier === 'free' ? 'Free Plan' : (authState.user.subscription_tier || 'Free Plan')}
+                  </span>
+                  <!-- Debug info -->
+                  <span style="font-size: 10px; color: #666; margin-left: 5px;">
+                    (Debug: {authState.user.subscription_tier || 'undefined'})
                   </span>
                 </div>
               </div>
