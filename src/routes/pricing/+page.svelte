@@ -2,6 +2,8 @@
   import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
   import { auth } from '$lib/auth';
   import { getPlansForUserType, getAllPlans } from '$lib/subscription-plans';
+  import { apiClient } from '$lib/api';
+  import { onMount } from 'svelte';
 
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -29,10 +31,54 @@
   // Get all plans for non-logged-in users
   $: allPlans = getAllPlans();
 
+  // Current subscription data
+  let currentSubscription: any = null;
+  let isLoadingSubscription = false;
+
   // Subscription modal state
   let showSubscriptionModal = false;
   let selectedPlanForModal: any = null;
   const TRIAL_DURATION = 7; // Standard 7-day trial period
+
+  // Load current subscription data
+  onMount(async () => {
+    if (authState.user && authState.token) {
+      await loadCurrentSubscription();
+    }
+  });
+
+  // Reactive statement to load subscription when auth state changes
+  $: if (authState.user && authState.token && !currentSubscription) {
+    loadCurrentSubscription();
+  }
+
+  async function loadCurrentSubscription() {
+    if (!authState.user || !authState.token) return;
+    
+    try {
+      isLoadingSubscription = true;
+      const subscription = await apiClient.getCurrentSubscription(authState.token);
+      currentSubscription = subscription;
+    } catch (err: any) {
+      console.error('Failed to load current subscription:', err);
+      // Don't show error to user, just log it
+    } finally {
+      isLoadingSubscription = false;
+    }
+  }
+
+  // Function to check if a plan is the user's current plan
+  function isCurrentPlan(plan: any): boolean {
+    if (!currentSubscription) return false;
+    
+    // Match by tier name (e.g., "subscription_monthly", "subscription_annual")
+    const tierName = currentSubscription.tier?.toLowerCase();
+    const planName = plan.name?.toLowerCase().replace(/\s+/g, '_');
+    
+    return tierName === planName || 
+           tierName === plan.id?.toString() ||
+           (plan.price === 0 && (tierName === 'free' || !tierName));
+  }
 
   function openSubscriptionModal(plan?: any) {
     if (!authState.user) {
@@ -125,7 +171,9 @@
                 </div>
                 
                 <div class="plan-actions">
-                  {#if plan.price === 0}
+                  {#if isCurrentPlan(plan)}
+                    <button class="btn-current" disabled>Current Plan</button>
+                  {:else if plan.price === 0}
                     <button class="btn-secondary" on:click={() => openSubscriptionModal(plan)}>Get Started Free</button>
                   {:else}
                     <button class="btn-primary" on:click={() => openSubscriptionModal(plan)}>
@@ -312,6 +360,22 @@
 
   .btn-secondary:hover {
     background: #545b62;
+  }
+
+  .btn-current {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: default;
+    opacity: 0.8;
+  }
+
+  .btn-current:disabled {
+    cursor: not-allowed;
   }
 
 
