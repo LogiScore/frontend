@@ -71,13 +71,28 @@
   function isCurrentPlan(plan: any): boolean {
     if (!currentSubscription) return false;
     
-    // Match by tier name (e.g., "subscription_monthly", "subscription_annual")
     const tierName = currentSubscription.tier?.toLowerCase();
-    const planName = plan.name?.toLowerCase().replace(/\s+/g, '_');
     
-    return tierName === planName || 
-           tierName === plan.id?.toString() ||
-           (plan.price === 0 && (tierName === 'free' || !tierName));
+    // Handle free plan
+    if (plan.price === 0 && (tierName === 'free' || !tierName)) {
+      return true;
+    }
+    
+    // Map subscription tier names to plan names
+    if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+      return true;
+    }
+    
+    if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+      return true;
+    }
+    
+    if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+      return true;
+    }
+    
+    // Fallback matching by plan ID
+    return tierName === plan.id?.toString();
   }
 
   function openSubscriptionModal(plan?: any) {
