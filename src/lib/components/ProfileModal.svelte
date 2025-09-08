@@ -20,8 +20,6 @@
   let subscriptionData: any = null;
   let isLoadingSubscription = false;
   let subscriptionError = '';
-  let isCanceling = false;
-  let isReactivating = false;
   let isTogglingAutoRenewal = false;
   let isOpeningBillingPortal = false;
   let hasLoadedSubscription = false;
@@ -89,84 +87,6 @@
     }
   }
 
-  async function handleCancelSubscription() {
-    if (!authState.token) {
-      alert('Authentication required');
-      return;
-    }
-
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
-      return;
-    }
-
-    try {
-      isCanceling = true;
-      const result = await apiClient.cancelSubscription(authState.token);
-      await loadSubscriptionData(); // Reload subscription data
-      
-      // Determine the appropriate tier and dates based on subscription status
-      let updateTier = subscriptionData?.tier;
-      let updateStartDate = subscriptionData?.start_date;
-      let updateEndDate = subscriptionData?.end_date;
-      
-      // If subscription is canceled, clear the subscription data
-      if (subscriptionData?.status === 'canceled') {
-        updateTier = null;
-        updateStartDate = null;
-        updateEndDate = null;
-        console.log('Subscription canceled - clearing subscription data');
-      }
-      
-      console.log('Updating subscription data:', { tier: updateTier, start_date: updateStartDate, end_date: updateEndDate });
-      
-      // Update user subscription data locally as fallback
-      await authMethods.updateUserSubscriptionData({
-        tier: updateTier,
-        start_date: updateStartDate,
-        end_date: updateEndDate
-      });
-      
-      // Refresh user data from backend to get updated subscription_tier
-      await authMethods.refreshUserData();
-      
-      alert(result.message);
-    } catch (err: any) {
-      console.error('Failed to cancel subscription:', err);
-      alert(err.message || 'Failed to cancel subscription');
-    } finally {
-      isCanceling = false;
-    }
-  }
-
-  async function handleReactivateSubscription() {
-    if (!authState.token) {
-      alert('Authentication required');
-      return;
-    }
-
-    try {
-      isReactivating = true;
-      const result = await apiClient.reactivateSubscription(authState.token);
-      await loadSubscriptionData(); // Reload subscription data
-      
-      // Update user subscription data locally as fallback
-      await authMethods.updateUserSubscriptionData({
-        tier: subscriptionData?.tier,
-        start_date: subscriptionData?.start_date,
-        end_date: subscriptionData?.end_date
-      });
-      
-      // Refresh user data from backend to get updated subscription_tier
-      await authMethods.refreshUserData();
-      
-      alert(result.message);
-    } catch (err: any) {
-      console.error('Failed to reactivate subscription:', err);
-      alert(err.message || 'Failed to reactivate subscription');
-    } finally {
-      isReactivating = false;
-    }
-  }
 
   function handleBillingPortal() {
     showSubscriptionManagement = true;
@@ -371,6 +291,7 @@
                   <label>Access Ends</label>
                   <div class="subscription-value">
                     {formatDate(subscriptionData.end_date)}
+                    <span class="access-note">(Tier changes to Free)</span>
                   </div>
                 </div>
               {/if}
@@ -401,19 +322,9 @@
                 <button class="btn-secondary" on:click={handleBillingPortal}>
                   Manage Billing
                 </button>
-                <button class="btn-danger" on:click={handleCancelSubscription} disabled={isCanceling}>
-                  {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-                </button>
-              {:else if subscriptionData.status === 'canceled'}
-                <button class="btn-primary" on:click={handleReactivateSubscription} disabled={isReactivating}>
-                  {isReactivating ? 'Reactivating...' : 'Reactivate Subscription'}
-                </button>
               {:else if subscriptionData.status === 'trial'}
                 <button class="btn-secondary" on:click={handleBillingPortal}>
                   Manage Billing
-                </button>
-                <button class="btn-danger" on:click={handleCancelSubscription} disabled={isCanceling}>
-                  {isCanceling ? 'Canceling...' : 'Cancel Trial'}
                 </button>
               {:else if subscriptionData.status === 'expired'}
                 <button class="btn-primary" on:click={() => window.location.href = '/pricing'}>
@@ -605,6 +516,13 @@
     color: #666;
     font-size: 0.9rem;
     font-style: italic;
+  }
+
+  .access-note {
+    color: #666;
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-left: 8px;
   }
 
   .auto-renew {
