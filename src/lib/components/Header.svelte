@@ -22,6 +22,13 @@
   let showProfileModal = false;
   let showChangePasswordModal = false;
   let showReviewSubscriptionModal = false;
+
+  // Function to determine if subscription tier is premium
+  function isPremiumTier(tier: string | null | undefined): boolean {
+    if (!tier) return false;
+    const basicTiers = ['free', 'basic', 'trial'];
+    return !basicTiers.includes(tier.toLowerCase());
+  }
   let authModalMode: 'signin' | 'signup' = 'signin';
   
   // Check if current page is admin page
@@ -156,8 +163,8 @@
                 </div>
                 <div class="subscription-info">
                   <span class="subscription-label">Plan:</span>
-                  <span class="subscription-value" class:premium={authState.user.subscription_tier && authState.user.subscription_tier !== 'free'}>
-                    {authState.user.subscription_tier === 'free' ? 'Free Plan' : (authState.user.subscription_tier || 'Free Plan')}
+                  <span class="subscription-value" class:premium={isPremiumTier(authState.user.subscription_tier)}>
+                    {authState.user.subscription_tier || 'No Plan'}
                   </span>
                   <!-- Debug info -->
                   <span style="font-size: 10px; color: #666; margin-left: 5px;">
