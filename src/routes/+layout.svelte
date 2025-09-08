@@ -16,8 +16,8 @@
 	injectAnalytics();
 	
 	// Lazy load components that aren't immediately needed
-	let InactivityPrompt: any;
-	let CookieConsent: any;
+	let InactivityPrompt;
+	let CookieConsent;
 	
 	onMount(async () => {
 		// Load these components after the initial page load to reduce preload warnings
