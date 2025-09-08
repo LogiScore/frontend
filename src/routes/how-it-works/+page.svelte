@@ -1,5 +1,21 @@
 <script lang="ts">
+  import { auth } from '$lib/auth';
   
+  let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
+    user: null,
+    token: null,
+    isLoading: false,
+    error: null
+  };
+
+  // Subscribe to auth store
+  auth.subscribe(state => {
+    authState = state;
+  });
+
+  // Determine user type
+  $: userType = authState.user?.user_type || 'shipper';
+  $: isForwarder = userType === 'forwarder';
 </script>
 
 <svelte:head>
@@ -17,7 +33,12 @@
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-item active">How It Works</span>
     </div>
-    <p class="page-description">A simple 3-step process to find the perfect freight forwarder for your business</p>
+    <p class="page-description">
+      {isForwarder 
+        ? 'Learn how LogiScore helps freight forwarders monitor their reputation and showcase their strengths to potential customers.'
+        : 'A simple 3-step process to find the perfect freight forwarder for your business'
+      }
+    </p>
   </div>
 </section>
 
@@ -28,13 +49,24 @@
       <div class="step">
         <div class="step-number">1</div>
         <div class="step-content">
-          <h3>Search & Discover</h3>
-          <p>Begin your journey by exploring our comprehensive database of freight forwarders. Use our search functionality to find companies that match your requirements.</p>
+          <h3>{isForwarder ? 'Monitor & Analyze' : 'Search & Discover'}</h3>
+          <p>
+            {isForwarder 
+              ? 'Track your company\'s performance and reputation on LogiScore. Monitor ratings, reviews, and industry standing to understand your market position.'
+              : 'Begin your journey by exploring our comprehensive database of freight forwarders. Use our search functionality to find companies that match your requirements.'
+            }
+          </p>
           <div class="step-features">
             <ul>
-              <li>Search by company name or location</li>
-              <li>Browse detailed company profiles with company information</li>
-              <li>View company ratings and reviews</li>
+              {#if isForwarder}
+                <li>Monitor your company ratings and reviews</li>
+                <li>Track performance across 8 key categories</li>
+                <li>Analyze trends and competitor comparisons</li>
+              {:else}
+                <li>Search by company name or location</li>
+                <li>Browse detailed company profiles with company information</li>
+                <li>View company ratings and reviews</li>
+              {/if}
             </ul>
           </div>
         </div>
@@ -43,14 +75,26 @@
       <div class="step">
         <div class="step-number">2</div>
         <div class="step-content">
-          <h3>Compare & Evaluate</h3>
-          <p>Make informed decisions by analyzing detailed performance metrics and authentic customer experiences. Our comprehensive rating system covers 8 key categories to give you a complete picture.</p>
+          <h3>{isForwarder ? 'Engage & Respond' : 'Compare & Evaluate'}</h3>
+          <p>
+            {isForwarder 
+              ? 'Engage with your customers and respond to reviews professionally. Use insights to improve your services and showcase your strengths to potential customers.'
+              : 'Make informed decisions by analyzing detailed performance metrics and authentic customer experiences. Our comprehensive rating system covers 8 key categories to give you a complete picture.'
+            }
+          </p>
           <div class="step-features">
             <ul>
-              <li>Compare multiple companies side-by-side</li>
-              <li>Review detailed category ratings and scores</li>
-              <li>Read authentic customer reviews and testimonials</li>
-              <li>Access company information and credentials</li>
+              {#if isForwarder}
+                <li>Respond to customer reviews professionally</li>
+                <li>Engage with customers through the platform</li>
+                <li>Showcase your company strengths and achievements</li>
+                <li>Access detailed analytics and insights</li>
+              {:else}
+                <li>Compare multiple companies side-by-side</li>
+                <li>Review detailed category ratings and scores</li>
+                <li>Read authentic customer reviews and testimonials</li>
+                <li>Access company information and credentials</li>
+              {/if}
             </ul>
           </div>
         </div>
@@ -59,14 +103,26 @@
       <div class="step">
         <div class="step-number">3</div>
         <div class="step-content">
-          <h3>Review & Share</h3>
-          <p>Contribute to the community by sharing your experiences. Your reviews help other businesses make better decisions while building transparency in the logistics industry.</p>
+          <h3>{isForwarder ? 'Grow & Improve' : 'Review & Share'}</h3>
+          <p>
+            {isForwarder 
+              ? 'Use LogiScore insights to continuously improve your services and grow your business. Leverage analytics to identify areas for improvement and celebrate your successes.'
+              : 'Contribute to the community by sharing your experiences. Your reviews help other businesses make better decisions while building transparency in the logistics industry.'
+            }
+          </p>
           <div class="step-features">
             <ul>
-              <li>Write comprehensive reviews with category ratings</li>
-              <li>Share specific experiences and recommendations</li>
-              <li>Help maintain quality standards in the industry</li>
-              <li>Add new freight forwarders during the review process</li>
+              {#if isForwarder}
+                <li>Use analytics to identify improvement areas</li>
+                <li>Track performance trends over time</li>
+                <li>Celebrate achievements and milestones</li>
+                <li>Grow your business with data-driven insights</li>
+              {:else}
+                <li>Write comprehensive reviews with category ratings</li>
+                <li>Share specific experiences and recommendations</li>
+                <li>Help maintain quality standards in the industry</li>
+                <li>Add new freight forwarders during the review process</li>
+              {/if}
             </ul>
           </div>
         </div>
@@ -133,7 +189,8 @@
   </div>
 </section>
 
-<!-- Review Process -->
+<!-- Review Process - Hidden for forwarders -->
+{#if !isForwarder}
 <section class="review-process">
   <div class="container">
     <h2>How Reviews Work</h2>
@@ -158,6 +215,7 @@
     </div>
   </div>
 </section>
+{/if}
 
 <!-- User Types -->
 <section class="user-types">
@@ -196,10 +254,20 @@
   <div class="container">
     <div class="cta-content">
       <h2>Ready to Get Started?</h2>
-      <p>Join thousands of businesses making informed logistics decisions with LogiScore.</p>
+      <p>
+        {isForwarder 
+          ? 'Join LogiScore to monitor your reputation, engage with customers, and grow your freight forwarding business.'
+          : 'Join thousands of businesses making informed logistics decisions with LogiScore.'
+        }
+      </p>
       <div class="cta-buttons">
-        <a href="/search" class="btn-primary">Start Searching</a>
-        <a href="/pricing" class="btn-secondary">View Pricing</a>
+        {#if isForwarder}
+          <a href="/search" class="btn-primary">Monitor Your Company</a>
+          <a href="/pricing" class="btn-secondary">View Pricing</a>
+        {:else}
+          <a href="/search" class="btn-primary">Start Searching</a>
+          <a href="/pricing" class="btn-secondary">View Pricing</a>
+        {/if}
       </div>
     </div>
   </div>
