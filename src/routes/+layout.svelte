@@ -2,9 +2,10 @@
 	import { BUILD_ID, CACHE_BUSTER_CONFIG } from '$lib/build-cache-buster.js';
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import InactivityPrompt from '$lib/components/InactivityPrompt.svelte';
+	import CookieConsent from '$lib/components/CookieConsent.svelte';
 	import { page } from '$app/stores';
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
-	import { onMount } from 'svelte';
 	
 	// Force cache buster to be included in build
 	console.log('Layout loaded with cache buster:', CACHE_BUSTER_CONFIG);
@@ -14,21 +15,6 @@
 	
 	// Initialize Vercel Analytics
 	injectAnalytics();
-	
-	// Lazy load components that aren't immediately needed
-	let InactivityPrompt;
-	let CookieConsent;
-	
-	onMount(async () => {
-		// Load these components after the initial page load to reduce preload warnings
-		const [inactivityModule, cookieModule] = await Promise.all([
-			import('$lib/components/InactivityPrompt.svelte'),
-			import('$lib/components/CookieConsent.svelte')
-		]);
-		
-		InactivityPrompt = inactivityModule.default;
-		CookieConsent = cookieModule.default;
-	});
 </script>
 
 <Header hideNavigation={isAdminPage} />
