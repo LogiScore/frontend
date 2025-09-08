@@ -266,8 +266,13 @@
                 </div>
               {:else if subscriptionData.status === 'active'}
                 <div class="billing-info">
-                  <p><strong>Next billing:</strong> {formatDate(subscriptionData.next_billing_date)}</p>
-                  <p><strong>Subscription ends:</strong> {formatDate(subscriptionData.end_date)}</p>
+                  {#if subscriptionData.auto_renew}
+                    <p><strong>Next billing:</strong> {formatDate(subscriptionData.next_billing_date)}</p>
+                    <p><strong>Subscription ends:</strong> {formatDate(subscriptionData.end_date)}</p>
+                  {:else}
+                    <p><strong>Subscription ends:</strong> {formatDate(subscriptionData.end_date)}</p>
+                    <p><strong>Final charge:</strong> Same amount as current tier on this date</p>
+                  {/if}
                 </div>
               {/if}
               
@@ -290,7 +295,7 @@
                     <p class="toggle-description">
                       {subscriptionData.auto_renew 
                         ? 'Your subscription will automatically renew on the next billing date.'
-                        : 'Your subscription will end on ' + formatDate(subscriptionData.end_date) + '. You can turn auto-renewal back on anytime before then.'
+                        : 'Your subscription will end on ' + formatDate(subscriptionData.end_date) + '. You will be charged the same amount on this date to continue your current tier.'
                       }
                     </p>
                   </div>

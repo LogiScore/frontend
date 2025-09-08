@@ -286,12 +286,12 @@
                     {formatDate(subscriptionData.end_date)}
                   </div>
                 </div>
-              {:else if subscriptionData.status === 'canceled'}
+              {:else if subscriptionData.status === 'canceled' || (subscriptionData.status === 'active' && !subscriptionData.auto_renew)}
                 <div class="subscription-field">
-                  <label>Access Ends</label>
+                  <label>Subscription Ends</label>
                   <div class="subscription-value">
                     {formatDate(subscriptionData.end_date || subscriptionData.current_period_end)}
-                    <span class="access-note">(Tier changes to Free on this date)</span>
+                    <span class="access-note">(Auto-renewal is OFF - will be charged on this date)</span>
                   </div>
                 </div>
               {/if}
