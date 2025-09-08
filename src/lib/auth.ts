@@ -413,6 +413,9 @@ export const authMethods = {
 
       const user = await apiClient.getCurrentUser(currentState.token);
       
+      console.log('User data refreshed from backend:', user);
+      console.log('User subscription_tier from backend:', user.subscription_tier);
+      
       // Update auth store with fresh user data
       saveUser(user);
       auth.update(state => ({
@@ -447,6 +450,10 @@ export const authMethods = {
         ...(subscriptionData.start_date && { subscription_start_date: subscriptionData.start_date }),
         ...(subscriptionData.end_date && { subscription_end_date: subscriptionData.end_date })
       };
+      
+      console.log('Before local update - current user subscription_tier:', currentState.user.subscription_tier);
+      console.log('Local update data:', subscriptionData);
+      console.log('After local update - new user subscription_tier:', updatedUser.subscription_tier);
       
       // Update auth store with new subscription data
       saveUser(updatedUser);

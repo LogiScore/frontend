@@ -155,6 +155,10 @@
       // Reload subscription data
       await loadSubscriptionData();
       
+      console.log('After cancellation - subscriptionData:', subscriptionData);
+      console.log('After cancellation - subscription status:', subscriptionData?.status);
+      console.log('After cancellation - subscription tier:', subscriptionData?.tier);
+      
       // Update user subscription data locally as fallback
       await authMethods.updateUserSubscriptionData({
         tier: subscriptionData?.tier,
