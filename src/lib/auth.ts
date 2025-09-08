@@ -421,6 +421,8 @@ export const authMethods = {
       if (currentState.user?.subscription_tier === null && user.subscription_tier !== null) {
         console.log('Overriding backend subscription_tier to maintain null for canceled subscription');
         user.subscription_tier = null;
+        user.subscription_start_date = null;
+        user.subscription_end_date = null;
       }
       
       // Update auth store with fresh user data
@@ -450,12 +452,12 @@ export const authMethods = {
         return;
       }
 
-      // Only update fields that are provided
+      // Update fields that are provided (including null values for clearing)
       const updatedUser = {
         ...currentState.user,
-        ...(subscriptionData.tier && { subscription_tier: subscriptionData.tier }),
-        ...(subscriptionData.start_date && { subscription_start_date: subscriptionData.start_date }),
-        ...(subscriptionData.end_date && { subscription_end_date: subscriptionData.end_date })
+        ...(subscriptionData.tier !== undefined && { subscription_tier: subscriptionData.tier }),
+        ...(subscriptionData.start_date !== undefined && { subscription_start_date: subscriptionData.start_date }),
+        ...(subscriptionData.end_date !== undefined && { subscription_end_date: subscriptionData.end_date })
       };
       
       console.log('Before local update - current user subscription_tier:', currentState.user.subscription_tier);
