@@ -1,5 +1,17 @@
 <script lang="ts">
-  // Footer component for consistent layout across all pages
+  import { auth } from '$lib/auth';
+  
+  let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
+    user: null,
+    token: null,
+    isLoading: false,
+    error: null
+  };
+
+  // Subscribe to auth store
+  auth.subscribe(state => {
+    authState = state;
+  });
 </script>
 
 <footer class="footer">
@@ -22,7 +34,9 @@
         </div>
         <ul>
           <li><a href="/search">Search Companies</a></li>
-          <li><a href="/reviews">Browse Reviews</a></li>
+          {#if !authState.user || authState.user.user_type !== 'forwarder'}
+            <li><a href="/reviews">Browse Reviews</a></li>
+          {/if}
           <li><a href="/how-it-works">How It Works</a></li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/faq">FAQ</a></li>
