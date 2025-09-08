@@ -290,13 +290,13 @@
                 <div class="subscription-field">
                   <label>Access Ends</label>
                   <div class="subscription-value">
-                    {formatDate(subscriptionData.end_date)}
-                    <span class="access-note">(Tier changes to Free)</span>
+                    {formatDate(subscriptionData.end_date || subscriptionData.current_period_end)}
+                    <span class="access-note">(Tier changes to Free on this date)</span>
                   </div>
                 </div>
               {/if}
 
-              {#if subscriptionData.auto_renew !== undefined}
+              {#if subscriptionData.auto_renew !== undefined && subscriptionData.tier && subscriptionData.tier !== 'free'}
                 <div class="subscription-field">
                   <label>Auto Renewal</label>
                   <div class="subscription-value">
