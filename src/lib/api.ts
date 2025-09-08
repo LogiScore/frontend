@@ -1817,7 +1817,7 @@ class ApiClient {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          refresh_token: token
+          token: token
         }),
       });
     } catch (error) {
