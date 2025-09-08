@@ -94,9 +94,7 @@
     if (!isAnnualSubscriber) return;
     
     try {
-      console.log('Loading user subscriptions for search page...');
       const result = await apiClient.getReviewSubscriptions(token);
-      console.log('Search page API response:', result);
       
       // Handle both response formats: direct array or object with subscriptions property
       if (Array.isArray(result)) {
@@ -104,13 +102,9 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         userSubscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format for search page:', result);
         userSubscriptions = [];
       }
-      
-      console.log('Loaded user subscriptions for search page:', userSubscriptions);
     } catch (err: any) {
-      console.error('Failed to load user subscriptions for search page:', err);
       userSubscriptions = [];
     }
   }
@@ -120,9 +114,6 @@
       sub.location_country === country && 
       sub.location_city === city
     );
-    console.log(`Search page - Checking location subscription for ${city}, ${country}:`, isSubscribed);
-    console.log('Search page - Location button should be green:', isSubscribed);
-    console.log('Search page - User subscriptions:', userSubscriptions);
     return isSubscribed;
   }
 
@@ -131,9 +122,6 @@
       sub.location_country === country && 
       !sub.location_city
     );
-    console.log(`Search page - Checking country subscription for ${country}:`, isSubscribed);
-    console.log('Search page - Country button should be green:', isSubscribed);
-    console.log('Search page - User subscriptions:', userSubscriptions);
     return isSubscribed;
   }
 
@@ -173,25 +161,20 @@
       
       if (subscription) {
         // Unsubscribe
-        console.log('Unsubscribing from city:', city, selectedCountry);
         await apiClient.deleteReviewSubscription(authToken, subscription.id);
-        console.log('Successfully unsubscribed from city notifications');
       } else {
         // Subscribe
-        console.log('Subscribing to city:', city, selectedCountry);
         const subscriptionData = {
           location_country: selectedCountry,
           location_city: city,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
         await apiClient.createReviewSubscription(authToken, subscriptionData);
-        console.log('Successfully subscribed to city notifications');
       }
       
       // Reload subscription list after changes
       await loadUserSubscriptions(authToken);
     } catch (err: any) {
-      console.error('Failed to toggle city notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -234,24 +217,19 @@
       
       if (subscription) {
         // Unsubscribe
-        console.log('Unsubscribing from country:', country);
         await apiClient.deleteReviewSubscription(authToken, subscription.id);
-        console.log('Successfully unsubscribed from country notifications');
       } else {
         // Subscribe
-        console.log('Subscribing to country:', country);
         const subscriptionData = {
           location_country: country,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
         await apiClient.createReviewSubscription(authToken, subscriptionData);
-        console.log('Successfully subscribed to country notifications');
       }
       
       // Reload subscription list after changes
       await loadUserSubscriptions(authToken);
     } catch (err: any) {
-      console.error('Failed to toggle country notification subscription:', err);
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -259,7 +237,6 @@
   }
 
   function goBackToCities() {
-    console.log('Going back to cities');
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
@@ -304,21 +281,18 @@
               const score = parseFloat(categoryData.average_rating) || 0;
               // Use backend review count (now should be correct with city/country filtering)
               const count = parseInt(categoryData.total_reviews) || 0;
-              console.log(`Category ${categoryId}: Raw score ${categoryData.average_rating}, Review count: ${count}`);
               return {
                 category_name: categoryId,
                 average_score: score,
                 review_count: count
               };
             });
-            console.log('Final category_scores for', company.name, ':', company.category_scores);
           } else {
             company.category_scores = [];
           }
           
           return company;
         } catch (error) {
-          console.error(`Failed to fetch company ${id}:`, error);
           return null;
         }
       });
@@ -332,7 +306,6 @@
       }
       
     } catch (err: any) {
-      console.error('Error fetching companies for city:', err);
       error = 'Failed to load companies for this city. Please try again.';
       companiesForLocation = [];
       searchResults = [];
@@ -365,10 +338,8 @@
         if (reviews.length > 0) {
           // Use the actual country name from the first review instead of the search query
           selectedCountry = reviews[0].country || countryQuery;
-          console.log(`Search query: "${countryQuery}", Actual country name: "${selectedCountry}"`);
         } else {
           selectedCountry = countryQuery;
-          console.log(`No reviews found, using search query: "${selectedCountry}"`);
         }
         
         // Extract unique cities from reviews
@@ -379,7 +350,6 @@
         searchResults = [];
       }
     } catch (err: any) {
-      console.error('Search error:', err);
       error = 'Search failed. Please try again.';
     } finally {
       isLoading = false;

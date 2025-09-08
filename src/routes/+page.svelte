@@ -44,7 +44,7 @@
         showAuthModal = true;
       }
     } catch (error) {
-      console.error('Failed to load homepage data:', error);
+      // Silently handle homepage data loading errors
     } finally {
       isLoading = false;
     }
