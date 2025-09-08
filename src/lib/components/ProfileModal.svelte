@@ -59,7 +59,10 @@
     // Load subscription data only once when modal opens
     if (!hasLoadedSubscription && authState.token) {
       hasLoadedSubscription = true;
-      loadSubscriptionData();
+      // Add small delay to prevent rapid re-renders
+      setTimeout(() => {
+        loadSubscriptionData();
+      }, 50);
     }
   }
 

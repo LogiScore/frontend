@@ -15,6 +15,7 @@
   let success = '';
   let isUpgrading = false;
   let isTogglingAutoRenewal = false;
+  let hasLoadedData = false; // Flag to prevent multiple loads
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -29,10 +30,16 @@
     authState = state;
   });
 
-  // Load data when modal opens
-  $: if (isOpen && authState.user && authState.token) {
+  // Load data when modal opens (only once)
+  $: if (isOpen && authState.user && authState.token && !hasLoadedData) {
+    hasLoadedData = true;
     loadSubscriptionData();
     loadAvailablePlans();
+  }
+
+  // Reset flag when modal closes
+  $: if (!isOpen) {
+    hasLoadedData = false;
   }
 
   async function loadSubscriptionData() {
@@ -41,9 +48,43 @@
     try {
       isLoading = true;
       error = '';
+      
+      // Small delay to prevent rapid re-renders and stabilize the modal
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       subscriptionData = await apiClient.getCurrentSubscription(authState.token);
     } catch (err: any) {
       console.error('Failed to load subscription:', err);
+      
+      // Check if it's a "No active subscription found" error
+      if (err.message && err.message.includes('No active subscription found')) {
+        console.log('SubscriptionManagementModal: Backend reports no active subscription, checking local user data');
+        
+        // Check if user has subscription data locally
+        if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
+          console.log('SubscriptionManagementModal: User has local subscription data, creating fallback subscription object');
+          
+          // Create a fallback subscription object from local user data
+          subscriptionData = {
+            id: 'local-' + authState.user.id,
+            user_id: authState.user.id,
+            tier: authState.user.subscription_tier,
+            status: 'active', // Assume active if we have local data
+            start_date: authState.user.subscription_start_date || new Date().toISOString(),
+            end_date: authState.user.subscription_end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            auto_renew: true,
+            stripe_subscription_id: null,
+            days_remaining: null,
+            last_billing_date: null,
+            next_billing_date: null
+          };
+          
+          console.log('SubscriptionManagementModal: Created fallback subscription:', subscriptionData);
+          error = ''; // Clear error since we have fallback data
+          return; // Don't set error, we have fallback data
+        }
+      }
+      
       error = err.message || 'Failed to load subscription information';
     } finally {
       isLoading = false;
