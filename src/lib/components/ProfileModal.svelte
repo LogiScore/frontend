@@ -104,9 +104,13 @@
       const result = await apiClient.cancelSubscription(authState.token);
       await loadSubscriptionData(); // Reload subscription data
       
+      // When subscription is canceled, set tier to 'free' regardless of what backend returns
+      const canceledTier = subscriptionData?.status === 'canceled' ? 'free' : subscriptionData?.tier;
+      console.log('Setting subscription tier to:', canceledTier);
+      
       // Update user subscription data locally as fallback
       await authMethods.updateUserSubscriptionData({
-        tier: subscriptionData?.tier,
+        tier: canceledTier,
         start_date: subscriptionData?.start_date,
         end_date: subscriptionData?.end_date
       });

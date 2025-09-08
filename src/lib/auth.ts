@@ -416,6 +416,13 @@ export const authMethods = {
       console.log('User data refreshed from backend:', user);
       console.log('User subscription_tier from backend:', user.subscription_tier);
       
+      // Check if we need to override the backend data for canceled subscriptions
+      // This prevents the backend from overriding our local "free" tier for canceled subscriptions
+      if (currentState.user?.subscription_tier === 'free' && user.subscription_tier !== 'free') {
+        console.log('Overriding backend subscription_tier to maintain "free" for canceled subscription');
+        user.subscription_tier = 'free';
+      }
+      
       // Update auth store with fresh user data
       saveUser(user);
       auth.update(state => ({
