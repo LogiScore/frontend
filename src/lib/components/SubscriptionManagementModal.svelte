@@ -154,6 +154,13 @@
       // Update local subscription data
       subscriptionData.auto_renew = newAutoRenewStatus;
       
+      // Update user subscription data to keep header in sync
+      await authMethods.updateUserSubscriptionData({
+        tier: subscriptionData.tier,
+        start_date: subscriptionData.start_date,
+        end_date: subscriptionData.end_date
+      });
+      
       success = result.message || `Auto-renewal ${newAutoRenewStatus ? 'enabled' : 'disabled'} successfully!`;
       
       // Notify parent
