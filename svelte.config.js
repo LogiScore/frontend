@@ -23,7 +23,10 @@ const config = {
 		// Configure service worker for better caching
 		serviceWorker: {
 			register: false // Disable if not using service worker
-		}
+		},
+		
+		// Optimize preloading strategy
+		preloadStrategy: 'modulepreload'
 	}
 };
 

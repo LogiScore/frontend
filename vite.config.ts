@@ -46,7 +46,9 @@ export default defineConfig({
 					}
 				}
 			}
-		}
+		},
+		// Reduce chunk size warnings
+		chunkSizeWarningLimit: 1000
 	},
 	
 	// Reduce console noise in development
