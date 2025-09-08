@@ -1961,7 +1961,7 @@ class ApiClient {
   // ===== NEW METHOD: updateAutoRenewal =====
   async updateAutoRenewal(token: string, autoRenew: boolean): Promise<{ message: string }> {
     const requestData = {
-      auto_renew: autoRenew
+      auto_renew_enabled: autoRenew
     };
     
     console.log('Sending updateAutoRenewal request to /api/subscriptions/auto-renewal');
@@ -2023,7 +2023,7 @@ class ApiClient {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        auto_renew: enabled
+        auto_renew_enabled: enabled
       }),
     });
   }
