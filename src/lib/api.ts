@@ -1958,6 +1958,29 @@ class ApiClient {
     return response;
   }
 
+  // ===== NEW METHOD: updateAutoRenewal =====
+  async updateAutoRenewal(token: string, autoRenew: boolean): Promise<{ message: string }> {
+    const requestData = {
+      auto_renew: autoRenew
+    };
+    
+    console.log('Sending updateAutoRenewal request to /api/subscriptions/auto-renewal');
+    console.log('Request data:', requestData);
+    console.log('Authorization token:', token.substring(0, 20) + '...');
+    
+    const response = await this.request<{ message: string }>('/api/subscriptions/auto-renewal', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    console.log('UpdateAutoRenewal response:', response);
+    return response;
+  }
+
   // ===== NEW METHOD: reactivateSubscription =====
   async reactivateSubscription(token: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/api/subscriptions/reactivate', {

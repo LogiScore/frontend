@@ -14,6 +14,7 @@
   let error = '';
   let success = '';
   let isUpgrading = false;
+  let isTogglingAutoRenewal = false;
 
   // Get user data from auth store
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -136,6 +137,36 @@
     }
   }
 
+  async function handleToggleAutoRenewal() {
+    if (!authState.token || !subscriptionData) return;
+
+    try {
+      isTogglingAutoRenewal = true;
+      error = '';
+      success = '';
+
+      // Toggle the auto-renewal status
+      const newAutoRenewStatus = !subscriptionData.auto_renew;
+      
+      // Call the API to update auto-renewal status
+      const result = await apiClient.updateAutoRenewal(authState.token, newAutoRenewStatus);
+      
+      // Update local subscription data
+      subscriptionData.auto_renew = newAutoRenewStatus;
+      
+      success = result.message || `Auto-renewal ${newAutoRenewStatus ? 'enabled' : 'disabled'} successfully!`;
+      
+      // Notify parent
+      dispatch('subscriptionUpdated', { action: 'autoRenewalToggled', autoRenew: newAutoRenewStatus });
+    } catch (err: any) {
+      console.error('Failed to toggle auto-renewal:', err);
+      error = err.message || 'Failed to update auto-renewal setting';
+      // Revert the toggle on error
+      subscriptionData.auto_renew = !subscriptionData.auto_renew;
+    } finally {
+      isTogglingAutoRenewal = false;
+    }
+  }
 
   function closeModal() {
     dispatch('close');
