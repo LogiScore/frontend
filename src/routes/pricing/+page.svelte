@@ -60,8 +60,7 @@
       const subscription = await apiClient.getCurrentSubscription(authState.token);
       currentSubscription = subscription;
     } catch (err: any) {
-      console.error('Failed to load current subscription:', err);
-      // Don't show error to user, just log it
+      // Silently handle subscription loading errors
     } finally {
       isLoadingSubscription = false;
     }
