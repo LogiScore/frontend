@@ -1808,11 +1808,17 @@ class ApiClient {
   // Refresh expired JWT token
   async refreshToken(token: string): Promise<{ access_token: string }> {
     try {
+      console.log('Refreshing token with:', token.substring(0, 20) + '...');
+      
       return await this.request<{ access_token: string }>('/api/auth/refresh', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          refresh_token: token
+        }),
       });
     } catch (error) {
       console.error('Failed to refresh token:', error instanceof Error ? error.message : String(error));
@@ -1931,16 +1937,25 @@ class ApiClient {
 
   // ===== NEW METHOD: cancelSubscription =====
   async cancelSubscription(token: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/api/subscriptions/cancel', {
+    const requestData = {
+      reason: 'User requested cancellation'
+    };
+    
+    console.log('Sending cancelSubscription request to /api/subscriptions/cancel');
+    console.log('Request data:', requestData);
+    console.log('Authorization token:', token.substring(0, 20) + '...');
+    
+    const response = await this.request<{ message: string }>('/api/subscriptions/cancel', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        reason: 'User requested cancellation'
-      }),
+      body: JSON.stringify(requestData),
     });
+    
+    console.log('CancelSubscription response:', response);
+    return response;
   }
 
   // ===== NEW METHOD: reactivateSubscription =====

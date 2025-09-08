@@ -55,15 +55,26 @@
       // Reload subscription data
       await loadCurrentSubscription();
       
-      // When subscription is canceled, set tier to 'free' regardless of what backend returns
-      const canceledTier = currentSubscription?.status === 'canceled' ? 'free' : currentSubscription?.tier;
-      console.log('Setting subscription tier to:', canceledTier);
+      // Determine the appropriate tier and dates based on subscription status
+      let updateTier = currentSubscription?.tier;
+      let updateStartDate = currentSubscription?.start_date;
+      let updateEndDate = currentSubscription?.end_date;
+      
+      // If subscription is canceled, clear the subscription data
+      if (currentSubscription?.status === 'canceled') {
+        updateTier = null;
+        updateStartDate = null;
+        updateEndDate = null;
+        console.log('Subscription canceled - clearing subscription data');
+      }
+      
+      console.log('Updating subscription data:', { tier: updateTier, start_date: updateStartDate, end_date: updateEndDate });
       
       // Update user subscription data locally as fallback
       await authMethods.updateUserSubscriptionData({
-        tier: canceledTier,
-        start_date: currentSubscription?.start_date,
-        end_date: currentSubscription?.end_date
+        tier: updateTier,
+        start_date: updateStartDate,
+        end_date: updateEndDate
       });
       
       // Refresh user data from backend to get updated subscription_tier
