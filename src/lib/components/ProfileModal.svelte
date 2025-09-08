@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { apiClient } from '$lib/api';
   import SubscriptionManagementModal from './SubscriptionManagementModal.svelte';
 
@@ -103,6 +103,17 @@
       isCanceling = true;
       const result = await apiClient.cancelSubscription(authState.token);
       await loadSubscriptionData(); // Reload subscription data
+      
+      // Update user subscription data locally as fallback
+      await authMethods.updateUserSubscriptionData({
+        tier: subscriptionData?.tier,
+        start_date: subscriptionData?.start_date,
+        end_date: subscriptionData?.end_date
+      });
+      
+      // Refresh user data from backend to get updated subscription_tier
+      await authMethods.refreshUserData();
+      
       alert(result.message);
     } catch (err: any) {
       console.error('Failed to cancel subscription:', err);
@@ -122,6 +133,17 @@
       isReactivating = true;
       const result = await apiClient.reactivateSubscription(authState.token);
       await loadSubscriptionData(); // Reload subscription data
+      
+      // Update user subscription data locally as fallback
+      await authMethods.updateUserSubscriptionData({
+        tier: subscriptionData?.tier,
+        start_date: subscriptionData?.start_date,
+        end_date: subscriptionData?.end_date
+      });
+      
+      // Refresh user data from backend to get updated subscription_tier
+      await authMethods.refreshUserData();
+      
       alert(result.message);
     } catch (err: any) {
       console.error('Failed to reactivate subscription:', err);

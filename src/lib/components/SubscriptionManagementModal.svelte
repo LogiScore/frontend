@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { apiClient } from '$lib/api';
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { getPlansForUserType, type Plan } from '$lib/subscription-plans';
 
   export let isOpen = false;
@@ -112,18 +112,15 @@
         // Reload subscription data
         await loadSubscriptionData();
         
-        // Update user in auth store
-        if (authState.user) {
-          const updatedUser = {
-            ...authState.user,
-            subscription_tier: plan.name.toLowerCase().replace(' ', '_')
-          };
-          
-          auth.update(state => ({
-            ...state,
-            user: updatedUser
-          }));
-        }
+        // Update user subscription data locally as fallback
+        await authMethods.updateUserSubscriptionData({
+          tier: subscriptionData?.tier,
+          start_date: subscriptionData?.start_date,
+          end_date: subscriptionData?.end_date
+        });
+        
+        // Refresh user data from backend to get updated subscription_tier
+        await authMethods.refreshUserData();
 
         // Notify parent
         dispatch('subscriptionUpdated', { action: 'upgraded', plan: plan.name });
@@ -157,6 +154,16 @@
       
       // Reload subscription data
       await loadSubscriptionData();
+      
+      // Update user subscription data locally as fallback
+      await authMethods.updateUserSubscriptionData({
+        tier: subscriptionData?.tier,
+        start_date: subscriptionData?.start_date,
+        end_date: subscriptionData?.end_date
+      });
+      
+      // Refresh user data from backend to get updated subscription_tier
+      await authMethods.refreshUserData();
       
       // Notify parent
       dispatch('subscriptionUpdated', { action: 'canceled' });

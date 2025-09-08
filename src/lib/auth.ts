@@ -402,6 +402,65 @@ export const authMethods = {
     }
   },
 
+  // Refresh user data from backend
+  refreshUserData: async (): Promise<void> => {
+    try {
+      const currentState = get<AuthState>(auth);
+      if (!currentState.token) {
+        console.warn('No token available for user refresh');
+        return;
+      }
+
+      const user = await apiClient.getCurrentUser(currentState.token);
+      
+      // Update auth store with fresh user data
+      saveUser(user);
+      auth.update(state => ({
+        ...state,
+        user
+      }));
+      
+      console.log('User data refreshed from backend');
+    } catch (error: any) {
+      console.error('Failed to refresh user data:', error.message);
+      // Don't clear auth on refresh failure - just log the error
+    }
+  },
+
+  // Update user subscription data locally (fallback when backend sync fails)
+  updateUserSubscriptionData: async (subscriptionData: {
+    tier?: string;
+    start_date?: string;
+    end_date?: string;
+  }): Promise<void> => {
+    try {
+      const currentState = get<AuthState>(auth);
+      if (!currentState.user) {
+        console.warn('No user data available for subscription update');
+        return;
+      }
+
+      // Only update fields that are provided
+      const updatedUser = {
+        ...currentState.user,
+        ...(subscriptionData.tier && { subscription_tier: subscriptionData.tier }),
+        ...(subscriptionData.start_date && { subscription_start_date: subscriptionData.start_date }),
+        ...(subscriptionData.end_date && { subscription_end_date: subscriptionData.end_date })
+      };
+      
+      // Update auth store with new subscription data
+      saveUser(updatedUser);
+      auth.update(state => ({
+        ...state,
+        user: updatedUser
+      }));
+      
+      console.log('User subscription data updated locally:', subscriptionData);
+    } catch (error: any) {
+      console.error('Failed to update user subscription data:', error.message);
+    }
+  },
+
   // Check auth status
   checkAuth: async () => {
     try {

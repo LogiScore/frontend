@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { apiClient } from '$lib/api';
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
 
   export let showActions: boolean = true;
 
@@ -55,6 +55,16 @@
       // Reload subscription data
       await loadCurrentSubscription();
       
+      // Update user subscription data locally as fallback
+      await authMethods.updateUserSubscriptionData({
+        tier: currentSubscription?.tier,
+        start_date: currentSubscription?.start_date,
+        end_date: currentSubscription?.end_date
+      });
+      
+      // Refresh user data from backend to get updated subscription_tier
+      await authMethods.refreshUserData();
+      
       // Notify parent component
       dispatch('subscriptionUpdated', { action: 'canceled', message: result.message });
     } catch (err: any) {
@@ -77,6 +87,16 @@
       
       // Reload subscription data
       await loadCurrentSubscription();
+      
+      // Update user subscription data locally as fallback
+      await authMethods.updateUserSubscriptionData({
+        tier: currentSubscription?.tier,
+        start_date: currentSubscription?.start_date,
+        end_date: currentSubscription?.end_date
+      });
+      
+      // Refresh user data from backend to get updated subscription_tier
+      await authMethods.refreshUserData();
       
       // Notify parent component
       dispatch('subscriptionUpdated', { action: 'reactivated', message: result.message });
