@@ -1916,23 +1916,36 @@ class ApiClient {
     last_billing_date?: string;
     next_billing_date?: string;
   }> {
-    return this.request<{
-      id: string;
-      user_id: string;
-      tier: string;
-      status: 'active' | 'past_due' | 'canceled' | 'expired' | 'trial';
-      start_date: string;
-      end_date: string;
-      auto_renew: boolean;
-      stripe_subscription_id?: string;
-      days_remaining?: number;
-      last_billing_date?: string;
-      next_billing_date?: string;
-    }>('/api/subscriptions/current', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    console.log('getCurrentSubscription: Making API call to /api/subscriptions/current');
+    console.log('getCurrentSubscription: Token (first 20 chars):', token.substring(0, 20) + '...');
+    
+    try {
+      const result = await this.request<{
+        id: string;
+        user_id: string;
+        tier: string;
+        status: 'active' | 'past_due' | 'canceled' | 'expired' | 'trial';
+        start_date: string;
+        end_date: string;
+        auto_renew: boolean;
+        stripe_subscription_id?: string;
+        days_remaining?: number;
+        last_billing_date?: string;
+        next_billing_date?: string;
+      }>('/api/subscriptions/current', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      console.log('getCurrentSubscription: API call successful, result:', result);
+      return result;
+    } catch (error: any) {
+      console.error('getCurrentSubscription: API call failed:', error);
+      console.error('getCurrentSubscription: Error message:', error.message);
+      console.error('getCurrentSubscription: Error details:', error);
+      throw error;
+    }
   }
 
   // ===== NEW METHOD: cancelSubscription =====
