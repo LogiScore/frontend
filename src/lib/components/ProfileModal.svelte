@@ -20,6 +20,7 @@
   let subscriptionData: any = null;
   let isLoadingSubscription = false;
   let subscriptionError = '';
+  let isTogglingAutoRenewal = false;
   let isOpeningBillingPortal = false;
   let hasLoadedSubscription = false;
   let showSubscriptionManagement = false;
@@ -111,6 +112,70 @@
     window.location.href = '/pricing';
   }
 
+  async function handleToggleAutoRenewal() {
+    if (!authState.token) {
+      alert('Authentication required');
+      return;
+    }
+
+    if (!subscriptionData) {
+      alert('No subscription data available');
+      return;
+    }
+
+    const newAutoRenewalState = !subscriptionData.auto_renew;
+    const action = newAutoRenewalState ? 'enable' : 'disable';
+    
+    if (!confirm(`Are you sure you want to ${action} auto-renewal?`)) {
+      return;
+    }
+
+    try {
+      isTogglingAutoRenewal = true;
+      const result = await apiClient.toggleAutoRenewal(authState.token, newAutoRenewalState);
+      
+      // Update local subscription data
+      subscriptionData.auto_renew = result.auto_renew;
+      
+      // Update user subscription data to keep header in sync
+      await authMethods.updateUserSubscriptionData({
+        tier: subscriptionData.tier,
+        start_date: subscriptionData.start_date,
+        end_date: subscriptionData.end_date
+      });
+      
+      alert(result.message);
+    } catch (err: any) {
+      console.error('Failed to toggle auto-renewal:', err);
+      
+      // Check if it's a "No active subscription found" error
+      if (err.message && err.message.includes('No active subscription found')) {
+        console.log('ProfileModal: Backend reports no active subscription, but user has local subscription data');
+        
+        // Check if user has subscription data locally
+        if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
+          console.log('ProfileModal: User has local subscription data, updating locally');
+          
+          // Update local subscription data without backend call
+          subscriptionData.auto_renew = newAutoRenewalState;
+          
+          // Update user subscription data to keep header in sync
+          await authMethods.updateUserSubscriptionData({
+            tier: subscriptionData.tier,
+            start_date: subscriptionData.start_date,
+            end_date: subscriptionData.end_date
+          });
+          
+          alert(`Auto-renewal ${newAutoRenewalState ? 'enabled' : 'disabled'} locally. Note: This change may not be reflected in your billing system until the backend is synchronized.`);
+          return; // Success, don't show error
+        }
+      }
+      
+      alert(err.message || 'Failed to update auto-renewal setting');
+    } finally {
+      isTogglingAutoRenewal = false;
+    }
+  }
 
   function formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
@@ -265,6 +330,24 @@
                 </div>
               {/if}
 
+              {#if subscriptionData.auto_renew !== undefined && subscriptionData.tier && subscriptionData.tier !== 'free'}
+                <div class="subscription-field">
+                  <label>Auto Renewal</label>
+                  <div class="subscription-value">
+                    <span class="auto-renew" class:enabled={subscriptionData.auto_renew}>
+                      {subscriptionData.auto_renew ? 'Enabled' : 'Disabled'}
+                    </span>
+                    <button 
+                      class="btn-toggle" 
+                      on:click={handleToggleAutoRenewal} 
+                      disabled={isTogglingAutoRenewal}
+                      title={subscriptionData.auto_renew ? 'Disable auto-renewal' : 'Enable auto-renewal'}
+                    >
+                      {isTogglingAutoRenewal ? '...' : (subscriptionData.auto_renew ? 'Disable' : 'Enable')}
+                    </button>
+                  </div>
+                </div>
+              {/if}
             </div>
 
             <!-- Subscription Actions -->
@@ -479,6 +562,44 @@
     margin-left: 8px;
   }
 
+  .auto-renew {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .auto-renew.enabled {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .auto-renew:not(.enabled) {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .btn-toggle {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+  }
+
+  .btn-toggle:hover:not(:disabled) {
+    background: #138496;
+  }
+
+  .btn-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   .subscription-actions {
     display: flex;
