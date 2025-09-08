@@ -36,6 +36,8 @@
   
   // Subscribe to auth store
   auth.subscribe(state => {
+    console.log('Header: Auth store updated:', state);
+    console.log('Header: User subscription_tier:', state.user?.subscription_tier);
     authState = state;
   });
   
