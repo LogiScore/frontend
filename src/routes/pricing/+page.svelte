@@ -155,7 +155,12 @@
         <!-- User Plans -->
         <div class="plan-type-section">
           <h2 class="section-title">{userType === 'forwarder' ? 'Forwarder Plans' : 'Shipper Plans'}</h2>
-          
+          <p class="section-subtitle">
+            {userType === 'forwarder' 
+              ? 'Choose the perfect plan to enhance your freight forwarding business visibility and management capabilities.'
+              : 'Choose the perfect plan for your shipping and logistics needs.'
+            }
+          </p>
           
           <div class="plans-row">
             {#each userPlans as plan}
@@ -464,8 +469,18 @@
 
   .section-title {
     font-size: 2.5rem;
-    margin-bottom: 40px;
+    margin-bottom: 15px;
     color: #333;
+  }
+
+  .section-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
   }
 
   .plans-row {
