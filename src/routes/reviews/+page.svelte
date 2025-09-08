@@ -117,11 +117,11 @@
     }
   }
   
-  $: aggregateRating = reviewCategories && reviewCategories.length > 0 ? Math.round((reviewCategories.reduce((sum, cat) => {
+  $: aggregateRating = reviewCategories && reviewCategories.length > 0 ? Math.min(5, Math.max(0, Math.round((reviewCategories.reduce((sum, cat) => {
     if (!cat.questions || !Array.isArray(cat.questions)) return sum;
     const categoryRating = cat.questions.reduce((qSum: number, q: any) => qSum + (q.rating || 0), 0) / cat.questions.filter((q: any) => (q.rating || 0) > 0).length || 0;
     return sum + categoryRating;
-  }, 0) / reviewCategories.filter(cat => cat.questions && Array.isArray(cat.questions) && cat.questions.some((q: any) => (q.rating || 0) > 0)).length || 0) * 100) / 100 : 0;
+  }, 0) / reviewCategories.filter(cat => cat.questions && Array.isArray(cat.questions) && cat.questions.some((q: any) => (q.rating || 0) > 0)).length || 0) * 100) / 100)) : 0;
   
   $: ratedQuestions = reviewCategories && reviewCategories.length > 0 ? reviewCategories.reduce((sum, cat) => {
     if (!cat.questions || !Array.isArray(cat.questions)) return sum;
@@ -132,7 +132,7 @@
     return sum + cat.questions.length;
   }, 0) : 0;
   $: reviewWeight = isAnonymous ? 0.5 : 1.0;
-  $: weightedRating = Math.round((aggregateRating * reviewWeight) * 100) / 100;
+  $: weightedRating = Math.min(5, Math.max(0, Math.round((aggregateRating * reviewWeight) * 100) / 100));
 
   // Computed property for filtered modal locations
   $: filteredModalLocations = locationSearchTerm && locationSuggestions && Array.isArray(locationSuggestions)
@@ -951,8 +951,6 @@
       aggregate_rating: aggregateRating,
       weighted_rating: weightedRating
     };
-
-    // Prepare review data for submission
 
     // Validate location_id format
     if (!reviewData.location_id || reviewData.location_id.trim() === '') {
