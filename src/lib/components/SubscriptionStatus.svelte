@@ -209,9 +209,12 @@
       {#if showActions}
         <div class="subscription-actions">
           {#if currentSubscription.status === 'active'}
-            <button class="btn-secondary" on:click={handleBillingPortal}>
-              Manage Billing
-            </button>
+            <!-- Only show Manage Subscription for monthly subscribers -->
+            {#if currentSubscription.tier !== 'annual'}
+              <button class="btn-secondary" on:click={handleBillingPortal}>
+                Manage Subscription
+              </button>
+            {/if}
           {:else if currentSubscription.status === 'expired'}
             <button class="btn-primary" on:click={() => dispatch('upgrade')}>
               Upgrade Plan

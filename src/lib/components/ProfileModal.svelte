@@ -353,12 +353,15 @@
             <!-- Subscription Actions -->
             <div class="subscription-actions">
               {#if subscriptionData.status === 'active'}
-                <button class="btn-secondary" on:click={handleBillingPortal}>
-                  Manage Billing
-                </button>
+                <!-- Only show Manage Subscription for monthly subscribers -->
+                {#if subscriptionData.tier !== 'annual'}
+                  <button class="btn-secondary" on:click={handleBillingPortal}>
+                    Manage Subscription
+                  </button>
+                {/if}
               {:else if subscriptionData.status === 'trial'}
                 <button class="btn-secondary" on:click={handleBillingPortal}>
-                  Manage Billing
+                  Manage Subscription
                 </button>
               {:else if subscriptionData.status === 'expired'}
                 <button class="btn-primary" on:click={() => window.location.href = '/pricing'}>

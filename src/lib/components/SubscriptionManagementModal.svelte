@@ -386,39 +386,42 @@
               <div class="plans-grid">
                 {#each availablePlans as plan}
                   {#if plan.price > 0}
-                    <div class="plan-card" class:current={plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}>
-                      <div class="plan-header">
-                        <h4>{plan.name}</h4>
-                        <div class="plan-price">${plan.price}/{plan.billingCycle}</div>
+                    <!-- Filter out monthly plans if user is already on monthly -->
+                    {#if !(subscriptionData.tier === 'monthly' && plan.billingCycle === 'month')}
+                      <div class="plan-card" class:current={plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}>
+                        <div class="plan-header">
+                          <h4>{plan.name}</h4>
+                          <div class="plan-price">${plan.price}/{plan.billingCycle}</div>
+                        </div>
+                        
+                        <div class="plan-features">
+                          <ul>
+                            {#each plan.features.slice(0, 3) as feature}
+                              <li>✓ {feature}</li>
+                            {/each}
+                          </ul>
+                        </div>
+                        
+                        <div class="plan-actions">
+                          {#if plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}
+                            <button type="button" class="btn-current" disabled>Current Plan</button>
+                          {:else if plan.price > (subscriptionData.price || 0)}
+                            <button 
+                              type="button"
+                              class="btn-upgrade" 
+                              on:click={() => handleUpgrade(plan)}
+                              disabled={isUpgrading}
+                            >
+                              {isUpgrading ? 'Upgrading...' : 'Upgrade'}
+                            </button>
+                          {:else}
+                            <button type="button" class="btn-downgrade" disabled>
+                              Downgrade (Contact Support)
+                            </button>
+                          {/if}
+                        </div>
                       </div>
-                      
-                      <div class="plan-features">
-                        <ul>
-                          {#each plan.features.slice(0, 3) as feature}
-                            <li>✓ {feature}</li>
-                          {/each}
-                        </ul>
-                      </div>
-                      
-                      <div class="plan-actions">
-                        {#if plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}
-                          <button type="button" class="btn-current" disabled>Current Plan</button>
-                        {:else if plan.price > (subscriptionData.price || 0)}
-                          <button 
-                            type="button"
-                            class="btn-upgrade" 
-                            on:click={() => handleUpgrade(plan)}
-                            disabled={isUpgrading}
-                          >
-                            {isUpgrading ? 'Upgrading...' : 'Upgrade'}
-                          </button>
-                        {:else}
-                          <button type="button" class="btn-downgrade" disabled>
-                            Downgrade (Contact Support)
-                          </button>
-                        {/if}
-                      </div>
-                    </div>
+                    {/if}
                   {/if}
                 {/each}
               </div>
