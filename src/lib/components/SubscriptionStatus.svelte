@@ -22,38 +22,20 @@
       error = '';
       
       const currentAuth = $auth;
-      console.log('SubscriptionStatus: Loading subscription data');
-      console.log('SubscriptionStatus: Auth state:', {
-        hasUser: !!currentAuth.user,
-        hasToken: !!currentAuth.token,
-        userId: currentAuth.user?.id,
-        userEmail: currentAuth.user?.email,
-        subscriptionTier: currentAuth.user?.subscription_tier
-      });
       
       if (!currentAuth.user || !currentAuth.token) {
         throw new Error('User not authenticated');
       }
 
       const subscription = await apiClient.getCurrentSubscription(currentAuth.token);
-      console.log('SubscriptionStatus: Subscription loaded successfully:', subscription);
       currentSubscription = subscription;
     } catch (err: any) {
-      console.error('SubscriptionStatus: Failed to load subscription:', err);
-      console.error('SubscriptionStatus: Error details:', {
-        message: err.message,
-        status: err.status,
-        response: err.response
-      });
       
       // Check if it's a "No active subscription found" error
       if (err.message && err.message.includes('No active subscription found')) {
-        console.log('SubscriptionStatus: Backend reports no active subscription, checking local user data');
-        
         // Check if user has subscription data locally
         const currentAuth = $auth;
         if (currentAuth.user && currentAuth.user.subscription_tier && currentAuth.user.subscription_tier !== 'free') {
-          console.log('SubscriptionStatus: User has local subscription data, creating fallback subscription object');
           
           // Create a fallback subscription object from local user data
           currentSubscription = {
@@ -70,7 +52,6 @@
             next_billing_date: null
           };
           
-          console.log('SubscriptionStatus: Created fallback subscription:', currentSubscription);
           error = ''; // Clear error since we have fallback data
           return; // Don't set error, we have fallback data
         }
@@ -95,7 +76,6 @@
       // Open billing portal in new window
       window.open(result.url, '_blank');
     } catch (err: any) {
-      console.error('Failed to get billing portal:', err);
       error = err.message || 'Failed to access billing portal';
     }
   }

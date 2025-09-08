@@ -79,7 +79,6 @@ function isTokenExpired(token: string): boolean {
     
     return isExpired;
   } catch (error) {
-    console.warn('Failed to decode token for expiration check:', error);
     // If we can't decode the token, assume it's expired
     return true;
   }
@@ -90,7 +89,6 @@ function getTokenExpirationTime(token: string): number | null {
     const payload = JSON.parse(atob(token.split('.')[1]));
     return payload.exp ? payload.exp * 1000 : null; // Convert to milliseconds
   } catch (error) {
-    console.warn('Failed to get token expiration time:', error);
     return null;
   }
 }

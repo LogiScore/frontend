@@ -169,7 +169,6 @@ class ApiClient {
         
         return JSON.parse(responseText);
               } catch (parseError) {
-          console.error('API: Failed to parse response as JSON:', parseError instanceof Error ? parseError.message : String(parseError));
           throw new Error('Invalid response format from server');
         }
     } catch (error) {
@@ -219,7 +218,6 @@ class ApiClient {
         }
       });
     } catch (error: any) {
-      console.error('Failed to fetch freight forwarders:', error.message);
       throw error;
     }
   }
