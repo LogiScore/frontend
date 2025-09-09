@@ -104,7 +104,15 @@ export async function confirmPayment(
 // Handle payment errors
 export function getPaymentErrorMessage(error: any): string {
   if (error.type === 'card_error' || error.type === 'validation_error') {
-    return error.message;
+    // Clean up error messages for better user experience
+    let message = error.message;
+    
+    // Remove technical details that confuse users
+    if (message.includes('Your request was in live mode, but used a known test card')) {
+      message = 'Your card was declined. Please use a valid credit card.';
+    }
+    
+    return message;
   } else {
     return 'An unexpected error occurred.';
   }
