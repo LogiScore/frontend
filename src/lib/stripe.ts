@@ -10,16 +10,23 @@ type StripeElement = StripeJS.StripeElement;
 // Stripe configuration
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51Rxlqv2OLXWq2oiietu8CyKM';
 
+// Log the key being used (for debugging)
+console.log('Stripe publishable key loaded:', STRIPE_PUBLISHABLE_KEY ? 'Yes' : 'No');
+console.log('Key starts with:', STRIPE_PUBLISHABLE_KEY.substring(0, 10));
+
 // Stripe instance
 let stripe: Stripe | null = null;
 
 // Initialize Stripe
 export async function initializeStripe(): Promise<Stripe> {
   if (!stripe) {
+    console.log('Initializing Stripe with key:', STRIPE_PUBLISHABLE_KEY.substring(0, 20) + '...');
     stripe = await loadStripe(STRIPE_PUBLISHABLE_KEY);
     if (!stripe) {
+      console.error('Failed to load Stripe - stripe instance is null');
       throw new Error('Failed to load Stripe');
     }
+    console.log('Stripe initialized successfully');
   }
   return stripe;
 }
@@ -46,8 +53,10 @@ export async function createPaymentMethod(
   }
 ): Promise<{ paymentMethod: any; error?: any }> {
   try {
+    console.log('Initializing Stripe for payment method creation...');
     const stripeInstance = await initializeStripe();
     
+    console.log('Creating payment method with Stripe...');
     const { paymentMethod, error } = await stripeInstance.createPaymentMethod({
       type: 'card',
       card: cardElement,
@@ -55,11 +64,14 @@ export async function createPaymentMethod(
     });
 
     if (error) {
+      console.error('Stripe createPaymentMethod error:', error);
       return { paymentMethod: null, error };
     }
 
+    console.log('Payment method created successfully');
     return { paymentMethod, error: null };
   } catch (error) {
+    console.error('Error in createPaymentMethod:', error);
     return { paymentMethod: null, error };
   }
 }
@@ -100,7 +112,11 @@ export function getPaymentErrorMessage(error: any): string {
 
 // Stripe Elements options
 export const stripeElementsOptions = {
-  // Note: Style options should be passed directly to individual elements, not to the elements() constructor
+  // Minimal configuration to avoid 401 errors on Stripe's internal endpoints
+  mode: 'payment',
+  currency: 'usd',
+  // Disable automatic payment method detection
+  paymentMethodTypes: ['card'],
 };
 
 // Test card numbers for development
