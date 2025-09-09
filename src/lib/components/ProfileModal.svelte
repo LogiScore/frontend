@@ -132,10 +132,11 @@
 
     try {
       isTogglingAutoRenewal = true;
-      const result = await apiClient.toggleAutoRenewal(authState.token, newAutoRenewalState);
+      // Use updateAutoRenewal instead of toggleAutoRenewal since it might be working
+      const result = await apiClient.updateAutoRenewal(authState.token, newAutoRenewalState);
       
       // Update local subscription data
-      subscriptionData.auto_renew = result.auto_renew;
+      subscriptionData.auto_renew = newAutoRenewalState;
       
       // Update user subscription data to keep header in sync
       await authMethods.updateUserSubscriptionData({

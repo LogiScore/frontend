@@ -116,6 +116,7 @@ export interface User {
   created_at?: string;
 }
 
+
 // API client class
 class ApiClient {
   private baseUrl: string;
@@ -2016,6 +2017,9 @@ class ApiClient {
     try {
       const result = await this.requestWithAuth<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           auto_renew_enabled: enabled
         }),
