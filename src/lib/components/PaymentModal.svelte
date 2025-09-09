@@ -212,9 +212,11 @@
               <div id="card-element" bind:this={cardContainer} class="stripe-card-element"></div>
               <div class="card-help">
                 <p>🔒 Your payment information is secure and encrypted by Stripe</p>
-                <p class="test-cards">
-                  <strong>Test Cards:</strong> 4242 4242 4242 4242 (success), 4000 0000 0000 0002 (decline)
-                </p>
+                {#if import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_')}
+                  <p class="test-cards">
+                    <strong>Test Cards:</strong> 4242 4242 4242 4242 (success), 4000 0000 0000 0002 (decline)
+                  </p>
+                {/if}
               </div>
             </div>
           </form>
