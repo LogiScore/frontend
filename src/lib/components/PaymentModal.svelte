@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { apiClient } from '$lib/api';
-  import { auth } from '$lib/auth';
+  import { auth, authMethods } from '$lib/auth';
   import { initializeStripe, createPaymentMethod, getPaymentErrorMessage, stripeElementsOptions } from '$lib/stripe';
   import { loadStripe } from '@stripe/stripe-js';
 
@@ -30,12 +30,14 @@
     // Initialize Stripe
     try {
       stripe = await initializeStripe();
+      if (!stripe) {
+        throw new Error('Failed to load Stripe');
+      }
+      
       elements = stripe.elements(stripeElementsOptions);
       
       // Create card element
-      cardElement = elements.create('card', {
-        style: stripeElementsOptions.style
-      });
+      cardElement = elements.create('card');
       
       // Mount card element
       if (cardContainer) {
@@ -67,11 +69,20 @@
     success = '';
 
     try {
-      // Get current user
+      // Get current user and validate authentication
       const currentAuth = $auth;
       if (!currentAuth.user || !currentAuth.token) {
         throw new Error('User not authenticated');
       }
+
+      // Ensure we have a valid token before proceeding
+      console.log('Validating token before payment...');
+      const validToken = await authMethods.ensureValidToken();
+      if (!validToken) {
+        console.error('Token validation failed');
+        throw new Error('Authentication expired. Please sign in again.');
+      }
+      console.log('Token validation successful');
 
       // Create payment method
       const { paymentMethod, error: paymentError } = await createPaymentMethod(
@@ -91,7 +102,7 @@
         selectedPlan.id,
         selectedPlan.name,
         currentAuth.user.user_type,
-        currentAuth.token,
+        validToken,
         paymentMethod.id,
         isNewUser ? TRIAL_DURATION : 0 // Only give trial to new users
       );

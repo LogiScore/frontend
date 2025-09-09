@@ -1876,11 +1876,8 @@ class ApiClient {
     paymentMethodId?: string,
     trialDays: number = 0
   ): Promise<{ subscription_id: string; message: string; tier: string; status: string }> {
-    return this.request<{ subscription_id: string; message: string; tier: string; status: string }>('/api/subscriptions/create', {
+    return this.requestWithAuth<{ subscription_id: string; message: string; tier: string; status: string }>('/api/subscriptions/create', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
       body: JSON.stringify({
         plan_id: planId,
         plan_name: planName,
@@ -1888,16 +1885,12 @@ class ApiClient {
         payment_method_id: paymentMethodId,
         trial_days: trialDays
       }),
-    });
+    }, token);
   }
 
   // ===== METHOD: getSubscriptionPlans =====
   async getSubscriptionPlans(token: string): Promise<{ plans: any[] }> {
-    return this.request<{ plans: any[] }>('/api/subscriptions/plans', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    return this.requestWithAuth<{ plans: any[] }>('/api/subscriptions/plans', {}, token);
   }
 
   // ===== METHOD: getCurrentSubscription =====
@@ -1956,14 +1949,10 @@ class ApiClient {
     console.log('Request data:', requestData);
     console.log('Authorization token:', token.substring(0, 20) + '...');
     
-    const response = await this.request<{ message: string }>('/api/subscriptions/cancel', {
+    const response = await this.requestWithAuth<{ message: string }>('/api/subscriptions/cancel', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(requestData),
-    });
+    }, token);
     
     console.log('CancelSubscription response:', response);
     return response;
@@ -1980,14 +1969,10 @@ class ApiClient {
     console.log('updateAutoRenewal: Request data:', requestData);
     
     try {
-      const response = await this.request<{ message: string }>('/api/subscriptions/auto-renewal', {
+      const response = await this.requestWithAuth<{ message: string }>('/api/subscriptions/auto-renewal', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(requestData),
-      });
+      }, token);
       
       console.log('updateAutoRenewal: API call successful, response:', response);
       return response;
@@ -2001,12 +1986,9 @@ class ApiClient {
 
   // ===== NEW METHOD: reactivateSubscription =====
   async reactivateSubscription(token: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/api/subscriptions/reactivate', {
+    return this.requestWithAuth<{ message: string }>('/api/subscriptions/reactivate', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    }, token);
   }
 
   // ===== NEW METHOD: upgradeSubscription =====
@@ -2015,21 +1997,14 @@ class ApiClient {
     newPlanId: string, 
     newPlanName: string
   ): Promise<{ message: string; subscription_id: string }> {
-    return this.request<{ message: string; subscription_id: string }>(`/api/subscriptions/upgrade?new_tier=${encodeURIComponent(newPlanId)}`, {
+    return this.requestWithAuth<{ message: string; subscription_id: string }>(`/api/subscriptions/upgrade?new_tier=${encodeURIComponent(newPlanId)}`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    }, token);
   }
 
   // ===== NEW METHOD: getBillingPortal =====
   async getBillingPortal(token: string): Promise<{ url: string }> {
-    return this.request<{ url: string }>('/api/subscriptions/billing-portal', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    return this.requestWithAuth<{ url: string }>('/api/subscriptions/billing-portal', {}, token);
   }
 
   // ===== NEW METHOD: toggleAutoRenewal =====
@@ -2039,16 +2014,12 @@ class ApiClient {
     console.log('toggleAutoRenewal: Enabled:', enabled);
     
     try {
-      const result = await this.request<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
+      const result = await this.requestWithAuth<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           auto_renew_enabled: enabled
         }),
-      });
+      }, token);
       
       console.log('toggleAutoRenewal: API call successful, result:', result);
       return result;
