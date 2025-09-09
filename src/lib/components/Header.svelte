@@ -178,10 +178,6 @@
                   <span class="subscription-value" class:premium={isPremiumTier(authState.user.subscription_tier)}>
                     {authState.user.subscription_tier || 'No Plan'}
                   </span>
-                  <!-- Debug info -->
-                  <span style="font-size: 10px; color: #666; margin-left: 5px;">
-                    (Debug: {authState.user.subscription_tier || 'undefined'})
-                  </span>
                 </div>
               </div>
               
