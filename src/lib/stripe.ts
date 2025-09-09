@@ -112,8 +112,8 @@ export function getPaymentErrorMessage(error: any): string {
 
 // Stripe Elements options
 export const stripeElementsOptions = {
-  // Minimal configuration to avoid 401 errors on Stripe's internal endpoints
-  mode: 'payment',
+  // Use setup mode for subscriptions (no amount required)
+  mode: 'setup',
   currency: 'usd',
   // Disable automatic payment method detection
   paymentMethodTypes: ['card'],
