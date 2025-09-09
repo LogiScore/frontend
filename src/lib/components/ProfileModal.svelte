@@ -132,11 +132,11 @@
 
     try {
       isTogglingAutoRenewal = true;
-      // Use updateAutoRenewal instead of toggleAutoRenewal since it might be working
-      const result = await apiClient.updateAutoRenewal(authState.token, newAutoRenewalState);
+      // Use toggleAutoRenewal to call the correct backend endpoint
+      const result = await apiClient.toggleAutoRenewal(authState.token, newAutoRenewalState);
       
       // Update local subscription data
-      subscriptionData.auto_renew = newAutoRenewalState;
+      subscriptionData.auto_renew = result.auto_renew;
       
       // Update user subscription data to keep header in sync
       await authMethods.updateUserSubscriptionData({
@@ -158,7 +158,7 @@
           console.log('ProfileModal: User has local subscription data, updating locally');
           
           // Update local subscription data without backend call
-          subscriptionData.auto_renew = newAutoRenewalState;
+          subscriptionData.auto_renew = result.auto_renew;
           
           // Update user subscription data to keep header in sync
           await authMethods.updateUserSubscriptionData({
