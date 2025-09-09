@@ -100,20 +100,7 @@ export function getPaymentErrorMessage(error: any): string {
 
 // Stripe Elements options
 export const stripeElementsOptions = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#424770',
-      '::placeholder': {
-        color: '#aab7c4',
-      },
-      iconColor: '#6772e5',
-    },
-    invalid: {
-      iconColor: '#fa755a',
-      color: '#fa755a',
-    },
-  },
+  // Note: Style options should be passed directly to individual elements, not to the elements() constructor
 };
 
 // Test card numbers for development

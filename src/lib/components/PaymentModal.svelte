@@ -36,8 +36,23 @@
       
       elements = stripe.elements(stripeElementsOptions);
       
-      // Create card element
-      cardElement = elements.create('card');
+      // Create card element with style options
+      cardElement = elements.create('card', {
+        style: {
+          base: {
+            fontSize: '16px',
+            color: '#424770',
+            '::placeholder': {
+              color: '#aab7c4',
+            },
+            iconColor: '#6772e5',
+          },
+          invalid: {
+            iconColor: '#fa755a',
+            color: '#fa755a',
+          },
+        },
+      });
       
       // Mount card element
       if (cardContainer) {
