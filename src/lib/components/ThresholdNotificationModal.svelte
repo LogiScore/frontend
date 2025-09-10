@@ -571,19 +571,22 @@
 
   .detail-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    margin-bottom: 8px;
   }
 
   .detail-item .label {
     font-weight: 500;
     color: #6b7280;
     font-size: 14px;
+    width: 120px;
+    flex-shrink: 0;
   }
 
   .detail-item .value {
     color: #1f2937;
     font-size: 14px;
+    margin-left: 12px;
   }
 
   .modal-actions {
