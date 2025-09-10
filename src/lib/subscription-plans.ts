@@ -9,6 +9,8 @@ export interface Plan {
 	popular?: boolean;
 	billingCycle: string;
 	planType: 'monthly' | 'annual';
+	stripe_price_id?: string;
+	stripe_product_id?: string;
 }
 
 export interface UserPlans {
@@ -43,7 +45,9 @@ const userPlans: Plan[] = [
 			'Full numerical score display (e.g., 4.2/5.0)'
 		],
 		billingCycle: 'month',
-		planType: 'monthly'
+		planType: 'monthly',
+		stripe_price_id: 'price_1Rxlqv2OLXWq2oiietu8CyKM',
+		stripe_product_id: 'prod_StYy4QPzGhoMQU'
 	},
 	{
 		id: 3,
@@ -60,7 +64,9 @@ const userPlans: Plan[] = [
 		],
 		popular: true,
 		billingCycle: 'year',
-		planType: 'annual'
+		planType: 'annual',
+		stripe_price_id: 'price_1Rxls62OLXWq2oiiIdJoqCCI',
+		stripe_product_id: 'prod_annual_shipper'
 	}
 ];
 
@@ -86,7 +92,9 @@ const forwarderPlans: Plan[] = [
 			'Search for Forwarders and view aggregated scores by company, country and branch locations'
 		],
 		billingCycle: 'month',
-		planType: 'monthly'
+		planType: 'monthly',
+		stripe_price_id: 'price_1RxltP2OLXWq2oii2DWmg31v',
+		stripe_product_id: 'prod_forwarder_monthly'
 	},
 	{
 		id: 6,
@@ -99,7 +107,9 @@ const forwarderPlans: Plan[] = [
 		],
 		popular: true,
 		billingCycle: 'year',
-		planType: 'annual'
+		planType: 'annual',
+		stripe_price_id: 'price_1Rxlu52OLXWq2oiiFPxI4mVK',
+		stripe_product_id: 'prod_forwarder_annual'
 	},
 	{
 		id: 7,
@@ -119,7 +129,9 @@ const forwarderPlans: Plan[] = [
 			'Access trend of scores over time (past 12-24 months, category-by-category)'
 		],
 		billingCycle: 'year',
-		planType: 'annual'
+		planType: 'annual',
+		stripe_price_id: 'price_1Rxlux2OLXWq2oiix7Mc8aG5',
+		stripe_product_id: 'prod_forwarder_annual_plus'
 	}
 ];
 
