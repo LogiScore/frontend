@@ -36,7 +36,7 @@
   let scoreTrendsData: any = null;
   let isLoadingTrends = false;
   let trendsError: string | null = null;
-  let selectedPeriod = '12m';
+  let selectedPeriod = '6m';
   
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;

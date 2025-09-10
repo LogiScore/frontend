@@ -3156,7 +3156,7 @@ class ApiClient {
   }
 
   // Get score trends for a freight forwarder
-  async getScoreTrends(freightForwarderId: string, token: string, period: string = '12m'): Promise<{
+  async getScoreTrends(freightForwarderId: string, token: string, period: string = '6m'): Promise<{
     freight_forwarder_id: string;
     freight_forwarder_name: string;
     period: string;
