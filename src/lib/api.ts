@@ -3065,11 +3065,11 @@ class ApiClient {
       freight_forwarder_id: string;
       freight_forwarder_name?: string;
       threshold_type: 'percentage_drop' | 'absolute_score';
-      threshold_value: number;
+      threshold_score: number;
       notification_frequency?: 'immediate' | 'daily' | 'weekly';
     }
   ): Promise<{ id: string; message: string }> {
-    return this.request<{ id: string; message: string }>('/api/score-threshold-subscriptions/', {
+    return this.request<{ id: string; message: string }>('/api/threshold-subscriptions/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -3086,7 +3086,7 @@ class ApiClient {
       freight_forwarder_id: string;
       freight_forwarder_name?: string;
       threshold_type: 'percentage_drop' | 'absolute_score';
-      threshold_value: number;
+      threshold_score: number;
       current_score?: number;
       notification_frequency: string;
       is_active: boolean;
@@ -3100,14 +3100,14 @@ class ApiClient {
         freight_forwarder_id: string;
         freight_forwarder_name?: string;
         threshold_type: 'percentage_drop' | 'absolute_score';
-        threshold_value: number;
+        threshold_score: number;
         current_score?: number;
         notification_frequency: string;
         is_active: boolean;
         created_at: string;
         last_triggered?: string;
       }>;
-    }>('/api/score-threshold-subscriptions/', {
+    }>('/api/threshold-subscriptions/', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -3121,11 +3121,11 @@ class ApiClient {
     subscriptionId: string,
     updates: {
       threshold_type?: 'percentage_drop' | 'absolute_score';
-      threshold_value?: number;
+      threshold_score?: number;
       notification_frequency?: 'immediate' | 'daily' | 'weekly';
     }
   ): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/score-threshold-subscriptions/${subscriptionId}`, {
+    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -3137,7 +3137,7 @@ class ApiClient {
 
   // Delete a threshold subscription
   async deleteThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/score-threshold-subscriptions/${subscriptionId}`, {
+    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -3147,7 +3147,7 @@ class ApiClient {
 
   // Toggle threshold subscription active status
   async toggleThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string; is_active: boolean }> {
-    return this.request<{ message: string; is_active: boolean }>(`/api/score-threshold-subscriptions/${subscriptionId}/toggle`, {
+    return this.request<{ message: string; is_active: boolean }>(`/api/threshold-subscriptions/${subscriptionId}/toggle`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

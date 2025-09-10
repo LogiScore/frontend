@@ -27,7 +27,7 @@
     freight_forwarder_id: string;
     freight_forwarder_name?: string;
     threshold_type: 'percentage_drop' | 'absolute_score';
-    threshold_value: number;
+    threshold_score: number;
     current_score?: number;
     notification_frequency: string;
     is_active: boolean;

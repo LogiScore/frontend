@@ -21,7 +21,7 @@
   // Form data for new subscription
   let newSubscription = {
     threshold_type: 'percentage_drop' as 'percentage_drop' | 'absolute_score',
-    threshold_value: 10,
+    threshold_score: 10,
     notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
   };
 
@@ -79,7 +79,7 @@
       success = '';
       newSubscription = {
         threshold_type: 'percentage_drop',
-        threshold_value: 10,
+        threshold_score: 10,
         notification_frequency: 'immediate'
       };
     } catch (err) {
@@ -98,7 +98,7 @@
         freight_forwarder_id: freightForwarderId,
         freight_forwarder_name: freightForwarderName,
         threshold_type: newSubscription.threshold_type,
-        threshold_value: newSubscription.threshold_value,
+        threshold_score: newSubscription.threshold_score,
         notification_frequency: newSubscription.notification_frequency
       };
       
@@ -109,7 +109,7 @@
       // Reset form
       newSubscription = {
         threshold_type: 'percentage_drop',
-        threshold_value: 10,
+        threshold_score: 10,
         notification_frequency: 'immediate'
       };
     } catch (err: any) {
@@ -152,10 +152,14 @@
   }
 
   function formatThresholdValue(subscription: any): string {
+    console.log('formatThresholdValue - subscription:', subscription);
+    console.log('threshold_score:', subscription.threshold_score);
+    console.log('threshold_type:', subscription.threshold_type);
+    
     if (subscription.threshold_type === 'percentage_drop') {
-      return `${subscription.threshold_value}% drop`;
+      return `${subscription.threshold_score}% drop`;
     } else {
-      return `Below ${subscription.threshold_value}/5.0`;
+      return `Below ${subscription.threshold_score}/5.0`;
     }
   }
 
@@ -217,7 +221,7 @@
               </label>
               <input 
                 type="number" 
-                bind:value={newSubscription.threshold_value}
+                bind:value={newSubscription.threshold_score}
                 id="threshold-value"
                 min={newSubscription.threshold_type === 'percentage_drop' ? 1 : 1}
                 max={newSubscription.threshold_type === 'percentage_drop' ? 50 : 5}
