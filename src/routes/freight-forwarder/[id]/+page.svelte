@@ -5,6 +5,7 @@
   import { auth } from '$lib/auth';
   import AuthModal from '$lib/components/AuthModal.svelte';
   import ThresholdNotificationModal from '$lib/components/ThresholdNotificationModal.svelte';
+  import CategoryTrendChart from '$lib/components/CategoryTrendChart.svelte';
   
   let freightForwarder: any = null;
   let locationScores: any[] = [];
@@ -31,6 +32,12 @@
   }> = [];
   let showSubscriptionList = false;
   
+  // Score trends variables
+  let scoreTrendsData: any = null;
+  let isLoadingTrends = false;
+  let trendsError: string | null = null;
+  let selectedPeriod = '12m';
+  
   $: freightForwarderId = $page.params?.id;
   $: user = $auth?.user;
   $: isSubscribed = user && user.subscription_tier && user.subscription_tier !== 'Basic' && user.subscription_tier !== 'free';
@@ -46,6 +53,11 @@
     if (!isLoadingScores) {
       loadDetailedScores();
     }
+  }
+
+  // Reactive statement to load score trends when user becomes annual subscriber
+  $: if (freightForwarder && isAnnualSubscriber && $auth?.token && !isLoadingTrends && !scoreTrendsData) {
+    loadScoreTrends();
   }
   
   function openAuthModal(mode: 'signin' | 'signup') {
@@ -465,6 +477,28 @@
       isLoadingScores = false;
     }
   }
+
+  // Load score trends data
+  async function loadScoreTrends() {
+    if (!freightForwarderId || !$auth?.token || !isAnnualSubscriber) {
+      return;
+    }
+
+    try {
+      isLoadingTrends = true;
+      trendsError = null;
+      
+      console.log('Loading score trends for period:', selectedPeriod);
+      scoreTrendsData = await apiClient.getScoreTrends(freightForwarderId, $auth.token, selectedPeriod);
+      console.log('Score trends data loaded:', scoreTrendsData);
+    } catch (err: any) {
+      console.error('Failed to load score trends:', err);
+      trendsError = err.message || 'Failed to load score trends';
+      scoreTrendsData = null;
+    } finally {
+      isLoadingTrends = false;
+    }
+  }
   
   function switchTab(tab: 'overview' | 'locations' | 'countries') {
     // Only allow tab switching for subscribed users
@@ -780,6 +814,67 @@
             </div>
           {/if}
         </div>
+      {/if}
+
+      <!-- Score Trends Section (Annual Subscribers Only) -->
+      {#if isAnnualSubscriber && user && $auth?.token}
+        <section class="score-trends-section">
+          <div class="trends-header">
+            <h2>📈 Score Trends Over Time</h2>
+            <div class="period-selector">
+              <label for="period-select">Period:</label>
+              <select id="period-select" bind:value={selectedPeriod} on:change={loadScoreTrends}>
+                <option value="6m">6 Months</option>
+                <option value="12m">12 Months</option>
+                <option value="24m">24 Months</option>
+              </select>
+            </div>
+          </div>
+          
+          {#if isLoadingTrends}
+            <div class="trends-loading">
+              <div class="loading-spinner"></div>
+              <span>Loading score trends...</span>
+            </div>
+          {:else if trendsError}
+            <div class="trends-error">
+              <div class="error-icon">⚠️</div>
+              <h3>Unable to Load Trends</h3>
+              <p>{trendsError}</p>
+              <button class="btn-retry" on:click={loadScoreTrends}>🔄 Retry</button>
+            </div>
+          {:else if scoreTrendsData && scoreTrendsData.categories}
+            <div class="trends-grid">
+              {#each Object.entries(scoreTrendsData.categories) as [categoryName, trendData]}
+                <CategoryTrendChart {categoryName} trendData={trendData as {labels: string[], data: number[], review_counts: number[]}} />
+              {/each}
+            </div>
+          {:else}
+            <div class="trends-empty">
+              <div class="empty-icon">📊</div>
+              <h3>No Trend Data Available</h3>
+              <p>Score trends will appear here once there are enough reviews over time.</p>
+            </div>
+          {/if}
+        </section>
+      {:else if isSubscribed && !isAnnualSubscriber}
+        <!-- Upgrade prompt for non-annual subscribers -->
+        <section class="trends-upgrade-prompt">
+          <div class="upgrade-card">
+            <div class="upgrade-icon">📈</div>
+            <h3>Score Trends Over Time</h3>
+            <p>Track how {freightForwarder?.name || 'this forwarder'}'s scores have changed over the past 12-24 months with detailed category breakdowns.</p>
+            <div class="upgrade-features">
+              <div class="feature">📊 8 category trend charts</div>
+              <div class="feature">📅 6, 12, or 24 month periods</div>
+              <div class="feature">📈 Trend indicators and percentages</div>
+              <div class="feature">📱 Mobile responsive design</div>
+            </div>
+            <button class="btn btn-primary" on:click={() => window.open('/pricing', '_blank')}>
+              Upgrade to Annual Plan
+            </button>
+          </div>
+        </section>
       {/if}
 
       <!-- Detailed Rating Information (for subscribed users) -->
@@ -2203,5 +2298,278 @@
     font-size: 14px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Score Trends Styles */
+  .score-trends-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+  }
+
+  .trends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .trends-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .period-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .period-selector label {
+    font-weight: 500;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .period-selector select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .period-selector select:hover {
+    border-color: #667eea;
+  }
+
+  .period-selector select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .trends-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .trends-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .trends-loading .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  .trends-error {
+    text-align: center;
+    padding: 40px 20px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #dc2626;
+  }
+
+  .trends-error .error-icon {
+    font-size: 2rem;
+    margin-bottom: 16px;
+  }
+
+  .trends-error h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+  }
+
+  .trends-error p {
+    margin: 0 0 16px 0;
+    color: #7f1d1d;
+  }
+
+  .btn-retry {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-retry:hover {
+    background: #b91c1c;
+  }
+
+  .trends-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .trends-empty .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .trends-empty h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .trends-empty p {
+    margin: 0;
+    color: #666;
+  }
+
+  /* Upgrade prompt styles */
+  .trends-upgrade-prompt {
+    margin-top: 40px;
+  }
+
+  .upgrade-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upgrade-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+  }
+
+  .upgrade-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .upgrade-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  .upgrade-card h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .upgrade-card p {
+    margin: 0 0 24px 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .upgrade-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .upgrade-features .feature {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .upgrade-card .btn {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .upgrade-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .score-trends-section {
+      margin-top: 30px;
+      padding: 20px;
+    }
+
+    .trends-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .trends-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .upgrade-card {
+      padding: 30px 20px;
+    }
+
+    .upgrade-features {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .trends-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .upgrade-card h3 {
+      font-size: 1.3rem;
+    }
+
+    .upgrade-card p {
+      font-size: 1rem;
+    }
   }
 </style>

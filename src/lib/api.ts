@@ -3154,6 +3154,43 @@ class ApiClient {
       }
     });
   }
+
+  // Get score trends for a freight forwarder
+  async getScoreTrends(freightForwarderId: string, token: string, period: string = '12m'): Promise<{
+    freight_forwarder_id: string;
+    freight_forwarder_name: string;
+    period: string;
+    categories: Record<string, {
+      labels: string[];
+      data: number[];
+      review_counts: number[];
+    }>;
+  }> {
+    try {
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
+
+      return await this.request<{
+        freight_forwarder_id: string;
+        freight_forwarder_name: string;
+        period: string;
+        categories: Record<string, {
+          labels: string[];
+          data: number[];
+          review_counts: number[];
+        }>;
+      }>(`/api/analytics/score-trends/${freightForwarderId}?period=${period}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Failed to fetch score trends:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
