@@ -57,7 +57,7 @@ const userPlans: Plan[] = [
 		features: [
 			'Same as monthly subscription plus:',
 			'Receive email notifications when new reviews are posted about specific forwarders',
-			'Get notified if a forwarder\'s score drops by X% or below a threshold',
+			'Get notified if a forwarder\'s score drops below a threshold',
 			'Access trends of forwarder scores over time',
 			'Full numerical score',
 			'Save $38/year compared to monthly billing'
