@@ -20,8 +20,8 @@
 
   // Form data for new subscription
   let newSubscription = {
-    threshold_type: 'percentage_drop' as 'percentage_drop' | 'absolute_score',
-    threshold_score: 10,
+    threshold_type: 'absolute_score' as 'absolute_score',
+    threshold_score: 3.5,
     notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
   };
 
@@ -156,11 +156,7 @@
     console.log('threshold_score:', subscription.threshold_score);
     console.log('threshold_type:', subscription.threshold_type);
     
-    if (subscription.threshold_type === 'percentage_drop') {
-      return `${subscription.threshold_score}% drop`;
-    } else {
-      return `Below ${subscription.threshold_score}/5.0`;
-    }
+    return `Below ${subscription.threshold_score}/5.0`;
   }
 
   function formatLastTriggered(lastTriggered: string | undefined): string {
@@ -208,28 +204,16 @@
             <p>Get notified when {freightForwarderName || 'this freight forwarder'}'s score changes.</p>
             
             <div class="form-group">
-              <label for="threshold-type">Alert Type:</label>
-              <select bind:value={newSubscription.threshold_type} id="threshold-type">
-                <option value="percentage_drop">Percentage Drop</option>
-                <option value="absolute_score">Absolute Score</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="threshold-value">
-                {newSubscription.threshold_type === 'percentage_drop' ? 'Drop Percentage:' : 'Minimum Score:'}
-              </label>
+              <label for="threshold-value">Minimum Score:</label>
               <input 
                 type="number" 
                 bind:value={newSubscription.threshold_score}
                 id="threshold-value"
-                min={newSubscription.threshold_type === 'percentage_drop' ? 1 : 1}
-                max={newSubscription.threshold_type === 'percentage_drop' ? 50 : 5}
-                step={newSubscription.threshold_type === 'percentage_drop' ? 1 : 0.1}
+                min="1"
+                max="5"
+                step="0.1"
               />
-              <span class="input-suffix">
-                {newSubscription.threshold_type === 'percentage_drop' ? '%' : '/5.0'}
-              </span>
+              <span class="input-suffix">/5.0</span>
             </div>
 
             <div class="form-group">
