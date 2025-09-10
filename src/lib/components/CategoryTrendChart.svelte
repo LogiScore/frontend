@@ -223,11 +223,16 @@
     font-size: 0.7rem;
     color: #6b7280;
     pointer-events: none;
+    padding-left: 2px;
   }
 
   .y-label {
     font-size: 0.65rem;
     font-weight: 500;
+  }
+
+  .y-label.min {
+    margin-bottom: 8px;
   }
 
   .x-axis-labels {
@@ -240,11 +245,16 @@
     font-size: 0.7rem;
     color: #6b7280;
     pointer-events: none;
+    padding-bottom: 2px;
   }
 
   .x-label {
     font-size: 0.65rem;
     font-weight: 500;
+  }
+
+  .x-label.first {
+    margin-left: 8px;
   }
 
   .chart-tooltip {
