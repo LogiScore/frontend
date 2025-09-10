@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { auth } from '$lib/auth';
   import { apiClient } from '$lib/api';
+  import ThresholdNotificationModal from './ThresholdNotificationModal.svelte';
 
   export let isOpen = false;
 
@@ -20,10 +21,25 @@
     created_at: string;
   }> = [];
 
+  // Threshold subscription data
+  let thresholdSubscriptions: Array<{
+    id: string;
+    freight_forwarder_id: string;
+    freight_forwarder_name?: string;
+    threshold_type: 'percentage_drop' | 'absolute_score';
+    threshold_value: number;
+    current_score?: number;
+    notification_frequency: string;
+    is_active: boolean;
+    created_at: string;
+    last_triggered?: string;
+  }> = [];
+
   // UI state
   let isLoading = false;
   let error = '';
   let success = '';
+  let activeTab = 'reviews'; // 'reviews' or 'thresholds'
 
   // Auth state
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
@@ -43,6 +59,7 @@
   $: if (isOpen && authState.token && !hasLoadedForCurrentOpen) {
     hasLoadedForCurrentOpen = true;
     loadSubscriptions();
+    loadThresholdSubscriptions();
   }
   
   // Reset the flag when modal closes
@@ -84,6 +101,30 @@
       subscriptions = [];
     } finally {
       isLoading = false;
+    }
+  }
+
+  async function loadThresholdSubscriptions() {
+    if (!authState.token) return;
+    
+    try {
+      const result = await apiClient.getThresholdSubscriptions(authState.token);
+      console.log('Review Notifications Modal: Threshold API response:', result);
+      
+      // Handle both response formats: direct array or object with subscriptions property
+      if (Array.isArray(result)) {
+        thresholdSubscriptions = result;
+      } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
+        thresholdSubscriptions = result.subscriptions;
+      } else {
+        console.error('Invalid threshold API response format:', result);
+        thresholdSubscriptions = [];
+      }
+      
+      console.log('Review Notifications Modal: Loaded threshold subscriptions:', thresholdSubscriptions);
+    } catch (err: any) {
+      console.error('Failed to load threshold subscriptions:', err);
+      thresholdSubscriptions = [];
     }
   }
 
@@ -131,6 +172,49 @@
     }
   }
 
+  // Threshold subscription functions
+  async function toggleThresholdSubscription(subscriptionId: string) {
+    if (!authState.token) return;
+    
+    try {
+      const result = await apiClient.toggleThresholdSubscription(authState.token, subscriptionId);
+      success = result.message;
+      await loadThresholdSubscriptions(); // Reload to get updated status
+    } catch (err: any) {
+      console.error('Failed to toggle threshold subscription:', err);
+      error = err.message || 'Failed to toggle threshold subscription';
+    }
+  }
+
+  async function deleteThresholdSubscription(subscriptionId: string) {
+    if (!authState.token) return;
+    
+    if (!confirm('Are you sure you want to delete this threshold subscription?')) {
+      return;
+    }
+    
+    try {
+      const result = await apiClient.deleteThresholdSubscription(authState.token, subscriptionId);
+      success = result.message;
+      await loadThresholdSubscriptions(); // Reload to get updated list
+    } catch (err: any) {
+      console.error('Failed to delete threshold subscription:', err);
+      error = err.message || 'Failed to delete threshold subscription';
+    }
+  }
+
+  function formatThresholdValue(subscription: any): string {
+    if (subscription.threshold_type === 'percentage_drop') {
+      return `${subscription.threshold_value}% drop`;
+    } else {
+      return `Below ${subscription.threshold_value}/5.0`;
+    }
+  }
+
+  function formatLastTriggered(lastTriggered: string | undefined): string {
+    if (!lastTriggered) return 'Never';
+    return new Date(lastTriggered).toLocaleDateString();
+  }
 
 </script>
 
@@ -138,30 +222,48 @@
   <div class="modal-overlay" on:click|self={closeModal} on:mousedown={() => console.log('Modal overlay mousedown')}>
     <div class="modal-content" on:click|stopPropagation on:mousedown={() => console.log('Modal content mousedown')}>
       <div class="modal-header">
-        <h2>Review Notifications</h2>
+        <h2>Notification Settings</h2>
         <button class="close-btn" on:click={closeModal} on:mousedown={() => console.log('Close button mousedown')} on:mouseup={() => console.log('Close button mouseup')}>&times;</button>
       </div>
       
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <button 
+          class="tab-button {activeTab === 'reviews' ? 'active' : ''}" 
+          on:click={() => activeTab = 'reviews'}
+        >
+          Review Notifications
+        </button>
+        <button 
+          class="tab-button {activeTab === 'thresholds' ? 'active' : ''}" 
+          on:click={() => activeTab = 'thresholds'}
+        >
+          Score Thresholds
+        </button>
+      </div>
+      
       <div class="modal-body">
-        <div class="subscription-info">
-          <p>🔔 Manage your review notification subscriptions below.</p>
-          {#if authState.user.user_type === 'shipper'}
-            <p><strong>Note:</strong> This feature is available with the Annual Subscription plan.</p>
-            <p>You can:</p>
-            <ul>
-              <li>View your current notification subscriptions</li>
-              <li>Enable or disable notifications for specific subscriptions</li>
-              <li>Delete subscriptions you no longer need</li>
-            </ul>
-          {:else if authState.user.user_type === 'forwarder'}
-            <p><strong>Note:</strong> This feature is available with the Enterprise Annual Plus plan.</p>
-            <p>You can:</p>
-            <ul>
-              <li>View your notification status</li>
-              <li>Monitor your review notification settings</li>
-            </ul>
-          {/if}
-        </div>
+        {#if activeTab === 'reviews'}
+          <div class="tab-content">
+            <div class="subscription-info">
+              <p>🔔 Manage your review notification subscriptions below.</p>
+              {#if authState.user.user_type === 'shipper'}
+                <p><strong>Note:</strong> This feature is available with the Annual Subscription plan.</p>
+                <p>You can:</p>
+                <ul>
+                  <li>View your current notification subscriptions</li>
+                  <li>Enable or disable notifications for specific subscriptions</li>
+                  <li>Delete subscriptions you no longer need</li>
+                </ul>
+              {:else if authState.user.user_type === 'forwarder'}
+                <p><strong>Note:</strong> This feature is available with the Enterprise Annual Plus plan.</p>
+                <p>You can:</p>
+                <ul>
+                  <li>View your notification status</li>
+                  <li>Monitor your review notification settings</li>
+                </ul>
+              {/if}
+            </div>
 
         <!-- Error/Success Messages -->
         {#if error}
@@ -255,6 +357,112 @@
             </div>
           </div>
         {/if}
+          </div>
+        {:else if activeTab === 'thresholds'}
+          <div class="tab-content">
+            <div class="subscription-info">
+              <p>📊 Set up score threshold alerts to get notified when freight forwarder scores change.</p>
+              {#if authState.user.user_type === 'shipper'}
+                <p><strong>Note:</strong> This feature is available with the Annual Subscription plan.</p>
+                <p>You can:</p>
+                <ul>
+                  <li>Set percentage drop alerts (e.g., "notify me if score drops by 10%")</li>
+                  <li>Set absolute score alerts (e.g., "notify me if score drops below 3.5")</li>
+                  <li>Choose notification frequency (immediate, daily, or weekly)</li>
+                  <li>Manage your threshold subscriptions</li>
+                </ul>
+              {:else if authState.user.user_type === 'forwarder'}
+                <p><strong>Note:</strong> This feature is only available for shippers.</p>
+                <p>As a freight forwarder, you cannot set up threshold alerts for other companies.</p>
+              {/if}
+            </div>
+
+            <!-- Error/Success Messages -->
+            {#if error}
+              <div class="alert alert-error">{error}</div>
+            {/if}
+            {#if success}
+              <div class="alert alert-success">{success}</div>
+            {/if}
+
+            {#if authState.user.user_type === 'shipper'}
+              <!-- Threshold Subscriptions List -->
+              <div class="subscriptions-section">
+                <h3>Your Threshold Alerts</h3>
+                
+                {#if isLoading}
+                  <div class="loading">Loading threshold subscriptions...</div>
+                {:else if !thresholdSubscriptions || thresholdSubscriptions.length === 0}
+                  <div class="no-subscriptions">
+                    <p>You don't have any threshold alerts set up yet.</p>
+                    <p>Threshold alerts can be set up from individual freight forwarder pages.</p>
+                  </div>
+                {:else}
+                  <div class="subscriptions-list">
+                    {#each thresholdSubscriptions as subscription (subscription.id)}
+                      <div class="subscription-item">
+                        <div class="subscription-header">
+                          <h4>{subscription.freight_forwarder_name || 'Unknown Company'}</h4>
+                          <div class="subscription-actions">
+                            <button 
+                              type="button" 
+                              class="btn-toggle {subscription.is_active ? 'active' : 'inactive'}"
+                              on:click={() => toggleThresholdSubscription(subscription.id)}
+                            >
+                              {subscription.is_active ? 'Active' : 'Inactive'}
+                            </button>
+                            <button 
+                              type="button" 
+                              class="btn-delete"
+                              on:click={() => deleteThresholdSubscription(subscription.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div class="subscription-details">
+                          <div class="detail-item">
+                            <span class="label">Alert Type:</span>
+                            <span class="value">{formatThresholdValue(subscription)}</span>
+                          </div>
+                          <div class="detail-item">
+                            <span class="label">Frequency:</span>
+                            <span class="value">{subscription.notification_frequency}</span>
+                          </div>
+                          {#if subscription.current_score}
+                            <div class="detail-item">
+                              <span class="label">Current Score:</span>
+                              <span class="value">{subscription.current_score}/5.0</span>
+                            </div>
+                          {/if}
+                          <div class="detail-item">
+                            <span class="label">Last Triggered:</span>
+                            <span class="value">{formatLastTriggered(subscription.last_triggered)}</span>
+                          </div>
+                          <div class="detail-item">
+                            <span class="label">Created:</span>
+                            <span class="value">{new Date(subscription.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+            {:else if authState.user.user_type === 'forwarder'}
+              <!-- Forwarder functionality: Simple notification status -->
+              <div class="forwarder-notifications">
+                <h3>Threshold Notifications</h3>
+                <p>This feature is only available for shippers.</p>
+                
+                <div class="forwarder-info">
+                  <p><strong>Note:</strong> As a freight forwarder, you cannot set up threshold alerts for other companies.</p>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
       </div>
 
       <div class="modal-actions">
@@ -295,6 +503,40 @@
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid #e9ecef;
+  }
+
+  .tab-navigation {
+    display: flex;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+  }
+
+  .tab-button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .tab-button:hover {
+    color: #495057;
+    background-color: #e9ecef;
+  }
+
+  .tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background-color: white;
+  }
+
+  .tab-content {
+    padding: 20px;
   }
 
   .modal-header h2 {
@@ -465,6 +707,25 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 4px 0;
+  }
+
+  .detail-item .label {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .detail-item .value {
+    color: #1f2937;
+    font-size: 14px;
   }
 
   .badge {

@@ -3055,6 +3055,105 @@ class ApiClient {
       },
     });
   }
+
+  // ===== THRESHOLD NOTIFICATION METHODS =====
+  
+  // Create a new threshold subscription
+  async createThresholdSubscription(
+    token: string,
+    subscriptionData: {
+      freight_forwarder_id: string;
+      freight_forwarder_name?: string;
+      threshold_type: 'percentage_drop' | 'absolute_score';
+      threshold_value: number;
+      notification_frequency?: 'immediate' | 'daily' | 'weekly';
+    }
+  ): Promise<{ id: string; message: string }> {
+    return this.request<{ id: string; message: string }>('/api/threshold-subscriptions/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(subscriptionData)
+    });
+  }
+
+  // Get user's current threshold subscriptions
+  async getThresholdSubscriptions(token: string): Promise<{
+    subscriptions: Array<{
+      id: string;
+      freight_forwarder_id: string;
+      freight_forwarder_name?: string;
+      threshold_type: 'percentage_drop' | 'absolute_score';
+      threshold_value: number;
+      current_score?: number;
+      notification_frequency: string;
+      is_active: boolean;
+      created_at: string;
+      last_triggered?: string;
+    }>;
+  }> {
+    return this.request<{
+      subscriptions: Array<{
+        id: string;
+        freight_forwarder_id: string;
+        freight_forwarder_name?: string;
+        threshold_type: 'percentage_drop' | 'absolute_score';
+        threshold_value: number;
+        current_score?: number;
+        notification_frequency: string;
+        is_active: boolean;
+        created_at: string;
+        last_triggered?: string;
+      }>;
+    }>('/api/threshold-subscriptions/', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  // Update an existing threshold subscription
+  async updateThresholdSubscription(
+    token: string,
+    subscriptionId: string,
+    updates: {
+      threshold_type?: 'percentage_drop' | 'absolute_score';
+      threshold_value?: number;
+      notification_frequency?: 'immediate' | 'daily' | 'weekly';
+    }
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    });
+  }
+
+  // Delete a threshold subscription
+  async deleteThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  // Toggle threshold subscription active status
+  async toggleThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string; is_active: boolean }> {
+    return this.request<{ message: string; is_active: boolean }>(`/api/threshold-subscriptions/${subscriptionId}/toggle`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
 }
 
 // Export singleton instance

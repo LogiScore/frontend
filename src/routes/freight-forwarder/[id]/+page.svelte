@@ -4,6 +4,7 @@
   import { apiClient } from '$lib/api';
   import { auth } from '$lib/auth';
   import AuthModal from '$lib/components/AuthModal.svelte';
+  import ThresholdNotificationModal from '$lib/components/ThresholdNotificationModal.svelte';
   
   let freightForwarder: any = null;
   let locationScores: any[] = [];
@@ -15,6 +16,7 @@
   let showAuthModal = false;
   let authModalMode: 'signin' | 'signup' = 'signin';
   let isTogglingNotification = false;
+  let showThresholdModal = false;
   let isSubscribedToCompanyNotifications = false;
   let userSubscriptions: Array<{
     id: string;
@@ -49,6 +51,14 @@
   function openAuthModal(mode: 'signin' | 'signup') {
     authModalMode = mode;
     showAuthModal = true;
+  }
+
+  function openThresholdModal() {
+    showThresholdModal = true;
+  }
+
+  function closeThresholdModal() {
+    showThresholdModal = false;
   }
   
   function closeAuthModal() {
@@ -844,6 +854,18 @@
                 }
               </p>
               
+              <!-- Threshold Notification Button -->
+              <div class="threshold-notification-section">
+                <button 
+                  class="btn btn-outline threshold-notification-btn" 
+                  on:click={() => openThresholdModal()}
+                >
+                  📊
+                </button>
+                <p class="notification-help">
+                  Set up score threshold alerts to get notified when this company's score changes.
+                </p>
+              </div>
 
             </div>
           {/if}
@@ -924,6 +946,16 @@
       isOpen={showAuthModal}
       mode={authModalMode}
       on:close={closeAuthModal}
+    />
+  {/if}
+
+  <!-- Threshold Notification Modal -->
+  {#if showThresholdModal}
+    <ThresholdNotificationModal
+      isOpen={showThresholdModal}
+      freightForwarderId={freightForwarder?.id || ''}
+      freightForwarderName={freightForwarder?.name || ''}
+      on:close={closeThresholdModal}
     />
   {/if}
 </main>
@@ -2131,5 +2163,21 @@
 
   .notification-upgrade-prompt .btn {
     margin-top: 0.5rem;
+  }
+
+  /* Threshold Notification Styles */
+  .threshold-notification-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .threshold-notification-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-right: auto;
   }
 </style>
