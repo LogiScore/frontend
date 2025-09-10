@@ -834,28 +834,30 @@
           <!-- Company-wide Notification Button - Only for annual subscribers -->
           {#if isAnnualSubscriber}
             <div class="notification-section">
-              <button 
-                class="btn btn-outline notification-btn" 
-                class:btn-active={isSubscribedToCompanyNotifications}
-                class:btn-loading={isTogglingNotification}
-                on:click={() => toggleCompanySubscription(freightForwarder.id)}
-                disabled={isTogglingNotification}
-              >
-                {#if isTogglingNotification}
-                  <span class="spinner"></span>
-                {:else}
-                  🔔
-                {/if}
-              </button>
-              <p class="notification-help">
-                {isSubscribedToCompanyNotifications 
-                  ? 'You will receive notifications when new reviews are posted for this company.'
-                  : 'Get notified when new reviews are posted for this company.'
-                }
-              </p>
+              <div class="notification-container">
+                <button 
+                  class="btn btn-outline notification-btn" 
+                  class:btn-active={isSubscribedToCompanyNotifications}
+                  class:btn-loading={isTogglingNotification}
+                  on:click={() => toggleCompanySubscription(freightForwarder.id)}
+                  disabled={isTogglingNotification}
+                >
+                  {#if isTogglingNotification}
+                    <span class="spinner"></span>
+                  {:else}
+                    🔔
+                  {/if}
+                </button>
+                <p class="notification-help">
+                  {isSubscribedToCompanyNotifications 
+                    ? 'You will receive notifications when new reviews are posted for this company.'
+                    : 'Get notified when new reviews are posted for this company.'
+                  }
+                </p>
+              </div>
               
               <!-- Threshold Notification Button -->
-              <div class="threshold-notification-section">
+              <div class="notification-container">
                 <button 
                   class="btn btn-outline threshold-notification-btn" 
                   on:click={() => openThresholdModal()}
@@ -866,7 +868,6 @@
                   Set up score threshold alerts to get notified when this company's score changes.
                 </p>
               </div>
-
             </div>
           {/if}
           
@@ -1780,6 +1781,16 @@
     .country-score-card {
       padding: 1.25rem;
     }
+
+    /* Notification section responsive */
+    .notification-section {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .notification-container {
+      max-width: none;
+    }
   }
 
   /* Subscription Checkbox Styles */
@@ -1895,6 +1906,19 @@
     background: #f8f9fa;
     border-radius: 8px;
     border: 1px solid #e9ecef;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .notification-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    max-width: 300px;
   }
 
   .notification-btn {
@@ -1930,6 +1954,7 @@
     font-size: 0.9rem;
     color: #6c757d;
     line-height: 1.4;
+    text-align: center;
   }
 
   /* Location and Country Notification Button Styles */
@@ -2166,18 +2191,13 @@
   }
 
   /* Threshold Notification Styles */
-  .threshold-notification-section {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #e9ecef;
-  }
-
   .threshold-notification-btn {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
     font-size: 14px;
+    margin-left: auto;
     margin-right: auto;
   }
 </style>
