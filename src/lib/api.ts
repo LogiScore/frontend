@@ -3069,7 +3069,7 @@ class ApiClient {
       notification_frequency?: 'immediate' | 'daily' | 'weekly';
     }
   ): Promise<{ id: string; message: string }> {
-    return this.request<{ id: string; message: string }>('/api/threshold-subscriptions/', {
+    return this.request<{ id: string; message: string }>('/api/score-threshold-subscriptions/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -3107,7 +3107,7 @@ class ApiClient {
         created_at: string;
         last_triggered?: string;
       }>;
-    }>('/api/threshold-subscriptions/', {
+    }>('/api/score-threshold-subscriptions/', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -3125,7 +3125,7 @@ class ApiClient {
       notification_frequency?: 'immediate' | 'daily' | 'weekly';
     }
   ): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
+    return this.request<{ message: string }>(`/api/score-threshold-subscriptions/${subscriptionId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -3137,7 +3137,7 @@ class ApiClient {
 
   // Delete a threshold subscription
   async deleteThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/threshold-subscriptions/${subscriptionId}`, {
+    return this.request<{ message: string }>(`/api/score-threshold-subscriptions/${subscriptionId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -3147,7 +3147,7 @@ class ApiClient {
 
   // Toggle threshold subscription active status
   async toggleThresholdSubscription(token: string, subscriptionId: string): Promise<{ message: string; is_active: boolean }> {
-    return this.request<{ message: string; is_active: boolean }>(`/api/threshold-subscriptions/${subscriptionId}/toggle`, {
+    return this.request<{ message: string; is_active: boolean }>(`/api/score-threshold-subscriptions/${subscriptionId}/toggle`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
