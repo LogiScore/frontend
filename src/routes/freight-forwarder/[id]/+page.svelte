@@ -1925,6 +1925,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
     margin-bottom: 8px;
     margin-left: auto;
     margin-right: auto;
@@ -1996,6 +1998,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
     margin-bottom: 8px;
     margin-left: auto;
     margin-right: auto;
