@@ -191,6 +191,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: 25px;
   }
 
   .chart-svg {
@@ -214,7 +215,7 @@
 
   .y-axis-labels {
     position: absolute;
-    left: 0;
+    left: -25px;
     top: 0;
     height: 100%;
     display: flex;
@@ -223,7 +224,8 @@
     font-size: 0.7rem;
     color: #6b7280;
     pointer-events: none;
-    padding-left: 2px;
+    width: 20px;
+    text-align: right;
   }
 
   .y-label {
