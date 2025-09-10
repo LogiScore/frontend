@@ -96,8 +96,14 @@ function getTokenExpirationTime(token: string): number | null {
 // Inactivity tracking
 let inactivityTimer: number | null = null;
 let inactivityPromptTimer: number | null = null;
+let debounceTimer: number | null = null;
+let isTrackingSetup = false;
 const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 const PROMPT_TIMEOUT = 1 * 60 * 1000; // 1 minute to respond to prompt
+
+// Store references to event handlers for proper cleanup
+let debouncedResetTimer: (() => void) | null = null;
+let focusHandler: (() => void) | null = null;
 
 function resetInactivityTimer() {
   // Check if user is authenticated before setting timer
@@ -124,7 +130,7 @@ function resetInactivityTimer() {
   
   // Set new inactivity timer
   inactivityTimer = setTimeout(() => {
-          // User inactive for 10 minutes, showing prompt
+    // User inactive for 10 minutes, showing prompt
     auth.update(state => ({ ...state, showInactivityPrompt: true }));
     
     // Set prompt timeout - if user doesn't respond in 1 minute, logout
@@ -140,6 +146,12 @@ function resetInactivityTimer() {
 function setupInactivityTracking() {
   if (typeof window === 'undefined') return;
   
+  // Prevent multiple setups
+  if (isTrackingSetup) {
+    console.warn('Inactivity tracking already setup, skipping...');
+    return;
+  }
+  
   // Check if user is authenticated before setting up tracking
   const currentState = get<AuthState>(auth);
   if (!currentState.user || !currentState.token) {
@@ -152,14 +164,8 @@ function setupInactivityTracking() {
   // Events that indicate user activity
   const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
   
-  // Remove any existing listeners first
-  activityEvents.forEach(event => {
-    document.removeEventListener(event, resetInactivityTimer, true);
-  });
-  
   // Create a debounced version of resetInactivityTimer to avoid excessive calls
-  let debounceTimer: number | null = null;
-  const debouncedResetTimer = () => {
+  debouncedResetTimer = () => {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
@@ -169,19 +175,33 @@ function setupInactivityTracking() {
     }, 100); // 100ms debounce
   };
   
+  // Create focus handler that also uses debouncing
+  focusHandler = () => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+      resetInactivityTimer();
+      debounceTimer = null;
+    }, 100);
+  };
+  
   // Reset timer on any user activity
   activityEvents.forEach(event => {
     document.addEventListener(event, debouncedResetTimer, true);
   });
   
   // Also listen for window focus/blur events
-  window.addEventListener('focus', resetInactivityTimer);
+  window.addEventListener('focus', focusHandler);
   window.addEventListener('blur', () => {
     // Window lost focus, pausing inactivity timer
   });
   
   // Start the initial timer
   resetInactivityTimer();
+  
+  // Mark as setup
+  isTrackingSetup = true;
   
   // Inactivity tracking setup complete
 }
@@ -198,20 +218,29 @@ function clearInactivityTracking() {
     clearTimeout(inactivityPromptTimer);
     inactivityPromptTimer = null;
   }
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
   
   // Reset the inactivity prompt state
   auth.update(state => ({ ...state, showInactivityPrompt: false }));
   
   // Remove event listeners
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && debouncedResetTimer && focusHandler) {
     const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
     activityEvents.forEach(event => {
-      document.removeEventListener(event, resetInactivityTimer, true);
+      document.removeEventListener(event, debouncedResetTimer, true);
     });
     
     // Remove window event listeners
-    window.removeEventListener('focus', resetInactivityTimer);
+    window.removeEventListener('focus', focusHandler);
   }
+  
+  // Reset setup flag
+  isTrackingSetup = false;
+  debouncedResetTimer = null;
+  focusHandler = null;
   
   // Inactivity tracking cleared
 }
