@@ -290,8 +290,8 @@
     
     const tierName = subscriptionData.tier?.toLowerCase();
     
-    // Handle free plan
-    if (plan.price === 0 && (tierName === 'free' || !tierName)) {
+    // Handle free plans
+    if (plan.price === 0 && (tierName === 'free' || tierName === 'free shipper' || tierName === 'free forwarder' || !tierName)) {
       return true;
     }
     

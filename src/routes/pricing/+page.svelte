@@ -81,8 +81,8 @@
     const tierName = currentSubscription.tier?.toLowerCase();
     console.log('Checking tier:', tierName, 'against plan:', plan.name);
     
-    // Handle free plan
-    if (plan.price === 0 && (tierName === 'free' || !tierName)) {
+    // Handle free plans
+    if (plan.price === 0 && (tierName === 'free' || tierName === 'free shipper' || tierName === 'free forwarder' || !tierName)) {
       console.log('Matched free plan');
       return true;
     }
