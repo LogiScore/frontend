@@ -158,7 +158,7 @@
           console.log('ProfileModal: User has local subscription data, updating locally');
           
           // Update local subscription data without backend call
-          subscriptionData.auto_renew = result.auto_renew;
+          subscriptionData.auto_renew = newAutoRenewalState;
           
           // Update user subscription data to keep header in sync
           await authMethods.updateUserSubscriptionData({
@@ -175,6 +175,56 @@
       alert(err.message || 'Failed to update auto-renewal setting');
     } finally {
       isTogglingAutoRenewal = false;
+    }
+  }
+
+  async function handleCancelSubscription() {
+    if (!authState.token) {
+      alert('Authentication required');
+      return;
+    }
+
+    if (!subscriptionData) {
+      alert('No subscription data available');
+      return;
+    }
+
+    const isTrial = subscriptionData.status === 'trial';
+    const action = isTrial ? 'cancel your trial' : 'cancel your subscription';
+    
+    if (!confirm(`Are you sure you want to ${action}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Call the cancel subscription API
+      const result = await apiClient.cancelSubscription(authState.token);
+      
+      // Update local subscription data
+      subscriptionData.status = 'canceled';
+      subscriptionData.tier = 'free';
+      subscriptionData.auto_renew = false;
+      subscriptionData.subscription_start_date = null;
+      subscriptionData.subscription_end_date = null;
+      
+      // Update user subscription data to keep header in sync
+      await authMethods.updateUserSubscriptionData({
+        tier: 'free',
+        start_date: undefined,
+        end_date: undefined
+      });
+      
+      // Refresh user data from backend
+      await authMethods.refreshUserData();
+      
+      alert(result.message || 'Subscription canceled successfully');
+      
+      // Reload subscription data to get updated status
+      await loadSubscriptionData();
+      
+    } catch (err: any) {
+      console.error('Failed to cancel subscription:', err);
+      alert(err.message || 'Failed to cancel subscription');
     }
   }
 
@@ -360,9 +410,17 @@
                     Manage Subscription
                   </button>
                 {/if}
+                <!-- Cancel Subscription Button -->
+                <button class="btn-danger" on:click={handleCancelSubscription}>
+                  Cancel Subscription
+                </button>
               {:else if subscriptionData.status === 'trial'}
                 <button class="btn-secondary" on:click={handleBillingPortal}>
                   Manage Subscription
+                </button>
+                <!-- Cancel Trial Button -->
+                <button class="btn-danger" on:click={handleCancelSubscription}>
+                  Cancel Trial
                 </button>
               {:else if subscriptionData.status === 'expired'}
                 <button class="btn-primary" on:click={() => window.location.href = '/pricing'}>

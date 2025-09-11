@@ -178,6 +178,61 @@
   }
 
 
+  async function handleCancelSubscription() {
+    if (!authState.token) {
+      alert('Authentication required');
+      return;
+    }
+
+    if (!subscriptionData) {
+      alert('No subscription data available');
+      return;
+    }
+
+    const isTrial = subscriptionData.status === 'trial';
+    const action = isTrial ? 'cancel your trial' : 'cancel your subscription';
+    
+    if (!confirm(`Are you sure you want to ${action}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Call the cancel subscription API
+      const result = await apiClient.cancelSubscription(authState.token);
+      
+      // Update local subscription data
+      subscriptionData.status = 'canceled';
+      subscriptionData.tier = 'free';
+      subscriptionData.auto_renew = false;
+      subscriptionData.subscription_start_date = null;
+      subscriptionData.subscription_end_date = null;
+      
+      // Update user subscription data to keep header in sync
+      await authMethods.updateUserSubscriptionData({
+        tier: 'free',
+        start_date: undefined,
+        end_date: undefined
+      });
+      
+      // Refresh user data from backend
+      await authMethods.refreshUserData();
+      
+      success = result.message || 'Subscription canceled successfully';
+      error = ''; // Clear any previous errors
+      
+      // Reload subscription data to get updated status
+      await loadSubscriptionData();
+      
+      // Notify parent
+      dispatch('subscriptionUpdated', { action: 'canceled' });
+      
+    } catch (err: any) {
+      console.error('Failed to cancel subscription:', err);
+      error = err.message || 'Failed to cancel subscription';
+      success = ''; // Clear any previous success messages
+    }
+  }
+
   function closeModal() {
     dispatch('close');
   }
@@ -336,9 +391,52 @@
                 {/each}
               </div>
             </div>
+          {:else if subscriptionData.status === 'canceled'}
+            <div class="canceled-subscription-info">
+              <h3>Subscription Canceled</h3>
+              <p>Your subscription has been canceled. You can resubscribe anytime by selecting a plan below.</p>
+              <div class="plans-grid">
+                {#each availablePlans as plan}
+                  {#if plan.price > 0}
+                    <div class="plan-card">
+                      <div class="plan-header">
+                        <h4>{plan.name}</h4>
+                        <div class="plan-price">${plan.price}/{plan.billingCycle}</div>
+                      </div>
+                      
+                      <div class="plan-features">
+                        <ul>
+                          {#each plan.features.slice(0, 3) as feature}
+                            <li>✓ {feature}</li>
+                          {/each}
+                        </ul>
+                      </div>
+                      
+                      <div class="plan-actions">
+                        <button 
+                          type="button"
+                          class="btn-upgrade" 
+                          on:click={() => handleUpgrade(plan)}
+                          disabled={isUpgrading}
+                        >
+                          {isUpgrading ? 'Subscribing...' : 'Subscribe'}
+                        </button>
+                      </div>
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            </div>
           {/if}
 
           <!-- Subscription Actions -->
+          {#if subscriptionData.status === 'active' || subscriptionData.status === 'trial'}
+            <div class="subscription-actions">
+              <button class="btn-danger" on:click={handleCancelSubscription}>
+                {subscriptionData.status === 'trial' ? 'Cancel Trial' : 'Cancel Subscription'}
+              </button>
+            </div>
+          {/if}
         {/if}
       </div>
     </div>
@@ -609,6 +707,32 @@
     cursor: not-allowed;
   }
 
+  .canceled-subscription-info {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+  }
+
+  .canceled-subscription-info h3 {
+    margin: 0 0 10px 0;
+    color: #dc3545;
+  }
+
+  .canceled-subscription-info p {
+    margin: 0 0 20px 0;
+    color: #666;
+  }
+
+  .subscription-actions {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .subscription-actions .btn-danger {
+    margin: 0 auto;
+  }
 
   @media (max-width: 768px) {
     .plans-grid {
