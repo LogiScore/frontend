@@ -134,8 +134,7 @@
           // Fallback to plan name if no mapping found
           tierName = plan.name.toLowerCase().replace(' ', '_');
         }
-
-
+        console.log('Upgrading subscription:', {
           planName: plan.name,
           tierName: tierName,
           price: plan.price

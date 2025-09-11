@@ -219,8 +219,8 @@
 </script>
 
 {#if isOpen}
-
-
+  <div class="modal-overlay" on:click={closeModal}>
+    <div class="modal-content" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Notification Settings</h2>
 

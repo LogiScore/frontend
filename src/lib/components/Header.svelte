@@ -40,7 +40,7 @@
     if (authState.user?.id !== state.user?.id || 
         authState.user?.subscription_tier !== state.user?.subscription_tier ||
         authState.isLoading !== state.isLoading) {
-
+      console.log('Auth state changed in Header:', {
         userId: state.user?.id,
         subscriptionTier: state.user?.subscription_tier,
         isLoading: state.isLoading

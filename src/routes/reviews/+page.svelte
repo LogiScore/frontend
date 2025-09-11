@@ -499,8 +499,7 @@
 
       
     } catch (err: any) {
-
-
+      console.log('Error loading locations:', {
         message: err.message,
         stack: err.stack,
         name: err.name
@@ -549,7 +548,7 @@
       }
 
       // Debug: Log authentication details
-
+      console.log('Authentication details:', {
         hasToken: !!authState.token,
         tokenLength: authState.token?.length,
         tokenStart: authState.token?.substring(0, 20) + '...',
@@ -722,7 +721,7 @@
         
         // Debug logging for specific cases
         if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
-
+          console.log('München search debug:', {
             location: location.name,
             normalizedQuery,
             normalizedName,
@@ -735,7 +734,7 @@
         
         // Debug logging for matches (always log matches)
         if (hasMatch) {
-
+          console.log('Location match found:', {
             location: location.name,
             query,
             normalizedQuery,
@@ -748,7 +747,7 @@
           });
         } else if (shouldLogDetailed) {
           // Only log detailed non-match info for first few locations
-
+          console.log('Detailed non-match info:', {
             location: location.name,
             query,
             normalizedQuery,
@@ -820,7 +819,7 @@
         
         // Debug logging for specific cases
         if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
-
+          console.log('München search debug (fallback):', {
             location: location.name,
             normalizedQuery,
             normalizedName,
@@ -843,8 +842,7 @@
   }
   
   async function selectLocation(location: any) {
-
-
+    console.log('Selecting location:', {
       id: location.id,
       idType: typeof location.id,
       idLength: location.id?.length,
@@ -1064,7 +1062,7 @@
       }
       
       // Log additional details for debugging
-
+      console.log('Review submission error details:', {
         message: err.message,
         status: err.status,
         response: err.response,
@@ -1105,7 +1103,7 @@
     
     // Check for data structure issues
     locations.forEach((loc, index) => {
-
+      console.log(`Location ${index}:`, {
         id: loc.id,
         name: loc.name,
         city: loc.city,

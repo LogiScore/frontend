@@ -258,7 +258,7 @@ export const auth = writable<AuthState>({
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   auth.subscribe(state => {
     // Auth state changed - only log in development
-
+    console.log('Auth state changed:', {
       hasUser: !!state.user,
       hasToken: !!state.token,
       isLoading: state.isLoading
@@ -502,8 +502,7 @@ export const authMethods = {
         ...(subscriptionData.start_date !== undefined && { subscription_start_date: subscriptionData.start_date }),
         ...(subscriptionData.end_date !== undefined && { subscription_end_date: subscriptionData.end_date })
       };
-      
-
+      console.log('Subscription tier changed:', {
         from: currentState.user.subscription_tier,
         to: updatedUser.subscription_tier
       });
@@ -870,8 +869,7 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-
-
+      console.log('Error in sendVerificationCode:', {
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -899,8 +897,7 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-
-
+      console.log('Error in sendSignupCode:', {
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -991,8 +988,7 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-
-
+      console.log('Error in sendSignupCode:', {
         message: error.message,
         stack: error.stack,
         name: error.name

@@ -144,8 +144,7 @@
       }
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
-
-
+      console.log('Error in sendVerificationCode:', {
         message: error.message,
         stack: error.stack,
         name: error.name
