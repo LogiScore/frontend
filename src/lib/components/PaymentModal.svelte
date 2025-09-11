@@ -128,8 +128,8 @@
       console.log('Payment method created successfully:', paymentMethod?.id);
 
       // Create subscription with payment method and trial (only for new users)
-      // Use Stripe price ID if available, otherwise fall back to numeric ID
-      const planId = selectedPlan.stripe_price_id || selectedPlan.id;
+      // Send numeric plan ID to backend (backend will map to Stripe price ID internally)
+      const planId = selectedPlan.id.toString();
       
       const result = await apiClient.createSubscription(
         planId,
