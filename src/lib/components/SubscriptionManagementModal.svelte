@@ -296,30 +296,26 @@
     }
     
     // Map subscription tier names to plan names
-    if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+    // Backend returns: "Shipper Monthly", "Shipper Annual", "Forwarder Monthly", "Forwarder Annual", "Forwarder Annual Plus"
+    
+    if (tierName === 'shipper monthly' && plan.name === 'Subscription Monthly') {
       return true;
     }
     
-    if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+    if (tierName === 'shipper annual' && plan.name === 'Subscription Annual') {
       return true;
     }
     
-    if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+    if (tierName === 'forwarder monthly' && plan.name === 'Subscription Monthly') {
       return true;
     }
     
-    // Additional check for active subscription status
-    if (subscriptionData.status === 'active' || subscriptionData.status === 'trial') {
-      // Check if the plan matches the current subscription tier
-      if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
-        return true;
-      }
-      if (tierName === 'annual' && plan.name === 'Subscription Annual') {
-        return true;
-      }
-      if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
-        return true;
-      }
+    if (tierName === 'forwarder annual' && plan.name === 'Subscription Annual') {
+      return true;
+    }
+    
+    if (tierName === 'forwarder annual plus' && plan.name === 'Subscription Annual Plus') {
+      return true;
     }
     
     return false;

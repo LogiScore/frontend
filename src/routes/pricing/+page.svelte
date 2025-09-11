@@ -88,36 +88,31 @@
     }
     
     // Map subscription tier names to plan names
-    if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
-      console.log('Matched monthly plan');
+    // Backend returns: "Shipper Monthly", "Shipper Annual", "Forwarder Monthly", "Forwarder Annual", "Forwarder Annual Plus"
+    
+    if (tierName === 'shipper monthly' && plan.name === 'Subscription Monthly') {
+      console.log('Matched shipper monthly plan');
       return true;
     }
     
-    if (tierName === 'annual' && plan.name === 'Subscription Annual') {
-      console.log('Matched annual plan');
+    if (tierName === 'shipper annual' && plan.name === 'Subscription Annual') {
+      console.log('Matched shipper annual plan');
       return true;
     }
     
-    if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
-      console.log('Matched enterprise plan');
+    if (tierName === 'forwarder monthly' && plan.name === 'Subscription Monthly') {
+      console.log('Matched forwarder monthly plan');
       return true;
     }
     
-    // Additional check for active subscription status
-    if (currentSubscription.status === 'active' || currentSubscription.status === 'trial') {
-      // Check if the plan matches the current subscription tier
-      if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
-        console.log('Matched monthly plan (active status)');
-        return true;
-      }
-      if (tierName === 'annual' && plan.name === 'Subscription Annual') {
-        console.log('Matched annual plan (active status)');
-        return true;
-      }
-      if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
-        console.log('Matched enterprise plan (active status)');
-        return true;
-      }
+    if (tierName === 'forwarder annual' && plan.name === 'Subscription Annual') {
+      console.log('Matched forwarder annual plan');
+      return true;
+    }
+    
+    if (tierName === 'forwarder annual plus' && plan.name === 'Subscription Annual Plus') {
+      console.log('Matched forwarder annual plus plan');
+      return true;
     }
     
     console.log('No match found');
