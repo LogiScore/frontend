@@ -272,7 +272,7 @@
       promotionConfig.isActive = !promotionConfig.isActive;
       
       // Update promotion status in backend
-      await apiClient.updatePromotionConfig({
+      await apiClient.updatePromotionConfig(authState.token, {
         isActive: promotionConfig.isActive,
         maxRewardsPerUser: promotionConfig.maxRewardsPerUser,
         rewardMonths: promotionConfig.rewardMonths
@@ -297,14 +297,14 @@
     
     try {
       // Load promotion configuration
-      const config = await apiClient.getPromotionConfig();
+      const config = await apiClient.getPromotionConfig(authState.token);
       promotionConfig = { ...promotionConfig, ...config };
       
       // Load user rewards
-      userRewards = await apiClient.getUserRewards();
+      userRewards = await apiClient.getUserRewards(authState.token);
       
       // Load promotion statistics
-      promotionStats = await apiClient.getPromotionStats();
+      promotionStats = await apiClient.getPromotionStats(authState.token);
     } catch (error) {
       console.error('Failed to load promotion data:', error);
       addNotification('error', 'Failed to load promotion data');
@@ -315,7 +315,7 @@
     if (!authState.token || authState.user?.user_type !== 'admin') return;
     
     try {
-      const result = await apiClient.awardUserReward(userId, reviewId, promotionConfig.rewardMonths);
+      const result = await apiClient.awardUserReward(authState.token, userId, reviewId, promotionConfig.rewardMonths);
       
       if (result.success) {
         addNotification('success', `Awarded ${promotionConfig.rewardMonths} month(s) to user`);
