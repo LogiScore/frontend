@@ -15,6 +15,7 @@
   // Subscribe to auth store
   auth.subscribe(state => {
     authState = state;
+    console.log('Pricing page - Auth state updated:', { user: authState.user, hasToken: !!authState.token });
   });
 
   // Get plans based on user type
@@ -59,7 +60,9 @@
       isLoadingSubscription = true;
       const subscription = await apiClient.getCurrentSubscription(authState.token);
       currentSubscription = subscription;
+      console.log('Pricing page - Loaded subscription:', subscription);
     } catch (err: any) {
+      console.log('Pricing page - Failed to load subscription:', err);
       // Silently handle subscription loading errors
     } finally {
       isLoadingSubscription = false;
@@ -68,25 +71,35 @@
 
   // Function to check if a plan is the user's current plan
   function isCurrentPlan(plan: any): boolean {
-    if (!currentSubscription) return false;
+    console.log('isCurrentPlan called with:', { plan: plan.name, currentSubscription });
+    
+    if (!currentSubscription) {
+      console.log('No current subscription found');
+      return false;
+    }
     
     const tierName = currentSubscription.tier?.toLowerCase();
+    console.log('Checking tier:', tierName, 'against plan:', plan.name);
     
     // Handle free plan
     if (plan.price === 0 && (tierName === 'free' || !tierName)) {
+      console.log('Matched free plan');
       return true;
     }
     
     // Map subscription tier names to plan names
     if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+      console.log('Matched monthly plan');
       return true;
     }
     
     if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+      console.log('Matched annual plan');
       return true;
     }
     
     if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+      console.log('Matched enterprise plan');
       return true;
     }
     
@@ -94,16 +107,20 @@
     if (currentSubscription.status === 'active' || currentSubscription.status === 'trial') {
       // Check if the plan matches the current subscription tier
       if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+        console.log('Matched monthly plan (active status)');
         return true;
       }
       if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+        console.log('Matched annual plan (active status)');
         return true;
       }
       if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+        console.log('Matched enterprise plan (active status)');
         return true;
       }
     }
     
+    console.log('No match found');
     return false;
   }
 
