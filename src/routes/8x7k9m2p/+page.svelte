@@ -34,6 +34,7 @@
 
   onMount(() => {
     // Initialize admin page
+    console.log('Admin page initialized');
 
     // Cleanup function
     return () => {
@@ -337,13 +338,12 @@
   // Test authentication token with backend
   async function testAuthToken() {
     if (!authState.token) {
-
+      console.log('No auth token available for testing');
       return false;
     }
     
     try {
-
-
+      console.log('Testing auth token with backend...');
 
       
       // Test with a simple health check or try to get user info
@@ -354,18 +354,23 @@
         }
       });
       
-
-
+      console.log('Auth token test response:', {
+        status: response.status,
+        ok: response.ok
+      });
       
       if (response.ok) {
-
+        console.log('Auth token is valid');
         return true;
       } else {
-
+        console.log('Auth token test failed:', response.status);
         return false;
       }
     } catch (error) {
-
+      console.log('Error testing auth token:', {
+        message: error.message,
+        stack: error.stack
+      });
       return false;
     }
   }
@@ -373,30 +378,30 @@
   // Load dashboard stats
   async function loadDashboardStats() {
     if (!authState.token) {
-
+      console.log('No auth token for loading dashboard stats');
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (dashboardLoading) {
-
+      console.log('Dashboard stats already loading, skipping...');
       return;
     }
     
     // Test authentication first
     const isTokenValid = await testAuthToken();
     if (!isTokenValid) {
-
+      console.log('Invalid auth token, clearing auth state');
       auth.update(state => ({ ...state, user: null, token: null }));
       return;
     }
     
     try {
       dashboardLoading = true;
-
+      console.log('Loading dashboard stats...');
       
       const stats = await apiClient.getDashboardStats(authState.token) as any;
-
+      console.log('Dashboard stats loaded:', stats);
       
       dashboardStats = {
         totalUsers: stats?.total_users || 0,
@@ -407,11 +412,15 @@
         totalRevenue: stats?.total_revenue || 0
       };
     } catch (error) {
-
+      console.log('Error loading dashboard stats:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       // Handle specific error types
       if ((error as any).message?.includes('Authentication failed')) {
-
+        console.log('Authentication failed, clearing auth state');
         // Clear invalid auth state and show login form
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
@@ -428,37 +437,42 @@
   // Load users
   async function loadUsers() {
     if (!authState.token) {
-
+      console.log('No auth token for loading users');
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (usersLoading) {
-
+      console.log('Users already loading, skipping...');
       return;
     }
     
     try {
       usersLoading = true;
+      console.log('Loading users...');
 
       const usersData = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
+      console.log('Users loaded:', usersData.length, 'users');
 
       
       // Find the user we just updated to see if the subscription changed
       if (selectedUserId) {
         const updatedUser = usersData.find(u => u.id === selectedUserId);
         if (updatedUser) {
-
-
+          console.log('Updated user found:', updatedUser);
         }
       }
       
       users = usersData;
     } catch (error) {
-
+      console.log('Error loading users:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       if ((error as any).message?.includes('Authentication failed')) {
-
+        console.log('Authentication failed, clearing auth state');
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -531,22 +545,24 @@
   // Load companies
   async function loadCompanies() {
     if (!authState.token) {
-
+      console.log('No auth token for loading companies');
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (companiesLoading) {
-
+      console.log('Companies already loading, skipping...');
       return;
     }
     
     try {
       companiesLoading = true;
+      console.log('Loading companies...');
 
       
       // Load all companies first (without search filter)
       const allCompanies = await apiClient.getAdminCompanies(authState.token) as any[];
+      console.log('Companies loaded:', allCompanies.length, 'companies');
       
       // Apply client-side search filtering for substring search
       if (companySearch && companySearch.trim()) {
@@ -554,15 +570,19 @@
         companies = allCompanies.filter(company => 
           company.name && company.name.toLowerCase().includes(searchTerm)
         );
-
+        console.log('Filtered companies:', companies.length, 'matches for search:', searchTerm);
       } else {
         companies = allCompanies;
       }
     } catch (error) {
-
+      console.log('Error loading companies:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       if ((error as any).message?.includes('Authentication failed')) {
-
+        console.log('Authentication failed, clearing auth state');
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -574,18 +594,23 @@
   // Load recent activity
   async function loadRecentActivity() {
     if (!authState.token) {
-
+      console.log('No auth token for loading recent activity');
       return;
     }
     
     try {
-
+      console.log('Loading recent activity...');
       recentActivity = await apiClient.getRecentActivity(authState.token) as any[];
+      console.log('Recent activity loaded:', recentActivity.length, 'activities');
     } catch (error) {
-
+      console.log('Error loading recent activity:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       if ((error as any).message?.includes('Authentication failed')) {
-
+        console.log('Authentication failed, clearing auth state');
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -597,20 +622,29 @@
 
   // Load analytics data
   async function loadAnalytics() {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('No auth token for loading analytics');
+      return;
+    }
     
     // Prevent multiple simultaneous calls
     if (analyticsLoading) {
-
+      console.log('Analytics already loading, skipping...');
       return;
     }
     
     try {
       analyticsLoading = true;
       analyticsError = null;
+      console.log('Loading analytics...');
       analyticsData = await apiClient.getAdminAnalytics(authState.token);
+      console.log('Analytics loaded:', analyticsData);
     } catch (error) {
-
+      console.log('Error loading analytics:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       analyticsError = (error as any).message || 'Failed to load analytics data';
       analyticsData = null;
     } finally {
@@ -629,7 +663,7 @@
     const isInitialLoad = !hasDashboardInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-
+      console.log('Dashboard tab activated:', { isInitialLoad, tabChanged, activeTab });
       previousDashboardTab = activeTab;
       hasDashboardInitialLoad = true;
       loadDashboardStats();
@@ -657,7 +691,7 @@
     const isInitialLoad = !hasInitialLoad;
     
     if (isInitialLoad || tabChanged || filterChanged) {
-
+      console.log('Users tab activated:', { isInitialLoad, tabChanged, filterChanged, activeTab, userTypeFilter });
       previousUserTypeFilter = userTypeFilter;
       previousActiveTab = activeTab;
       hasInitialLoad = true;
@@ -727,7 +761,7 @@
     const isInitialLoad = !hasCompaniesInitialLoad;
     
     if (isInitialLoad || tabChanged || searchChanged) {
-
+      console.log('Companies tab activated:', { isInitialLoad, tabChanged, searchChanged, activeTab, companySearch });
       previousCompaniesTab = activeTab;
       previousCompanySearch = companySearch;
       hasCompaniesInitialLoad = true;
@@ -745,7 +779,7 @@
     const isInitialLoad = !hasAnalyticsInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-
+      console.log('Analytics tab activated:', { isInitialLoad, tabChanged, activeTab });
       previousAnalyticsTab = activeTab;
       hasAnalyticsInitialLoad = true;
       loadAnalytics();
@@ -762,7 +796,7 @@
     const isInitialLoad = !hasPromotionsInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-
+      console.log('Promotions tab activated:', { isInitialLoad, tabChanged, activeTab });
       previousPromotionsTab = activeTab;
       hasPromotionsInitialLoad = true;
       loadPromotionData();
@@ -941,8 +975,7 @@
     
     try {
       isUpdatingCompany = true;
-
-
+      console.log('Updating company:', selectedCompanyId, editCompanyData);
       
       const result = await apiClient.updateCompany(authState.token, selectedCompanyId, {
         name: editCompanyData.name,
@@ -951,14 +984,13 @@
         description: editCompanyData.description,
         headquarters_country: editCompanyData.headquarters_country
       });
-      
-
+      console.log('Company update result:', result);
       
       // Check if we got a valid result or if it's empty (which might still indicate success)
       if (result && typeof result === 'object' && Object.keys(result).length > 0) {
-
+        console.log('Company update successful with result');
       } else {
-
+        console.log('Company update successful with empty result');
       }
       
       // Show success message
@@ -967,7 +999,13 @@
       await loadCompanies(); // Reload companies
       closeEditCompanyModal();
     } catch (error) {
-
+      console.log('Error updating company:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        selectedCompanyId,
+        editCompanyData
+      });
       
       // Extract more detailed error information
       let errorMessage = 'Failed to update company';
@@ -1080,8 +1118,10 @@
   async function updateUserSubscription() {
     if (!authState.token || !selectedUserId) return;
     
-
-
+    console.log('Updating user subscription:', {
+      selectedUserId,
+      subscriptionData
+    });
     
     try {
       // Convert duration to months based on subscription tier
@@ -1097,12 +1137,10 @@
         duration: durationInMonths,
         is_paid: subscriptionData.isPaid
       };
-      
-
+      console.log('Subscription update request data:', requestData);
       
       const result = await apiClient.updateUserSubscription(authState.token, selectedUserId, requestData);
-      
-
+      console.log('Subscription update result:', result);
       
       await loadUsers(); // Reload users
 
@@ -1118,15 +1156,27 @@
       
       addNotification('success', `Subscription updated to ${tierDisplayName}`);
     } catch (error) {
-
+      console.log('Error updating user subscription:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        selectedUserId,
+        requestData
+      });
       addNotification('error', `Failed to update subscription: ${(error as any).message || 'Unknown error'}`);
     }
   }
 
   async function updateUserProfile() {
     if (!authState.token || !selectedUserId) {
+      console.log('No auth token or selected user for profile update');
       return;
     }
+    
+    console.log('Updating user profile:', {
+      selectedUserId,
+      editUserData
+    });
     
     // Validate and clean the data before sending to backend
     const userUpdateData: any = {};
@@ -1150,17 +1200,27 @@
     
     // Check if we have any data to update
     if (Object.keys(userUpdateData).length === 0) {
+      console.log('No valid data to update user profile');
       alert('No valid data to update. Please fill in at least one field.');
       return;
     }
     
+    console.log('User profile update data:', userUpdateData);
+    
     try {
       const result = await apiClient.adminUpdateUser(authState.token, selectedUserId, userUpdateData);
+      console.log('User profile update result:', result);
       
       await loadUsers(); // Reload users
       closeEditUserModal();
     } catch (error: any) {
-
+      console.log('Error updating user profile:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        selectedUserId,
+        userUpdateData
+      });
       alert(`Failed to update user profile: ${error.message || 'Unknown error'}`);
     }
   }
@@ -1168,13 +1228,24 @@
 
 
   async function resolveDispute(disputeId: string) {
-    if (!authState.token) return;
+    if (!authState.token) {
+      console.log('No auth token for resolving dispute');
+      return;
+    }
+    
+    console.log('Resolving dispute:', disputeId);
     
     try {
       await apiClient.resolveDispute(authState.token, disputeId);
+      console.log('Dispute resolved successfully');
       await loadDisputes(); // Reload disputes
     } catch (error) {
-
+      console.log('Error resolving dispute:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        disputeId
+      });
     }
   }
 </script>
@@ -1211,7 +1282,10 @@
       <!-- Admin Login Form -->
       {#if !authState.token || !authState.user}
         <div class="admin-login-section">
-
+          <AdminLoginForm on:loginSuccess={() => {
+            // Login success is handled by the auth store update in AdminLoginForm
+            // No additional action needed here
+          }} />
         </div>
       {/if}
     </div>
