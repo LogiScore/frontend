@@ -283,6 +283,47 @@
         return status;
     }
   }
+
+  // Function to check if a plan is the user's current plan
+  function isCurrentPlan(plan: any): boolean {
+    if (!subscriptionData) return false;
+    
+    const tierName = subscriptionData.tier?.toLowerCase();
+    
+    // Handle free plan
+    if (plan.price === 0 && (tierName === 'free' || !tierName)) {
+      return true;
+    }
+    
+    // Map subscription tier names to plan names
+    if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+      return true;
+    }
+    
+    if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+      return true;
+    }
+    
+    if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+      return true;
+    }
+    
+    // Additional check for active subscription status
+    if (subscriptionData.status === 'active' || subscriptionData.status === 'trial') {
+      // Check if the plan matches the current subscription tier
+      if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+        return true;
+      }
+      if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+        return true;
+      }
+      if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+        return true;
+      }
+    }
+    
+    return false;
+  }
 </script>
 
 {#if isOpen}
@@ -351,9 +392,9 @@
               <div class="plans-grid">
                 {#each availablePlans as plan}
                   {#if plan.price > 0}
-                    <!-- Filter out monthly plans if user is already on monthly -->
-                    {#if !(subscriptionData.tier === 'monthly' && plan.billingCycle === 'month')}
-                      <div class="plan-card" class:current={plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}>
+                    <!-- Check if this is the current plan and hide it -->
+                    {#if !isCurrentPlan(plan)}
+                      <div class="plan-card">
                         <div class="plan-header">
                           <h4>{plan.name}</h4>
                           <div class="plan-price">${plan.price}/{plan.billingCycle}</div>
@@ -368,9 +409,7 @@
                         </div>
                         
                         <div class="plan-actions">
-                          {#if plan.name.toLowerCase().replace(' ', '_') === subscriptionData.tier}
-                            <button type="button" class="btn-current" disabled>Current Plan</button>
-                          {:else if plan.price > (subscriptionData.price || 0)}
+                          {#if plan.price > (subscriptionData.price || 0)}
                             <button 
                               type="button"
                               class="btn-upgrade" 
@@ -628,10 +667,6 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   }
 
-  .plan-card.current {
-    border-color: #10b981;
-    background: #f0fdf4;
-  }
 
   .plan-card .plan-header {
     margin-bottom: 15px;
@@ -659,7 +694,7 @@
     text-align: center;
   }
 
-  .btn-current, .btn-upgrade, .btn-downgrade, .btn-danger {
+  .btn-upgrade, .btn-downgrade, .btn-danger {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
@@ -667,12 +702,6 @@
     font-size: 0.9rem;
     font-weight: 600;
     transition: background-color 0.2s;
-  }
-
-  .btn-current {
-    background: #10b981;
-    color: white;
-    cursor: not-allowed;
   }
 
   .btn-upgrade {
@@ -699,7 +728,6 @@
     background: #c82333;
   }
 
-  .btn-current:disabled,
   .btn-upgrade:disabled,
   .btn-downgrade:disabled,
   .btn-danger:disabled {

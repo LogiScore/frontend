@@ -90,8 +90,21 @@
       return true;
     }
     
-    // Fallback matching by plan ID
-    return tierName === plan.id?.toString();
+    // Additional check for active subscription status
+    if (currentSubscription.status === 'active' || currentSubscription.status === 'trial') {
+      // Check if the plan matches the current subscription tier
+      if (tierName === 'monthly' && plan.name === 'Subscription Monthly') {
+        return true;
+      }
+      if (tierName === 'annual' && plan.name === 'Subscription Annual') {
+        return true;
+      }
+      if (tierName === 'enterprise' && plan.name === 'Subscription Annual Plus') {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   function openSubscriptionModal(plan?: any) {
