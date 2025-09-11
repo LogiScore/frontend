@@ -62,10 +62,10 @@
       return;
     }
 
-    console.log('🔍 Starting email verification process for:', email, 'mode:', mode);
-    console.log('🔍 Available auth methods:', Object.keys(authMethods));
-    console.log('🔍 authMethods.requestSigninCode exists:', typeof authMethods.requestSigninCode);
-    console.log('🔍 authMethods.requestSignupCode exists:', typeof authMethods.requestSignupCode);
+
+
+
+
     
     isLoading = true;
     errorMessage = '';
@@ -75,11 +75,11 @@
       
       if (mode === 'signin') {
         // For sign-in: only send code to existing users
-        console.log('📧 Calling authMethods.requestSigninCode...');
+
         try {
           result = await authMethods.requestSigninCode(email);
         } catch (error: any) {
-          console.log('🔍 Checking for user not found error...');
+
           
           // Check if backend returned "User not found" error
           if (error.message?.includes('Email is not registered') || 
@@ -87,7 +87,7 @@
               error.message?.includes('not found') ||
               error.message?.includes('does not exist')) {
             
-            console.log('👤 User not registered, redirecting to sign-up mode');
+
             errorMessage = 'Email is not registered. Please register instead.';
             
             // Automatically switch to sign-up mode after showing the error message
@@ -127,25 +127,25 @@
           return;
         }
         
-        console.log('📧 Calling authMethods.requestSignupCode...');
+
         result = await authMethods.requestSignupCode(email, userType, companyName);
       }
       
-      console.log('📧 Result from requestCode:', result);
+
       
       if (result.success) {
         successMessage = `Verification code sent! Check your email. Code expires in ${result.expires_in} minutes.`;
         codeRequested = true;
         codeSent = true;
-        console.log('✅ Verification code sent successfully');
+
       } else {
         errorMessage = result.error || 'Failed to send verification code';
-        console.error('❌ Failed to send verification code:', result.error);
+
       }
     } catch (error: any) {
       errorMessage = error.message || 'Failed to send verification code';
-      console.error('💥 Exception during verification code request:', error);
-      console.error('💥 Error details:', {
+
+
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -171,7 +171,7 @@
           return;
         }
 
-        console.log('🔐 Calling signinWithCode for existing user');
+
         const result = await authMethods.signinWithCode(email, verificationCode);
         if (result.success) {
           closeModal();
@@ -200,7 +200,7 @@
           return;
         }
 
-        console.log('🔐 Calling verifySignupCode for new user registration');
+
 
         // For signup, verify the code and complete user authentication
         const result = await authMethods.verifySignupCode(email, verificationCode, fullName, companyName, userType);

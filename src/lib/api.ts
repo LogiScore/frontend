@@ -242,7 +242,7 @@ class ApiClient {
         }
       });
     } catch (error: any) {
-      console.error('Failed to fetch freight forwarder details:', error.message);
+
       throw error;
     }
   }
@@ -262,7 +262,7 @@ class ApiClient {
         body: JSON.stringify(forwarderData),
       });
     } catch (error: any) {
-      console.error('Failed to create freight forwarder:', error.message);
+
       throw error;
     }
   }
@@ -289,7 +289,7 @@ class ApiClient {
         body: JSON.stringify(branchData),
       });
     } catch (error: any) {
-      console.error('Failed to create branch:', error.message);
+
       throw error;
     }
   }
@@ -301,7 +301,7 @@ class ApiClient {
     try {
       return await this.request<Location[]>('/api/locations');
     } catch (error: any) {
-      console.error('Failed to fetch locations:', error.message);
+
       // Return fallback locations if API fails
       return this.getFallbackLocations();
     }
@@ -353,7 +353,7 @@ class ApiClient {
       const reviews = reviewsResponse.reviews || reviewsResponse as any;
       
       if (!Array.isArray(reviews)) {
-        console.error('Reviews response is not an array');
+
         return [];
       }
       
@@ -394,7 +394,7 @@ class ApiClient {
       return locationScores;
       
     } catch (error: any) {
-      console.error('Failed to calculate location scores from reviews:', error.message);
+
       return [];
     }
   }
@@ -452,7 +452,7 @@ class ApiClient {
       return countryScores;
       
     } catch (error: any) {
-      console.error('Failed to calculate country scores from reviews:', error.message);
+
       return [];
     }
   }
@@ -491,7 +491,7 @@ class ApiClient {
     try {
       return await this.request<ReviewCategory[]>('/api/reviews/questions');
     } catch (error: any) {
-      console.error('Failed to fetch review questions:', error);
+
       // Return fallback questions if API fails
       return this.getFallbackReviewQuestions();
     }
@@ -512,7 +512,7 @@ class ApiClient {
         body: JSON.stringify(reviewData),
       });
     } catch (error: any) {
-      console.error('Failed to create comprehensive review:', error);
+
       throw error;
     }
   }
@@ -531,7 +531,7 @@ class ApiClient {
       
       return response.reviews || [];
     } catch (error: any) {
-      console.error('Failed to fetch reviews for freight forwarder:', error);
+
       return [];
     }
   }
@@ -540,7 +540,7 @@ class ApiClient {
     try {
       return await this.request<ReviewResponse>(`/api/reviews/${reviewId}`);
     } catch (error: any) {
-      console.error('Failed to fetch review by ID:', error);
+
       throw error;
     }
   }
@@ -550,7 +550,7 @@ class ApiClient {
       // Query reviews by location_id
       return await this.request<ReviewResponse[]>(`/api/reviews/?location_id=${locationId}`);
     } catch (error: any) {
-      console.error('Failed to fetch reviews for location:', error);
+
       return [];
     }
   }
@@ -568,7 +568,7 @@ class ApiClient {
       }>(`/api/reviews/?country=${encodeURIComponent(country)}`);
       return response.reviews;
     } catch (error: any) {
-      console.error('Failed to fetch reviews for country:', error);
+
       return [];
     }
   }
@@ -590,7 +590,7 @@ class ApiClient {
       }>(url);
       return response.reviews;
     } catch (error: any) {
-      console.error('Failed to fetch reviews for city:', error);
+
       return [];
     }
   }
@@ -1190,7 +1190,7 @@ class ApiClient {
       
       return await this.request<FreightForwarder[]>(endpoint);
     } catch (error: any) {
-      console.error('Search failed:', error);
+
       // Return filtered mock data as fallback
       const mockData = [
         {
@@ -1241,7 +1241,7 @@ class ApiClient {
         body: JSON.stringify({ email, password, name, company, user_type: userType }),
       });
     } catch (error: any) {
-      console.error('Signup failed:', error);
+
       // Check if it's a duplicate user error
       if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('A user with this email or username already exists. Please try signing in instead.');
@@ -1275,7 +1275,7 @@ class ApiClient {
       };
       return result;
     } catch (error: any) {
-      console.error('API sendVerificationCode failed:', error);
+
       throw error;
     }
   }
@@ -1370,7 +1370,7 @@ class ApiClient {
         throw backendError;
       }
     } catch (error: any) {
-      console.error('API sendSigninCode failed:', error);
+
       throw error;
     }
   }
@@ -1429,7 +1429,7 @@ class ApiClient {
         throw backendError;
       }
     } catch (error: any) {
-      console.error('API sendSignupCode failed:', error);
+
       throw error;
     }
   }
@@ -1443,7 +1443,7 @@ class ApiClient {
         body: JSON.stringify({ email, code }),
       });
     } catch (error: any) {
-      console.error('Sign-in code verification failed:', error);
+
       throw new Error('Sign-in code verification failed. Please try again later.');
     }
   }
@@ -1466,7 +1466,7 @@ class ApiClient {
         body: JSON.stringify({ email, code, full_name: fullName, company_name: companyName, user_type: userType }),
       });
     } catch (error: any) {
-      console.error('Sign-up code verification failed:', error);
+
       // Check if it's a duplicate user error
       if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('A user with this email already exists. Please try signing in instead.');
@@ -1494,7 +1494,7 @@ class ApiClient {
         body: JSON.stringify({ email, code, name, company, user_type: userType }),
       });
     } catch (error: any) {
-      console.error('Legacy code verification failed:', error);
+
       // Check if it's a duplicate user error
       if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('A user with this email already exists. Please try signing in instead.');
@@ -1528,7 +1528,7 @@ class ApiClient {
       };
       return result;
     } catch (error: any) {
-      console.error('Failed to send admin verification code:', error);
+
       throw new Error('Failed to send verification code. Please try again later.');
     }
   }
@@ -1550,7 +1550,7 @@ class ApiClient {
         body: JSON.stringify({ email, code }),
       });
     } catch (error: any) {
-      console.error('Failed to verify admin code:', error);
+
       throw new Error('Failed to verify admin code. Please check your code and try again.');
     }
   }
@@ -1563,7 +1563,7 @@ class ApiClient {
         body: JSON.stringify({ email, code }),
       });
     } catch (error: any) {
-      console.error('Signin with code failed:', error.message);
+
       
               // Check if it's a CORS or network error
         if (error.message?.includes('Failed to fetch') || error.message?.includes('access control checks')) {
@@ -1689,14 +1689,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Email API error:', response.status, errorText);
+
         throw new Error(`Failed to send thank you email: ${response.status}`);
       }
 
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error('Email sending failed:', error.message);
+
       throw new Error(`Failed to send thank you email: ${error.message}`);
     }
   }
@@ -1728,14 +1728,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Admin notification API error:', response.status, errorText);
+
         throw new Error(`Failed to send admin notification: ${response.status}`);
       }
 
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error('Admin notification sending failed:', error.message);
+
       throw new Error(`Failed to send admin notification: ${error.message}`);
     }
   }
@@ -1764,14 +1764,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Welcome email API error:', response.status, errorText);
+
         throw new Error(`Failed to send welcome email: ${response.status}`);
       }
 
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error('Welcome email sending failed:', error.message);
+
       throw new Error(`Failed to send welcome email: ${error.message}`);
     }
   }
@@ -1796,7 +1796,7 @@ class ApiClient {
     try {
       return await this.requestWithAuth<User>('/api/users/me', {}, token);
     } catch (error) {
-      console.error('Failed to get current user:', error instanceof Error ? error.message : String(error));
+
       // Don't return demo user - let the calling code handle the error
       // This prevents real users from being replaced with demo data
       throw error;
@@ -1807,7 +1807,7 @@ class ApiClient {
   // Refresh expired JWT token
   async refreshToken(token: string): Promise<{ access_token: string }> {
     try {
-      console.log('Refreshing token with:', token.substring(0, 20) + '...');
+
       
       return await this.request<{ access_token: string }>('/api/auth/refresh', {
         method: 'POST',
@@ -1820,7 +1820,7 @@ class ApiClient {
         }),
       });
     } catch (error) {
-      console.error('Failed to refresh token:', error instanceof Error ? error.message : String(error));
+
       throw error;
     }
   }
@@ -1858,7 +1858,7 @@ class ApiClient {
             });
           }
         } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError instanceof Error ? refreshError.message : String(refreshError));
+
         }
       }
       
@@ -1908,8 +1908,8 @@ class ApiClient {
     last_billing_date?: string;
     next_billing_date?: string;
   }> {
-    console.log('getCurrentSubscription: Making API call to /api/subscriptions/current');
-    console.log('getCurrentSubscription: Token (first 20 chars):', token.substring(0, 20) + '...');
+
+
     
     try {
       const result = await this.request<{
@@ -1930,12 +1930,12 @@ class ApiClient {
         },
       });
       
-      console.log('getCurrentSubscription: API call successful, result:', result);
+
       return result;
     } catch (error: any) {
-      console.error('getCurrentSubscription: API call failed:', error);
-      console.error('getCurrentSubscription: Error message:', error.message);
-      console.error('getCurrentSubscription: Error details:', error);
+
+
+
       throw error;
     }
   }
@@ -1946,9 +1946,9 @@ class ApiClient {
       reason: 'User requested cancellation'
     };
     
-    console.log('Sending cancelSubscription request to /api/subscriptions/cancel');
-    console.log('Request data:', requestData);
-    console.log('Authorization token:', token.substring(0, 20) + '...');
+
+
+
     
     const response = await this.requestWithAuth<{ message: string }>('/api/subscriptions/cancel', {
       method: 'POST',
@@ -1958,7 +1958,7 @@ class ApiClient {
       body: JSON.stringify(requestData),
     }, token);
     
-    console.log('CancelSubscription response:', response);
+
     return response;
   }
 
@@ -1968,9 +1968,9 @@ class ApiClient {
       auto_renew_enabled: autoRenew
     };
     
-    console.log('updateAutoRenewal: Making API call to /api/subscriptions/auto-renewal');
-    console.log('updateAutoRenewal: Token (first 20 chars):', token.substring(0, 20) + '...');
-    console.log('updateAutoRenewal: Request data:', requestData);
+
+
+
     
     try {
       const response = await this.requestWithAuth<{ message: string }>('/api/subscriptions/auto-renewal', {
@@ -1978,12 +1978,12 @@ class ApiClient {
         body: JSON.stringify(requestData),
       }, token);
       
-      console.log('updateAutoRenewal: API call successful, response:', response);
+
       return response;
     } catch (error: any) {
-      console.error('updateAutoRenewal: API call failed:', error);
-      console.error('updateAutoRenewal: Error message:', error.message);
-      console.error('updateAutoRenewal: Error details:', error);
+
+
+
       throw error;
     }
   }
@@ -2013,9 +2013,9 @@ class ApiClient {
 
   // ===== NEW METHOD: toggleAutoRenewal =====
   async toggleAutoRenewal(token: string, enabled: boolean): Promise<{ message: string; auto_renew: boolean }> {
-    console.log('toggleAutoRenewal: Making API call to /api/subscriptions/toggle-auto-renewal');
-    console.log('toggleAutoRenewal: Token (first 20 chars):', token.substring(0, 20) + '...');
-    console.log('toggleAutoRenewal: Enabled:', enabled);
+
+
+
     
     try {
       const result = await this.requestWithAuth<{ message: string; auto_renew: boolean }>('/api/subscriptions/toggle-auto-renewal', {
@@ -2028,12 +2028,12 @@ class ApiClient {
         }),
       }, token);
       
-      console.log('toggleAutoRenewal: API call successful, result:', result);
+
       return result;
     } catch (error: any) {
-      console.error('toggleAutoRenewal: API call failed:', error);
-      console.error('toggleAutoRenewal: Error message:', error.message);
-      console.error('toggleAutoRenewal: Error details:', error);
+
+
+
       throw error;
     }
   }
@@ -2046,11 +2046,11 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get dashboard stats:', error);
+
       
       // Check if it's an authentication error
       if ((error as any).message?.includes('401') || (error as any).message?.includes('Could not validate credentials')) {
-        console.error('Authentication failed - token validation issue');
+
         throw new Error('Authentication failed. Please log in again.');
       }
       
@@ -2069,7 +2069,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get users:', error);
+
       throw new Error('Failed to load users. Please try again later.');
     }
   }
@@ -2084,7 +2084,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get reviews:', error);
+
       throw new Error('Failed to load reviews. Please try again later.');
     }
   }
@@ -2099,7 +2099,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get disputes:', error);
+
       throw new Error('Failed to load disputes. Please try again later.');
     }
   }
@@ -2114,7 +2114,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get companies:', error);
+
       throw new Error('Failed to load companies. Please try again later.');
     }
   }
@@ -2126,7 +2126,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get company details:', error);
+
       throw new Error('Failed to load company details. Please try again later.');
     }
   }
@@ -2145,7 +2145,7 @@ class ApiClient {
       
       return result;
     } catch (error) {
-      console.error('API: Failed to update company:', error);
+
       
       // Preserve the original error message if it's more specific
       if (error instanceof Error && error.message !== 'Failed to update company') {
@@ -2165,7 +2165,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to delete company:', error);
+
       throw new Error('Failed to delete company');
     }
   }
@@ -2182,7 +2182,7 @@ class ApiClient {
         body: JSON.stringify(companyData)
       });
     } catch (error) {
-      console.error('Failed to create company:', error);
+
       throw new Error('Failed to create company');
     }
   }
@@ -2199,7 +2199,7 @@ class ApiClient {
         body: JSON.stringify(subscriptionData)
       });
     } catch (error) {
-      console.error('Failed to update subscription:', error);
+
       throw new Error('Failed to update subscription');
     }
   }
@@ -2212,7 +2212,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to approve review:', error);
+
       throw new Error('Failed to approve review');
     }
   }
@@ -2225,7 +2225,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to reject review:', error);
+
       throw new Error('Failed to reject review');
     }
   }
@@ -2238,7 +2238,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to resolve dispute:', error);
+
       throw new Error('Failed to resolve dispute');
     }
   }
@@ -2250,7 +2250,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get recent activity:', error);
+
       throw new Error('Failed to load recent activity. Please try again later.');
     }
   }
@@ -2262,7 +2262,7 @@ class ApiClient {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (error) {
-      console.error('Failed to get analytics:', error);
+
       throw new Error('Failed to load analytics data. Please try again later.');
     }
   }
@@ -2283,7 +2283,7 @@ class ApiClient {
     try {
       return await this.request<User[]>('/api/users');
     } catch (error: any) {
-      console.error('Failed to get users:', error);
+
       throw error;
     }
   }
@@ -2291,7 +2291,7 @@ class ApiClient {
   // ===== METHOD: getLocationsFromDatabase =====
   async getLocationsFromDatabase(): Promise<Location[]> {
     try {
-      console.log('🔄 Loading locations from database with pagination...');
+
       
       let allLocations: any[] = [];
       let page = 1;
@@ -2301,7 +2301,7 @@ class ApiClient {
       // Load locations page by page until all are retrieved
       while (hasMorePages) {
         const url = `/api/locations/?page=${page}&page_size=${pageSize}`;
-        console.log(`📄 Loading page ${page} with ${pageSize} locations...`);
+
         
         const response = await this.request<any>(url);
         
@@ -2314,7 +2314,7 @@ class ApiClient {
           data = response.data;
           if (response.pagination) {
             totalPages = response.pagination.total_pages || Math.ceil(response.pagination.total / pageSize) || 1;
-            console.log(`📊 Page ${page}/${totalPages}, total items: ${response.pagination.total || 'unknown'}`);
+
           }
         } else if (Array.isArray(response)) {
           // Fallback: direct array response
@@ -2325,7 +2325,7 @@ class ApiClient {
         
         // Add locations from this page
         allLocations.push(...data);
-        console.log(`✅ Page ${page} loaded: ${data.length} locations (total so far: ${allLocations.length})`);
+
         
         // Check if we have more pages
         if (response.pagination && response.pagination.total_pages) {
@@ -2339,12 +2339,12 @@ class ApiClient {
         
         // Safety check to prevent infinite loops
         if (page > 50) {
-          console.warn('⚠️ Safety limit reached: stopping at 50 pages');
+
           break;
         }
       }
       
-      console.log(`🎯 Total locations loaded: ${allLocations.length}`);
+
       
       // Convert to the expected format for the existing code
       const processedLocations = allLocations.map((loc: any) => ({
@@ -2361,15 +2361,15 @@ class ApiClient {
       const bangladeshLocations = processedLocations.filter(loc => 
         loc.country && loc.country.toLowerCase().includes('bangladesh')
       );
-      console.log(`🇧🇩 Bangladesh locations found: ${bangladeshLocations.length}`);
+
       if (bangladeshLocations.length > 0) {
-        console.log('🇧🇩 Sample Bangladesh locations:', bangladeshLocations.slice(0, 3));
+
       }
       
       return processedLocations;
       
     } catch (error: any) {
-      console.error('Failed to load locations from database:', error);
+
       
       // Fallback: Load from static data if backend API is not available
       const fallbackLocations = [
@@ -2429,7 +2429,7 @@ class ApiClient {
         country: loc.country || ''
       }));
     } catch (error: any) {
-      console.error(`Failed to search locations for "${query}":`, error);
+
       return [];
     }
   }
@@ -2464,7 +2464,7 @@ class ApiClient {
         country: loc.country || ''
       }));
     } catch (error: any) {
-      console.error(`Failed to search countries for "${countryQuery}":`, error);
+
       return [];
     }
   }
@@ -2472,7 +2472,7 @@ class ApiClient {
   // ===== METHOD: getCitiesInCountry (EFFICIENT) =====
   async getCitiesInCountry(countryQuery: string): Promise<string[]> {
     try {
-      console.log(`🏙️ Fetching cities in ${countryQuery} efficiently...`);
+
       
       // Get just the first page with a large page size to get a good sample of cities
       // This is much faster than paginating through all locations
@@ -2495,19 +2495,19 @@ class ApiClient {
       // Extract unique cities from the sample
       const cities = [...new Set(data.map(loc => loc.city).filter((city): city is string => Boolean(city)))].sort();
       
-      console.log(`✅ Found ${cities.length} unique cities in ${countryQuery} from sample of ${data.length} locations`);
+
       
       // If we have pagination info and there are more pages, we might be missing some cities
       // But for user experience, this sample should be sufficient
       if (response.pagination && response.pagination.total_pages > 1) {
-        console.log(`ℹ️ Note: There are ${response.pagination.total_pages} total pages, but we're using a sample for performance`);
-        console.log(`ℹ️ If you need all cities, consider implementing a cities-specific API endpoint`);
+
+
       }
       
       return cities;
       
     } catch (error: any) {
-      console.error(`Failed to get cities in country "${countryQuery}":`, error);
+
       return [];
     }
   }
@@ -2520,11 +2520,11 @@ class ApiClient {
       const pageSize = 1000;
       let hasMorePages = true;
       
-      console.log(`🔍 Fetching all locations in ${countryQuery} with pagination...`);
+
       
       while (hasMorePages) {
         const url = `/api/locations/?country=${encodeURIComponent(countryQuery)}&page=${page}&page_size=${pageSize}`;
-        console.log(`📄 Fetching page ${page}...`);
+
         
         const response = await this.request<any>(url);
         
@@ -2552,7 +2552,7 @@ class ApiClient {
         }));
         
         allLocations.push(...pageLocations);
-        console.log(`✅ Page ${page}: Got ${pageLocations.length} locations (Total: ${allLocations.length})`);
+
         
         // Check if there are more pages
         if (response.pagination) {
@@ -2566,16 +2566,16 @@ class ApiClient {
         
         // Safety check to prevent infinite loops
         if (page > 100) {
-          console.warn('⚠️ Safety limit reached: stopping pagination at 100 pages');
+
           break;
         }
       }
       
-      console.log(`🎯 Total locations found in ${countryQuery}: ${allLocations.length}`);
+
       return allLocations;
       
     } catch (error: any) {
-      console.error(`Failed to get all locations in country "${countryQuery}":`, error);
+
       return [];
     }
   }
@@ -2610,7 +2610,7 @@ class ApiClient {
         country: loc.country || ''
       }));
     } catch (error: any) {
-      console.error(`Failed to get locations for city "${city}", "${country}":`, error);
+
       return [];
     }
   }
@@ -2661,7 +2661,7 @@ class ApiClient {
       
       return basicUserReviews;
     } catch (error: any) {
-      console.error(`Failed to get user reviews for company: ${companyId}`, error);
+
       // Return empty array if API fails
       return [];
     }
@@ -2702,14 +2702,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Contact form email API error:', response.status, errorText);
+
         throw new Error(`Failed to send contact form: ${response.status}`);
       }
 
       const result = await response.json();
       return result;
     } catch (error: any) {
-      console.error('Contact form email sending failed:', error);
+
       throw new Error(`Failed to send contact form: ${error.message}`);
     }
   }
@@ -2732,7 +2732,7 @@ class ApiClient {
         body: JSON.stringify(profileData)
       });
     } catch (error) {
-      console.error('Failed to update user profile:', error);
+
       throw new Error('Failed to update profile. Please try again later.');
     }
   }
@@ -2755,7 +2755,7 @@ class ApiClient {
         body: JSON.stringify(userData)
       });
     } catch (error) {
-      console.error('Failed to update user via admin endpoint:', error);
+
       throw new Error('Failed to update user. Please try again later.');
     }
   }
@@ -2771,7 +2771,7 @@ class ApiClient {
       });
       return response;
     } catch (error: any) {
-      console.error('Failed to get promotion config:', error);
+
       // Return default config if API fails
       return {
         isActive: true,
@@ -2798,7 +2798,7 @@ class ApiClient {
         body: JSON.stringify(config)
       });
     } catch (error: any) {
-      console.error('Failed to update promotion config:', error);
+
       throw new Error('Failed to update promotion configuration');
     }
   }
@@ -2812,7 +2812,7 @@ class ApiClient {
       });
       return Array.isArray(response) ? response : [];
     } catch (error: any) {
-      console.error('Failed to get user rewards:', error);
+
       return [];
     }
   }
@@ -2830,7 +2830,7 @@ class ApiClient {
         totalMonthsAwarded: 0
       };
     } catch (error: any) {
-      console.error('Failed to get promotion stats:', error);
+
       return {
         totalRewardsGiven: 0,
         activeUsers: 0,
@@ -2858,7 +2858,7 @@ class ApiClient {
       
       return { success: true, message: 'Reward awarded successfully' };
     } catch (error: any) {
-      console.error('Failed to award user reward:', error);
+
       return { 
         success: false, 
         message: error.message || 'Failed to award user reward' 
@@ -2886,7 +2886,7 @@ class ApiClient {
       }
       throw new Error('Invalid response format');
     } catch (error: any) {
-      console.error('Failed to check user reward eligibility:', error);
+
       return {
         eligible: false,
         currentRewards: 0,
@@ -2916,14 +2916,14 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Reward notification email API error:', response.status, errorText);
+
         throw new Error(`Failed to send reward notification: ${response.status}`);
       }
 
       const result = await response.json();
       return { success: true, message: 'Reward notification email sent successfully' };
     } catch (error: any) {
-      console.error('Reward notification email sending failed:', error);
+
       return { 
         success: false, 
         message: `Failed to send reward notification: ${error.message}` 
@@ -3202,7 +3202,7 @@ class ApiClient {
         }
       });
     } catch (error) {
-      console.error('Failed to fetch score trends:', error);
+
       throw error;
     }
   }

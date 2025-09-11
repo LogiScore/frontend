@@ -53,15 +53,15 @@
       
       subscriptionData = await apiClient.getCurrentSubscription(authState.token);
     } catch (err: any) {
-      console.error('Failed to load subscription:', err);
+
       
       // Check if it's a "No active subscription found" error
       if (err.message && err.message.includes('No active subscription found')) {
-        console.log('SubscriptionManagementModal: Backend reports no active subscription, checking local user data');
+
         
         // Check if user has subscription data locally
         if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
-          console.log('SubscriptionManagementModal: User has local subscription data, creating fallback subscription object');
+
           
           // Create a fallback subscription object from local user data
           subscriptionData = {
@@ -78,7 +78,7 @@
             next_billing_date: null
           };
           
-          console.log('SubscriptionManagementModal: Created fallback subscription:', subscriptionData);
+
           error = ''; // Clear error since we have fallback data
           return; // Don't set error, we have fallback data
         }
@@ -96,7 +96,7 @@
     try {
       availablePlans = getPlansForUserType(authState.user.user_type);
     } catch (err: any) {
-      console.error('Failed to load plans:', err);
+
     }
   }
 
@@ -135,7 +135,7 @@
           tierName = plan.name.toLowerCase().replace(' ', '_');
         }
 
-        console.log('Upgrading subscription:', {
+
           planName: plan.name,
           tierName: tierName,
           price: plan.price
@@ -165,7 +165,7 @@
         // Notify parent
         dispatch('subscriptionUpdated', { action: 'upgraded', plan: plan.name });
       } catch (err: any) {
-        console.error('Failed to upgrade subscription:', err);
+
         error = err.message || 'Failed to upgrade subscription';
       } finally {
         isUpgrading = false;
@@ -227,7 +227,7 @@
       dispatch('subscriptionUpdated', { action: 'canceled' });
       
     } catch (err: any) {
-      console.error('Failed to cancel subscription:', err);
+
       error = err.message || 'Failed to cancel subscription';
       success = ''; // Clear any previous success messages
     }

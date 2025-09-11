@@ -89,9 +89,9 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this location
-      console.log('Fetching review subscriptions...');
+
       const result = await apiClient.getReviewSubscriptions($auth.token);
-      console.log('API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       let subscriptions = [];
@@ -100,7 +100,7 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format:', result);
+
         throw new Error('Invalid response from server');
       }
       
@@ -112,12 +112,12 @@
       
       if (subscription) {
         // Unsubscribe
-        console.log('Unsubscribing from location:', locationName, country, city);
+
         await apiClient.deleteReviewSubscription($auth.token, subscription.id);
-        console.log('Successfully unsubscribed from location notifications');
+
       } else {
         // Subscribe
-        console.log('Subscribing to location:', locationName, country, city);
+
         const subscriptionData = {
           freight_forwarder_id: forwarderId,
           location_country: country,
@@ -125,13 +125,13 @@
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
         await apiClient.createReviewSubscription($auth.token, subscriptionData);
-        console.log('Successfully subscribed to location notifications');
+
       }
       
       // Reload subscription list after changes
       await loadUserSubscriptions();
     } catch (err: any) {
-      console.error('Failed to toggle location notification subscription:', err);
+
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -148,9 +148,9 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this country
-      console.log('Fetching review subscriptions...');
+
       const result = await apiClient.getReviewSubscriptions($auth.token);
-      console.log('API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       let subscriptions = [];
@@ -159,7 +159,7 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format:', result);
+
         throw new Error('Invalid response from server');
       }
       
@@ -171,25 +171,25 @@
       
       if (subscription) {
         // Unsubscribe
-        console.log('Unsubscribing from country:', country);
+
         await apiClient.deleteReviewSubscription($auth.token, subscription.id);
-        console.log('Successfully unsubscribed from country notifications');
+
       } else {
         // Subscribe
-        console.log('Subscribing to country:', country);
+
         const subscriptionData = {
           freight_forwarder_id: forwarderId,
           location_country: country,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
         await apiClient.createReviewSubscription($auth.token, subscriptionData);
-        console.log('Successfully subscribed to country notifications');
+
       }
       
       // Reload subscription list after changes
       await loadUserSubscriptions();
     } catch (err: any) {
-      console.error('Failed to toggle country notification subscription:', err);
+
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -200,9 +200,9 @@
     if (!isAnnualSubscriber || !$auth?.token) return;
     
     try {
-      console.log('Loading all user subscriptions...');
+
       const result = await apiClient.getReviewSubscriptions($auth.token);
-      console.log('All subscriptions API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       let subscriptions = [];
@@ -211,15 +211,15 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format for loading subscriptions:', result);
+
         userSubscriptions = [];
         return;
       }
       
       userSubscriptions = subscriptions;
-      console.log('Loaded user subscriptions:', userSubscriptions);
+
     } catch (err: any) {
-      console.error('Failed to load user subscriptions:', err);
+
       userSubscriptions = [];
     }
   }
@@ -230,8 +230,8 @@
       sub.location_country === country && 
       sub.location_city === city
     );
-    console.log(`Checking location subscription for ${forwarderId}, ${city}, ${country}:`, isSubscribed);
-    console.log('Location button should be green:', isSubscribed);
+
+
     return isSubscribed;
   }
 
@@ -241,8 +241,8 @@
       sub.location_country === country && 
       !sub.location_city
     );
-    console.log(`Checking country subscription for ${forwarderId}, ${country}:`, isSubscribed);
-    console.log('Country button should be green:', isSubscribed);
+
+
     return isSubscribed;
   }
 
@@ -250,9 +250,9 @@
     if (!isAnnualSubscriber || !$auth?.token || !freightForwarderId) return;
     
     try {
-      console.log('Checking company notification subscription...');
+
       const result = await apiClient.getReviewSubscriptions($auth.token);
-      console.log('API response for company check:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       let subscriptions = [];
@@ -261,7 +261,7 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format for company check:', result);
+
         isSubscribedToCompanyNotifications = false;
         return;
       }
@@ -272,11 +272,11 @@
         !sub.location_city
       );
       isSubscribedToCompanyNotifications = !!subscription;
-      console.log('Company subscription found:', subscription);
-      console.log('Company subscription status:', isSubscribedToCompanyNotifications);
-      console.log('Button should be green:', isSubscribedToCompanyNotifications);
+
+
+
     } catch (err: any) {
-      console.error('Failed to check company notification subscription:', err);
+
       isSubscribedToCompanyNotifications = false;
     }
   }
@@ -291,9 +291,9 @@
       isTogglingNotification = true;
       
       // Check if already subscribed to this company (no location/country specified)
-      console.log('Fetching review subscriptions for company...');
+
       const result = await apiClient.getReviewSubscriptions($auth.token);
-      console.log('API response for company toggle:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       let subscriptions = [];
@@ -302,7 +302,7 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format for company toggle:', result);
+
         throw new Error('Invalid response from server');
       }
       
@@ -314,26 +314,26 @@
       
       if (subscription) {
         // Unsubscribe
-        console.log('Unsubscribing from company:', forwarderId);
+
         await apiClient.deleteReviewSubscription($auth.token, subscription.id);
         isSubscribedToCompanyNotifications = false;
-        console.log('Successfully unsubscribed from company notifications');
+
       } else {
         // Subscribe
-        console.log('Subscribing to company:', forwarderId);
+
         const subscriptionData = {
           freight_forwarder_id: forwarderId,
           notification_frequency: 'immediate' as 'immediate' | 'daily' | 'weekly'
         };
         await apiClient.createReviewSubscription($auth.token, subscriptionData);
         isSubscribedToCompanyNotifications = true;
-        console.log('Successfully subscribed to company notifications');
+
       }
       
       // Reload subscription list after changes
       await loadUserSubscriptions();
     } catch (err: any) {
-      console.error('Failed to toggle company notification subscription:', err);
+
       alert('Failed to update notification settings. Please try again.');
     } finally {
       isTogglingNotification = false;
@@ -351,9 +351,9 @@
     }
 
     try {
-      console.log('Deleting subscription:', subscriptionId);
+
       await apiClient.deleteReviewSubscription($auth.token, subscriptionId);
-      console.log('Successfully deleted subscription');
+
       
       // Reload subscription list after deletion
       await loadUserSubscriptions();
@@ -363,7 +363,7 @@
         await checkCompanyNotificationSubscription();
       }
     } catch (err: any) {
-      console.error('Failed to delete subscription:', err);
+
       alert('Failed to delete subscription. Please try again.');
     }
   }
@@ -427,7 +427,7 @@
       }
 
     } catch (err: any) {
-      console.error('Error loading freight forwarder:', err);
+
       error = err.message || 'Failed to load freight forwarder details';
       
       // Add more specific error handling
@@ -472,7 +472,7 @@
       locationScores = locationData || [];
       countryScores = countryData || [];
     } catch (err: any) {
-      console.error('Failed to load detailed scores:', err);
+
     } finally {
       isLoadingScores = false;
     }
@@ -488,11 +488,11 @@
       isLoadingTrends = true;
       trendsError = null;
       
-      console.log('Loading score trends for period:', selectedPeriod);
+
       scoreTrendsData = await apiClient.getScoreTrends(freightForwarderId, $auth.token, selectedPeriod);
-      console.log('Score trends data loaded:', scoreTrendsData);
+
     } catch (err: any) {
-      console.error('Failed to load score trends:', err);
+
       trendsError = err.message || 'Failed to load score trends';
       scoreTrendsData = null;
     } finally {

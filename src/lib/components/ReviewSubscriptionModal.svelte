@@ -68,7 +68,7 @@
   }
 
   onMount(async () => {
-    console.log('ReviewSubscriptionModal: onMount called, isOpen:', isOpen, 'hasToken:', !!authState.token);
+
     if (isOpen && authState.token) {
       await loadSubscriptions();
     }
@@ -81,7 +81,7 @@
       isLoading = true;
       error = '';
       const result = await apiClient.getReviewSubscriptions(authState.token);
-      console.log('Review Notifications Modal: API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       if (Array.isArray(result)) {
@@ -89,14 +89,14 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format:', result);
+
         subscriptions = [];
         error = 'Invalid response from server';
       }
       
-      console.log('Review Notifications Modal: Loaded subscriptions:', subscriptions);
+
     } catch (err: any) {
-      console.error('Failed to load subscriptions:', err);
+
       error = err.message || 'Failed to load subscriptions';
       subscriptions = [];
     } finally {
@@ -109,7 +109,7 @@
     
     try {
       const result = await apiClient.getThresholdSubscriptions(authState.token);
-      console.log('Review Notifications Modal: Threshold API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       if (Array.isArray(result)) {
@@ -117,33 +117,33 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         thresholdSubscriptions = result.subscriptions;
       } else {
-        console.error('Invalid threshold API response format:', result);
+
         thresholdSubscriptions = [];
       }
       
-      console.log('Review Notifications Modal: Loaded threshold subscriptions:', thresholdSubscriptions);
+
     } catch (err: any) {
-      console.error('Failed to load threshold subscriptions:', err);
+
       thresholdSubscriptions = [];
     }
   }
 
   function closeModal() {
-    console.log('ReviewSubscriptionModal: closeModal called');
+
     try {
       dispatch('close');
       // Reset state
       error = '';
       success = '';
     } catch (err) {
-      console.error('Error in closeModal:', err);
+
     }
   }
 
 
 
   async function toggleSubscription(subscriptionId: string) {
-    console.log('ReviewSubscriptionModal: toggleSubscription called for ID:', subscriptionId);
+
     if (!authState.token) return;
     
     try {
@@ -151,13 +151,13 @@
       success = result.message;
       await loadSubscriptions(); // Reload to get updated status
     } catch (err: any) {
-      console.error('Failed to toggle subscription:', err);
+
       error = err.message || 'Failed to toggle subscription';
     }
   }
 
   async function deleteSubscription(subscriptionId: string) {
-    console.log('ReviewSubscriptionModal: deleteSubscription called for ID:', subscriptionId);
+
     if (!authState.token) return;
     
     if (!confirm('Are you sure you want to delete this subscription?')) return;
@@ -167,7 +167,7 @@
       success = result.message;
       await loadSubscriptions(); // Reload to remove deleted item
     } catch (err: any) {
-      console.error('Failed to delete subscription:', err);
+
       error = err.message || 'Failed to delete subscription';
     }
   }
@@ -181,7 +181,7 @@
       success = result.message;
       await loadThresholdSubscriptions(); // Reload to get updated status
     } catch (err: any) {
-      console.error('Failed to toggle threshold subscription:', err);
+
       error = err.message || 'Failed to toggle threshold subscription';
     }
   }
@@ -198,7 +198,7 @@
       success = result.message;
       await loadThresholdSubscriptions(); // Reload to get updated list
     } catch (err: any) {
-      console.error('Failed to delete threshold subscription:', err);
+
       error = err.message || 'Failed to delete threshold subscription';
     }
   }
@@ -219,11 +219,11 @@
 </script>
 
 {#if isOpen}
-  <div class="modal-overlay" on:click|self={closeModal} on:mousedown={() => console.log('Modal overlay mousedown')}>
-    <div class="modal-content" on:click|stopPropagation on:mousedown={() => console.log('Modal content mousedown')}>
+
+
       <div class="modal-header">
         <h2>Notification Settings</h2>
-        <button class="close-btn" on:click={closeModal} on:mousedown={() => console.log('Close button mousedown')} on:mouseup={() => console.log('Close button mouseup')}>&times;</button>
+
       </div>
       
       <!-- Tab Navigation -->

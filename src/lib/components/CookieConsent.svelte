@@ -61,11 +61,11 @@
     // Here you would typically trigger your analytics/marketing scripts based on preferences
     if (preferences.analytics) {
       // Enable analytics cookies
-      console.log('Analytics cookies enabled');
+
     }
     if (preferences.marketing) {
       // Enable marketing cookies
-      console.log('Marketing cookies enabled');
+
     }
   }
   

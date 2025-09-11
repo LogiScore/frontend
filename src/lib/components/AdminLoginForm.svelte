@@ -34,7 +34,7 @@
       codeRequested = true;
       codeSent = true;
     } catch (error: any) {
-      console.error('Failed to request admin verification code:', error);
+
       errorMessage = error.message || 'Failed to send verification code. Please check your email and try again.';
     } finally {
       isLoading = false;
@@ -62,7 +62,7 @@
       if (response.user && response.access_token) {
         // Check if user has admin privileges
         if (response.user.user_type === 'admin') {
-          console.log('Admin login successful');
+
           
           // Manually update the auth store with admin user data
           auth.update(state => ({
@@ -87,7 +87,7 @@
         errorMessage = 'Invalid verification code or response';
       }
     } catch (error: any) {
-      console.error('Admin verification failed:', error);
+
       errorMessage = error.message || 'Verification failed. Please check your code and try again.';
     } finally {
       isLoading = false;

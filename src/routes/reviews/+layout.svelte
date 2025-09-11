@@ -18,14 +18,14 @@
   onMount(() => {
     // Check if user is a forwarder and redirect immediately
     if (authState.user && authState.user.user_type === 'forwarder') {
-      console.log('Route guard: Forwarder user detected, redirecting to search page');
+
       goto('/search');
     }
   });
 
   // Reactive check for forwarder users
   $: if (authState.user && authState.user.user_type === 'forwarder') {
-    console.log('Route guard: Forwarder user detected, redirecting to search page');
+
     goto('/search');
   }
 </script>

@@ -40,7 +40,7 @@
     if (authState.user?.id !== state.user?.id || 
         authState.user?.subscription_tier !== state.user?.subscription_tier ||
         authState.isLoading !== state.isLoading) {
-      console.log('Header: Auth store updated:', {
+
         userId: state.user?.id,
         subscriptionTier: state.user?.subscription_tier,
         isLoading: state.isLoading
@@ -52,14 +52,14 @@
   onMount(() => {
     // Only check auth if we don't already have a user
     if (!authState.user && authState.token) {
-      console.log('Header: No user but token exists, attempting to restore session');
+
       authMethods.getCurrentUser().catch((error: any) => {
-        console.error('Failed to get current user:', error);
+
       });
     } else if (authState.user && authState.token) {
-      console.log('Header: User session already restored');
+
     } else {
-      console.log('Header: No authentication found');
+
     }
     
     // Add click outside handler for dropdown
@@ -93,19 +93,19 @@
   
   
   function openProfileModal() {
-    console.log('Opening profile modal');
+
     showProfileModal = true;
     showUserDropdown = false; // Close dropdown when opening modal
   }
   
   function openChangePasswordModal() {
-    console.log('Opening change password modal');
+
     showChangePasswordModal = true;
     showUserDropdown = false; // Close dropdown when opening modal
   }
 
   function openReviewSubscriptionModal() {
-    console.log('Opening review subscription modal');
+
     showReviewSubscriptionModal = true;
     showUserDropdown = false; // Close dropdown when opening modal
   }
@@ -157,9 +157,9 @@
         {#if authState.user}
           <div class="user-dropdown" class:open={showUserDropdown}>
             <button class="user-dropdown-toggle" on:click={() => {
-              console.log('Dropdown toggle clicked, current state:', showUserDropdown);
+
               showUserDropdown = !showUserDropdown;
-              console.log('New dropdown state:', showUserDropdown);
+
             }}>
               <span class="username">{authState.user.full_name || authState.user.username}</span>
               <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -41,7 +41,7 @@
 
     } catch (err: any) {
       error = `❌ Error testing trial reminders: ${err.message}`;
-      console.error('Trial reminder test error:', err);
+
     } finally {
       isLoading = false;
     }
@@ -72,7 +72,7 @@
 
     } catch (err: any) {
       error = `❌ Error testing trial ended notification: ${err.message}`;
-      console.error('Trial ended test error:', err);
+
     } finally {
       isLoading = false;
     }

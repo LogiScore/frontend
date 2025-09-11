@@ -148,7 +148,7 @@ function setupInactivityTracking() {
   
   // Prevent multiple setups
   if (isTrackingSetup) {
-    console.warn('Inactivity tracking already setup, skipping...');
+
     return;
   }
   
@@ -258,7 +258,7 @@ export const auth = writable<AuthState>({
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   auth.subscribe(state => {
     // Auth state changed - only log in development
-    console.log('Auth store updated:', {
+
       hasUser: !!state.user,
       hasToken: !!state.token,
       isLoading: state.isLoading
@@ -395,7 +395,7 @@ export const authMethods = {
         }));
         return;
       } catch (apiError: any) {
-        console.warn('API call failed, but maintaining local session:', apiError.message);
+
         
         // If we have a stored token but API fails, maintain the session locally
         // This prevents users from being logged out due to backend issues
@@ -415,7 +415,7 @@ export const authMethods = {
         throw apiError;
       }
     } catch (error: any) {
-      console.error('getCurrentUser completely failed:', error.message);
+
       
       // Only clear authentication for critical errors, not network issues
       if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
@@ -439,19 +439,19 @@ export const authMethods = {
     try {
       const currentState = get<AuthState>(auth);
       if (!currentState.token) {
-        console.warn('No token available for user refresh');
+
         return;
       }
 
       const user = await apiClient.getCurrentUser(currentState.token);
       
-      console.log('User data refreshed from backend:', user);
-      console.log('User subscription_tier from backend:', user.subscription_tier);
+
+
       
       // Check if we need to override the backend data for canceled subscriptions
       // This prevents the backend from overriding our local cleared subscription data
       if (currentState.user?.subscription_tier === null && user.subscription_tier !== null) {
-        console.log('Overriding backend subscription_tier to maintain null for canceled subscription');
+
         user.subscription_tier = null;
         user.subscription_start_date = null;
         user.subscription_end_date = null;
@@ -464,9 +464,9 @@ export const authMethods = {
         user
       }));
       
-      console.log('User data refreshed from backend');
+
     } catch (error: any) {
-      console.error('Failed to refresh user data:', error.message);
+
       // Don't clear auth on refresh failure - just log the error
     }
   },
@@ -480,7 +480,7 @@ export const authMethods = {
     try {
       const currentState = get<AuthState>(auth);
       if (!currentState.user) {
-        console.warn('No user data available for subscription update');
+
         return;
       }
 
@@ -491,7 +491,7 @@ export const authMethods = {
         (subscriptionData.end_date !== undefined && currentState.user.subscription_end_date !== subscriptionData.end_date);
 
       if (!needsUpdate) {
-        console.log('No subscription data changes needed, skipping update');
+
         return;
       }
 
@@ -503,7 +503,7 @@ export const authMethods = {
         ...(subscriptionData.end_date !== undefined && { subscription_end_date: subscriptionData.end_date })
       };
       
-      console.log('Updating user subscription data:', {
+
         from: currentState.user.subscription_tier,
         to: updatedUser.subscription_tier
       });
@@ -516,7 +516,7 @@ export const authMethods = {
       }));
       
     } catch (error: any) {
-      console.error('Failed to update user subscription data:', error.message);
+
     }
   },
 
@@ -583,7 +583,7 @@ export const authMethods = {
             // Token validation successful
             return;
           } catch (validationError: any) {
-            console.warn('Token validation failed, but maintaining local session:', validationError.message);
+
             // Don't logout immediately, just maintain the local session
             return;
           }
@@ -630,7 +630,7 @@ export const authMethods = {
           await authMethods.getCurrentUser(currentState.token);
           return;
         } catch (error: any) {
-          console.warn('Failed to get user with existing token:', error.message);
+
           // Don't logout immediately, maintain the token
           return;
         }
@@ -638,7 +638,7 @@ export const authMethods = {
       
       // No valid authentication found
     } catch (error: any) {
-      console.error('checkAuth failed:', error);
+
       // Only clear everything if it's a critical error, not just a network issue
       if (error.message?.includes('Network error') || error.message?.includes('Failed to fetch')) {
         // Network error detected, maintaining existing session
@@ -839,7 +839,7 @@ export const authMethods = {
         throw new Error('Invalid response from server');
       }
     } catch (error: any) {
-      console.error('Sign in with code failed:', error);
+
       
       // Update the auth store with error
       auth.update(state => ({
@@ -870,8 +870,8 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-      console.error('💥 AuthMethods.requestSigninCode failed:', error);
-      console.error('💥 Error details:', {
+
+
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -899,8 +899,8 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-      console.error('💥 AuthMethods.requestSignupCode failed:', error);
-      console.error('💥 Error details:', {
+
+
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -943,9 +943,9 @@ export const authMethods = {
             companyName,
             userType
           );
-          console.log('Welcome email sent successfully to:', email);
+
         } catch (welcomeEmailError) {
-          console.error('Failed to send welcome email:', welcomeEmailError);
+
           // Don't fail the signup process if welcome email fails
         }
         
@@ -960,7 +960,7 @@ export const authMethods = {
         throw new Error('Invalid response from server');
       }
     } catch (error: any) {
-      console.error('Sign up with code failed:', error);
+
       
       // Update the auth store with error
       auth.update(state => ({
@@ -991,8 +991,8 @@ export const authMethods = {
         expires_in: response.expires_in 
       };
     } catch (error: any) {
-      console.error('💥 AuthMethods.requestCode failed:', error);
-      console.error('💥 Error details:', {
+
+
         message: error.message,
         stack: error.stack,
         name: error.name
@@ -1009,7 +1009,7 @@ export const authMethods = {
   async refreshToken(): Promise<{ success: boolean; newToken?: string }> {
     const currentToken = getStoredToken();
     if (!currentToken) {
-      console.warn('No token to refresh.');
+
       return { success: false };
     }
 
@@ -1020,11 +1020,11 @@ export const authMethods = {
         // Token refreshed successfully
         return { success: true, newToken: response.access_token };
       } else {
-        console.warn('Token refresh failed, invalid response from API.');
+
         return { success: false };
       }
     } catch (error: any) {
-      console.error('Token refresh error:', error);
+
       return { success: false };
     }
   },

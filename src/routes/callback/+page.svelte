@@ -32,7 +32,7 @@
       // Redirect to home page
       goto('/');
     } catch (err) {
-      console.error('GitHub callback error:', err);
+
       error = err instanceof Error ? err.message : 'Authentication failed';
       isLoading = false;
     }

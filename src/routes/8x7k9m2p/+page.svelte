@@ -14,45 +14,26 @@
 
   // Subscribe to auth store
   auth.subscribe(state => {
-    console.log('Admin page: Auth state changed:', state);
-    console.log('Admin page: Token present:', !!state.token);
-    console.log('Admin page: User present:', !!state.user);
-    console.log('Admin page: User type:', state.user?.user_type);
-    
     authState = state;
     
     // Check if user is authenticated and has admin access
     if (state.user && state.token) {
-      console.log('Admin page: User authenticated:', state.user);
-      console.log('Admin page: Token length:', state.token.length);
-      console.log('Admin page: Token preview:', state.token.substring(0, 50) + '...');
-      
       // Check if user has admin privileges
       if (state.user.user_type === 'admin') {
-        console.log('Admin page: User has admin access - ready to load data');
+        // User has admin access - ready to load data
       } else {
-        console.log('Admin page: User does not have admin access - redirecting');
         // Redirect non-admin users to home page
         window.location.href = '/';
       }
     } else if (!state.token) {
-      console.log('Admin page: No token - showing login form');
       // User not logged in - stay on page to show login form
     } else if (!state.user) {
-      console.log('Admin page: No user data - showing login form');
+      // No user data - showing login form
     }
   });
 
   onMount(() => {
-    console.log('Admin page mounted');
-    console.log('Current auth state:', authState);
-    
-    // Try to recover session if needed
-    if (authState.user && authState.user.username === 'Demo User') {
-      console.log('Admin page: Detected demo user, attempting to recover session');
-      const result = authMethods.recoverSession();
-      console.log('Session recovery result:', result);
-    }
+    // Initialize admin page
 
     // Cleanup function
     return () => {
@@ -65,8 +46,6 @@
 
   // Global error handler
   function handleGlobalError(error: ErrorEvent) {
-    console.error('Global error caught:', error);
-    
     // Prevent default error handling for known issues
     if (error.message?.includes('ResizeObserver') || 
         error.message?.includes('Source Map') ||
@@ -198,7 +177,7 @@
     // Refresh dashboard data every 30 seconds
     refreshInterval = setInterval(() => {
       if (authState.token && authState.user?.user_type === 'admin') {
-        console.log('Auto-refreshing dashboard data...');
+
         lastRefreshTime = new Date();
         
         if (activeTab === 'dashboard') {
@@ -285,7 +264,7 @@
         loadPromotionData();
       }
     } catch (error) {
-      console.error('Failed to toggle promotion:', error);
+
       addNotification('error', 'Failed to update promotion status');
       // Revert the change
       promotionConfig.isActive = !promotionConfig.isActive;
@@ -306,7 +285,7 @@
       // Load promotion statistics
       promotionStats = await apiClient.getPromotionStats(authState.token);
     } catch (error) {
-      console.error('Failed to load promotion data:', error);
+
       addNotification('error', 'Failed to load promotion data');
     }
   }
@@ -340,7 +319,7 @@
             }
           }
         } catch (emailError) {
-          console.error('Failed to send reward notification email:', emailError);
+
           addNotification('warning', 'Reward awarded but email notification failed');
         }
         
@@ -350,7 +329,7 @@
         addNotification('error', result.message || 'Failed to award user');
       }
     } catch (error) {
-      console.error('Failed to award user reward:', error);
+
       addNotification('error', 'Failed to award user reward');
     }
   }
@@ -358,14 +337,14 @@
   // Test authentication token with backend
   async function testAuthToken() {
     if (!authState.token) {
-      console.log('No token to test');
+
       return false;
     }
     
     try {
-      console.log('Testing authentication token...');
-      console.log('Token length:', authState.token.length);
-      console.log('Token preview:', authState.token.substring(0, 50) + '...');
+
+
+
       
       // Test with a simple health check or try to get user info
       const response = await fetch('https://logiscorebe.onrender.com/health', {
@@ -375,18 +354,18 @@
         }
       });
       
-      console.log('Auth test response status:', response.status);
-      console.log('Auth test response headers:', Object.fromEntries(response.headers.entries()));
+
+
       
       if (response.ok) {
-        console.log('✅ Token is valid');
+
         return true;
       } else {
-        console.log('❌ Token validation failed:', response.status, response.statusText);
+
         return false;
       }
     } catch (error) {
-      console.error('Error testing auth token:', error);
+
       return false;
     }
   }
@@ -394,30 +373,30 @@
   // Load dashboard stats
   async function loadDashboardStats() {
     if (!authState.token) {
-      console.log('Cannot load dashboard stats: No authentication token');
+
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (dashboardLoading) {
-      console.log('Dashboard stats already loading, skipping duplicate call');
+
       return;
     }
     
     // Test authentication first
     const isTokenValid = await testAuthToken();
     if (!isTokenValid) {
-      console.error('Authentication token is invalid - clearing auth state');
+
       auth.update(state => ({ ...state, user: null, token: null }));
       return;
     }
     
     try {
       dashboardLoading = true;
-      console.log('Loading dashboard stats with valid token:', authState.token.substring(0, 20) + '...');
+
       
       const stats = await apiClient.getDashboardStats(authState.token) as any;
-      console.log('Dashboard stats received:', stats);
+
       
       dashboardStats = {
         totalUsers: stats?.total_users || 0,
@@ -428,11 +407,11 @@
         totalRevenue: stats?.total_revenue || 0
       };
     } catch (error) {
-      console.error('Failed to load dashboard stats:', error);
+
       
       // Handle specific error types
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         // Clear invalid auth state and show login form
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
@@ -440,7 +419,7 @@
       
       // Set error state for user display
       dashboardError = 'Failed to load dashboard statistics. Please try again later.';
-      console.error('Dashboard Error:', (error as any).message);
+
     } finally {
       dashboardLoading = false;
     }
@@ -449,37 +428,37 @@
   // Load users
   async function loadUsers() {
     if (!authState.token) {
-      console.log('Cannot load users: No authentication token');
+
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (usersLoading) {
-      console.log('Users already loading, skipping duplicate call');
+
       return;
     }
     
     try {
       usersLoading = true;
-      console.log('Loading users with token:', authState.token.substring(0, 20) + '...');
+
       const usersData = await apiClient.getAdminUsers(authState.token, userSearch, userTypeFilter) as any[];
-      console.log('Users loaded:', usersData.length, 'users');
+
       
       // Find the user we just updated to see if the subscription changed
       if (selectedUserId) {
         const updatedUser = usersData.find(u => u.id === selectedUserId);
         if (updatedUser) {
-          console.log('Updated user data:', updatedUser);
-          console.log('Current subscription tier:', updatedUser.subscription_tier);
+
+
         }
       }
       
       users = usersData;
     } catch (error) {
-      console.error('Failed to load users:', error);
+
       
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -491,26 +470,26 @@
   // Load reviews
   async function loadReviews() {
     if (!authState.token) {
-      console.log('Cannot load reviews: No authentication token');
+
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (reviewsLoading) {
-      console.log('Reviews already loading, skipping duplicate call');
+
       return;
     }
     
     try {
       reviewsLoading = true;
-      console.log('Loading reviews with token:', authState.token.substring(0, 20) + '...');
+
       pendingReviews = await apiClient.getAdminReviews(authState.token, reviewStatusFilter) as any[];
-      console.log('Reviews loaded:', pendingReviews.length, 'reviews');
+
     } catch (error) {
-      console.error('Failed to load reviews:', error);
+
       
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -522,25 +501,25 @@
   // Load disputes
   async function loadDisputes() {
     if (!authState.token) {
-      console.log('Cannot load disputes: No authentication token');
+
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (disputesLoading) {
-      console.log('Disputes already loading, skipping duplicate call');
+
       return;
     }
     
     try {
       disputesLoading = true;
-      console.log('Loading disputes with token:', authState.token.substring(0, 20) + '...');
+
       disputes = await apiClient.getAdminDisputes(authState.token, disputeStatusFilter) as any[];
     } catch (error) {
-      console.error('Failed to load disputes:', error);
+
       
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -552,19 +531,19 @@
   // Load companies
   async function loadCompanies() {
     if (!authState.token) {
-      console.log('Cannot load companies: No authentication token');
+
       return;
     }
     
     // Prevent multiple simultaneous calls
     if (companiesLoading) {
-      console.log('Companies already loading, skipping duplicate call');
+
       return;
     }
     
     try {
       companiesLoading = true;
-      console.log('Loading companies with token:', authState.token.substring(0, 20) + '...');
+
       
       // Load all companies first (without search filter)
       const allCompanies = await apiClient.getAdminCompanies(authState.token) as any[];
@@ -575,15 +554,15 @@
         companies = allCompanies.filter(company => 
           company.name && company.name.toLowerCase().includes(searchTerm)
         );
-        console.log(`Filtered ${companies.length} companies from ${allCompanies.length} total for search: "${searchTerm}"`);
+
       } else {
         companies = allCompanies;
       }
     } catch (error) {
-      console.error('Failed to load companies:', error);
+
       
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -595,18 +574,18 @@
   // Load recent activity
   async function loadRecentActivity() {
     if (!authState.token) {
-      console.log('Cannot load recent activity: No authentication token');
+
       return;
     }
     
     try {
-      console.log('Loading recent activity with token:', authState.token.substring(0, 20) + '...');
+
       recentActivity = await apiClient.getRecentActivity(authState.token) as any[];
     } catch (error) {
-      console.error('Failed to load recent activity:', error);
+
       
       if ((error as any).message?.includes('Authentication failed')) {
-        console.error('Authentication error - redirecting to login');
+
         auth.update(state => ({ ...state, user: null, token: null }));
         return;
       }
@@ -622,7 +601,7 @@
     
     // Prevent multiple simultaneous calls
     if (analyticsLoading) {
-      console.log('Analytics already loading, skipping duplicate call');
+
       return;
     }
     
@@ -631,7 +610,7 @@
       analyticsError = null;
       analyticsData = await apiClient.getAdminAnalytics(authState.token);
     } catch (error) {
-      console.error('Failed to load analytics:', error);
+
       analyticsError = (error as any).message || 'Failed to load analytics data';
       analyticsData = null;
     } finally {
@@ -650,7 +629,7 @@
     const isInitialLoad = !hasDashboardInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-      console.log('Loading dashboard data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
+
       previousDashboardTab = activeTab;
       hasDashboardInitialLoad = true;
       loadDashboardStats();
@@ -678,7 +657,7 @@
     const isInitialLoad = !hasInitialLoad;
     
     if (isInitialLoad || tabChanged || filterChanged) {
-      console.log('Loading users data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
+
       previousUserTypeFilter = userTypeFilter;
       previousActiveTab = activeTab;
       hasInitialLoad = true;
@@ -704,7 +683,7 @@
     const isInitialLoad = !hasReviewsInitialLoad;
     
     if (isInitialLoad || tabChanged || filterChanged) {
-      console.log('Loading reviews data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
+
       previousReviewsTab = activeTab;
       previousReviewStatusFilter = reviewStatusFilter;
       hasReviewsInitialLoad = true;
@@ -728,7 +707,7 @@
     const isInitialLoad = !hasDisputesInitialLoad;
     
     if (isInitialLoad || tabChanged || filterChanged) {
-      console.log('Loading disputes data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'filter:', filterChanged);
+
       previousDisputesTab = activeTab;
       previousDisputeStatusFilter = disputeStatusFilter;
       hasDisputesInitialLoad = true;
@@ -748,7 +727,7 @@
     const isInitialLoad = !hasCompaniesInitialLoad;
     
     if (isInitialLoad || tabChanged || searchChanged) {
-      console.log('Loading companies data for admin user - initial:', isInitialLoad, 'tab:', tabChanged, 'search:', searchChanged);
+
       previousCompaniesTab = activeTab;
       previousCompanySearch = companySearch;
       hasCompaniesInitialLoad = true;
@@ -766,7 +745,7 @@
     const isInitialLoad = !hasAnalyticsInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-      console.log('Loading analytics data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
+
       previousAnalyticsTab = activeTab;
       hasAnalyticsInitialLoad = true;
       loadAnalytics();
@@ -783,7 +762,7 @@
     const isInitialLoad = !hasPromotionsInitialLoad;
     
     if (isInitialLoad || tabChanged) {
-      console.log('Loading promotions data for admin user - initial:', isInitialLoad, 'tab changed:', tabChanged);
+
       previousPromotionsTab = activeTab;
       hasPromotionsInitialLoad = true;
       loadPromotionData();
@@ -866,7 +845,7 @@
         day: 'numeric'
       });
     } catch (error) {
-      console.error('Error formatting date:', error);
+
       return 'Invalid Date';
     }
   }
@@ -885,7 +864,7 @@
       if (diffDays <= 7) return 'expiring';
       return 'active';
     } catch (error) {
-      console.error('Error calculating expiry status:', error);
+
       return 'no-date';
     }
   }
@@ -900,7 +879,7 @@
       const diffTime = expiryDate.getTime() - now.getTime();
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     } catch (error) {
-      console.error('Error calculating days remaining:', error);
+
       return 0;
     }
   }
@@ -935,7 +914,7 @@
       await loadCompanies(); // Reload companies
       newCompany = { name: '', website: '', logo_url: '', description: '', headquarters_country: '' };
     } catch (error) {
-      console.error('Failed to add company:', error);
+
     }
   }
 
@@ -962,8 +941,8 @@
     
     try {
       isUpdatingCompany = true;
-      console.log('Updating company with data:', editCompanyData);
-      console.log('Company ID:', selectedCompanyId);
+
+
       
       const result = await apiClient.updateCompany(authState.token, selectedCompanyId, {
         name: editCompanyData.name,
@@ -973,13 +952,13 @@
         headquarters_country: editCompanyData.headquarters_country
       });
       
-      console.log('Company update successful:', result);
+
       
       // Check if we got a valid result or if it's empty (which might still indicate success)
       if (result && typeof result === 'object' && Object.keys(result).length > 0) {
-        console.log('Company update returned data:', result);
+
       } else {
-        console.log('Company update returned empty response (this might be normal)');
+
       }
       
       // Show success message
@@ -988,7 +967,7 @@
       await loadCompanies(); // Reload companies
       closeEditCompanyModal();
     } catch (error) {
-      console.error('Failed to update company:', error);
+
       
       // Extract more detailed error information
       let errorMessage = 'Failed to update company';
@@ -1023,15 +1002,15 @@
       await apiClient.deleteCompany(authState.token, companyId);
       await loadCompanies(); // Reload companies
     } catch (error) {
-      console.error('Failed to delete company:', error);
+
       addNotification('error', `Failed to delete company: ${(error as any).message || 'Unknown error'}`);
     }
   }
 
   function openSubscriptionModal(user: any) {
-    console.log('Opening subscription modal for user:', user);
-    console.log('User type:', user.user_type);
-    console.log('Current subscription tier:', user.subscription_tier);
+
+
+
     
     selectedUserId = user.id;
     selectedUser = user;
@@ -1044,7 +1023,7 @@
       isPaid: false
     };
     
-    console.log('Initialized subscription data:', subscriptionData);
+
     showSubscriptionModal = true;
   }
 
@@ -1101,8 +1080,8 @@
   async function updateUserSubscription() {
     if (!authState.token || !selectedUserId) return;
     
-    console.log('Updating subscription for user:', selectedUserId);
-    console.log('New subscription data:', subscriptionData);
+
+
     
     try {
       // Convert duration to months based on subscription tier
@@ -1119,14 +1098,14 @@
         is_paid: subscriptionData.isPaid
       };
       
-      console.log('Sending subscription update request:', requestData);
+
       
       const result = await apiClient.updateUserSubscription(authState.token, selectedUserId, requestData);
       
-      console.log('Subscription update result:', result);
+
       
       await loadUsers(); // Reload users
-      console.log('Users reloaded after subscription update');
+
       
       closeSubscriptionModal();
       
@@ -1139,7 +1118,7 @@
       
       addNotification('success', `Subscription updated to ${tierDisplayName}`);
     } catch (error) {
-      console.error('Failed to update subscription:', error);
+
       addNotification('error', `Failed to update subscription: ${(error as any).message || 'Unknown error'}`);
     }
   }
@@ -1181,7 +1160,7 @@
       await loadUsers(); // Reload users
       closeEditUserModal();
     } catch (error: any) {
-      console.error('Failed to update user profile:', error);
+
       alert(`Failed to update user profile: ${error.message || 'Unknown error'}`);
     }
   }
@@ -1195,7 +1174,7 @@
       await apiClient.resolveDispute(authState.token, disputeId);
       await loadDisputes(); // Reload disputes
     } catch (error) {
-      console.error('Failed to resolve dispute:', error);
+
     }
   }
 </script>
@@ -1232,7 +1211,7 @@
       <!-- Admin Login Form -->
       {#if !authState.token || !authState.user}
         <div class="admin-login-section">
-          <AdminLoginForm on:loginSuccess={() => console.log('Admin login successful')} />
+
         </div>
       {/if}
     </div>

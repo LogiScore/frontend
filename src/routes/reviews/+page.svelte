@@ -87,7 +87,7 @@
     
     // Redirect forwarder users away from reviews page
     if (state.user && state.user.user_type === 'forwarder') {
-      console.log('Forwarder user detected, redirecting away from reviews page');
+
       goto('/search');
     }
   });
@@ -216,11 +216,11 @@
     
     // Enhanced debug logging for city search
     if (query.length >= 3) { // Only log for meaningful searches
-      console.log(`🔍 City search: "${city}" (${normalizedCity}) matches "${query}" (${normalizedQuery}): ${matches}`);
+
       
               // Special debug for international characters
         if (/[À-ÿĀ-ž]/.test(city)) {
-          console.log(`🔍 International character debug: "${city}" -> "${normalizedCity}"`);
+
         }
     }
     
@@ -279,7 +279,7 @@
     try {
       freightForwarders = await apiClient.getFreightForwarders();
     } catch (err: any) {
-      console.error('Failed to load freight forwarders:', err);
+
     }
   }
 
@@ -287,9 +287,9 @@
     try {
       const company = await apiClient.getFreightForwarder(companyId);
       // No need to load branches since we don't use the branches table
-      console.log('Loaded company data:', company);
+
     } catch (err: any) {
-      console.error('Failed to load company data:', err);
+
     }
   }
 
@@ -323,7 +323,7 @@
         ]) as any[];
       } catch (timeoutError) {
         // If the main call times out, try a quick fallback check
-        console.warn('Primary review frequency check timed out, trying fallback...');
+
         try {
           // Quick fallback: just check if we can get basic company data
           const fallbackPromise = new Promise((_, reject) => 
@@ -335,7 +335,7 @@
             fallbackPromise
           ]) as any[];
         } catch (fallbackError) {
-          console.warn('Fallback review frequency check also failed:', fallbackError);
+
           // If both attempts fail, allow submission to prevent user blocking
           userReviews = [];
           // Set a user-friendly message
@@ -401,7 +401,7 @@
         lastReviewDate = mostRecentReview.created_at;
       }
     } catch (err: any) {
-      console.error('Failed to check review frequency:', err);
+
       
       // Check if it's a CORS error and handle it gracefully
       if (err.message && (err.message.includes('Load failed') || err.message.includes('access control checks') || err.message.includes('CORS') || err.message.includes('NetworkError'))) {
@@ -416,7 +416,7 @@
       
       // Check if it's a timeout error
       if (err.message && err.message.includes('API timeout')) {
-        console.warn('Review frequency check timed out - allowing submission to prevent user blocking');
+
         canSubmitReview = true;
         reviewFrequencyMessage = 'Review frequency check is temporarily unavailable. You may proceed with your review submission.';
         lastReviewDate = null;
@@ -462,12 +462,12 @@
 
   async function loadLocations() {
     try {
-      console.log('🔄 Loading locations from database...');
+
       
       // Use the new dynamic location loading method from database
       const databaseLocations = await apiClient.getLocationsFromDatabase();
-      console.log('📊 Database locations loaded:', databaseLocations.length);
-      console.log('📊 Sample database location:', databaseLocations[0]);
+
+
       
       // Convert to the expected format for the existing code
       const processedLocations = databaseLocations.map(loc => ({
@@ -480,34 +480,34 @@
         subregion: loc.subregion
       }));
       
-      console.log('🔄 Processed locations:', processedLocations.length);
-      console.log('🔄 Sample processed location:', processedLocations[0]);
+
+
       
       // Check for Bangladesh specifically
       const bangladeshLocations = processedLocations.filter(loc => 
         loc.country && loc.country.toLowerCase().includes('bangladesh')
       );
-      console.log('🇧🇩 Bangladesh locations found:', bangladeshLocations.length);
+
       if (bangladeshLocations.length > 0) {
-        console.log('🇧🇩 Sample Bangladesh location:', bangladeshLocations[0]);
+
       }
       
       // Set locations to only the processed ones (no hardcoded test data)
       locations = processedLocations;
       
-      console.log('✅ Final locations array:', locations.length);
-      console.log('✅ Available countries:', [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort());
+
+
       
     } catch (err: any) {
-      console.error('❌ Failed to load dynamic locations:', err);
-      console.error('❌ Error details:', {
+
+
         message: err.message,
         stack: err.stack,
         name: err.name
       });
       
       // Enhanced fallback with Bangladesh and more locations
-      console.log('🔄 Using enhanced fallback locations due to API error');
+
       locations = [
         // Bangladesh locations
         { id: convertLocationIdToUUID('bd-dhaka'), name: 'Dhaka, Dhaka Division, Bangladesh', city: 'Dhaka', state: 'Dhaka Division', country: 'Bangladesh', region: 'Asia', subregion: 'South Asia' },
@@ -533,14 +533,14 @@
         { id: convertLocationIdToUUID('es-barcelona'), name: 'Barcelona, Catalonia, Spain', city: 'Barcelona', state: 'Catalonia', country: 'Spain', region: 'Europe', subregion: 'Southern Europe' }
       ];
       
-      console.log('✅ Fallback locations loaded:', locations.length);
-      console.log('✅ Available countries in fallback:', [...new Set(locations.map(loc => loc.country).filter(Boolean))].sort());
+
+
     }
   }
 
   async function createNewForwarder() {
     try {
-      console.log('Creating new forwarder:', newForwarder);
+
       
       // Check authentication first
       if (!authState.token) {
@@ -549,7 +549,7 @@
       }
 
       // Debug: Log authentication details
-      console.log('Auth state:', {
+
         hasToken: !!authState.token,
         tokenLength: authState.token?.length,
         tokenStart: authState.token?.substring(0, 20) + '...',
@@ -561,9 +561,9 @@
         return;
       }
 
-      console.log('Calling API to create forwarder...');
+
       const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token);
-      console.log('Forwarder created successfully:', createdForwarder);
+
       
       // Send admin notification about new freight forwarder
       try {
@@ -575,10 +575,10 @@
             authState.user.full_name || authState.user.username || 'Unknown User',
             authState.user.email || 'No email provided'
           );
-          console.log('Admin notification sent successfully');
+
         }
       } catch (notificationError) {
-        console.error('Failed to send admin notification:', notificationError);
+
         // Don't fail the entire operation if notification fails
       }
       
@@ -600,10 +600,10 @@
       error = null;
       successMessage = `Company "${createdForwarder.name}" created successfully!`;
       
-      console.log('New forwarder added to list, selected company:', selectedCompany);
+
       
     } catch (err: any) {
-      console.error('Error creating forwarder:', err);
+
       
       // Handle specific backend error responses
       if (err.message && err.message.includes('API request failed:')) {
@@ -641,30 +641,30 @@
   async function loadReviewQuestions() {
     try {
       reviewCategories = await apiClient.getReviewQuestions();
-      console.log('Loaded review questions:', reviewCategories);
+
       
       // Check if we got the fallback questions instead of API data
       if (reviewCategories.length <= 3) {
-        console.warn('Warning: Using fallback questions. API may be unavailable.');
+
         // Don't show error since we now have comprehensive fallback questions
       }
     } catch (err: any) {
-      console.error('Failed to load review questions:', err);
+
       error = 'Failed to load review questions. Please refresh the page.';
     }
   }
 
   async function handleLocationSearch(event: Event) {
-    console.log('🔍 handleLocationSearch called');
-    console.log('🔍 Event:', event);
-    console.log('🔍 Event target:', event.target);
+
+
+
     
     const query = (event.target as HTMLInputElement).value.trim().toLowerCase();
     
-    console.log('🔍 Location search query:', query);
-    console.log('🔍 Query length:', query.length);
-    console.log('📊 Available locations:', locations.length);
-    console.log('📊 Sample locations:', locations.slice(0, 3));
+
+
+
+
     
     if (query.length < 4) {
       locationSuggestions = [];
@@ -677,8 +677,8 @@
     const forceFallback = false; // Set to true only for testing client-side filtering
     
     if (forceFallback) {
-      console.log('🔄 Forcing fallback to client-side filtering for testing special character handling');
-      console.log('🔍 Searching in', locations.length, 'locations for query:', query);
+
+
       
       // Fallback to client-side filtering to test special character search
       const filtered = locations.filter(location => {
@@ -686,7 +686,7 @@
         const shouldLogDetailed = locations.indexOf(location) < 5;
         
         if (shouldLogDetailed) {
-          console.log('🔍 Checking location:', location.name, 'for query:', query);
+
         }
         
         // Strategy 1: Normalized search (remove accents)
@@ -722,7 +722,7 @@
         
         // Debug logging for specific cases
         if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
-          console.log('🔍 Debug match for "munchen" → "München":', {
+
             location: location.name,
             normalizedQuery,
             normalizedName,
@@ -735,7 +735,7 @@
         
         // Debug logging for matches (always log matches)
         if (hasMatch) {
-          console.log('✅ Match found:', {
+
             location: location.name,
             query,
             normalizedQuery,
@@ -748,7 +748,7 @@
           });
         } else if (shouldLogDetailed) {
           // Only log detailed non-match info for first few locations
-          console.log('❌ No match for:', {
+
             location: location.name,
             query,
             normalizedQuery,
@@ -760,30 +760,30 @@
         return hasMatch;
       }).slice(0, 25); // Increased from 10 to 25
       
-      console.log('🎯 Fallback filtered locations:', filtered.length);
-      console.log('🎯 Filtered results:', filtered.map(l => l.name));
-      console.log(`📊 Search summary: Checked ${locations.length} locations, found ${filtered.length} matches for query "${query}"`);
+
+
+
       locationSuggestions = filtered;
       showLocationSuggestions = true;
-      console.log('🎯 Location suggestions set:', locationSuggestions.length);
-      console.log('🎯 Show location suggestions:', showLocationSuggestions);
+
+
       return;
     }
 
     try {
       // Try backend search first
       const searchResults = await apiClient.searchLocations(query);
-      console.log('Backend search results:', searchResults.length);
+
       
       const filtered = searchResults.slice(0, 25); // Increased from 10 to 25
-      console.log(`✅ Backend search found ${searchResults.length} locations, showing ${filtered.length}`);
+
       
       locationSuggestions = filtered;
       showLocationSuggestions = true;
-      console.log('Location suggestions set:', locationSuggestions.length);
-      console.log('Show location suggestions:', showLocationSuggestions);
+
+
     } catch (error) {
-      console.error('Search failed, falling back to client-side filtering:', error);
+
       
       // Fallback to client-side filtering if backend search fails
       const filtered = locations.filter(location => {
@@ -820,7 +820,7 @@
         
         // Debug logging for specific cases
         if (query === 'munchen' && location.name && location.name.toLowerCase().includes('münchen')) {
-          console.log('🔍 Debug match for "munchen" → "München":', {
+
             location: location.name,
             normalizedQuery,
             normalizedName,
@@ -834,17 +834,17 @@
         return hasMatch;
       }).slice(0, 25); // Increased from 10 to 25
       
-      console.log('Fallback filtered locations:', filtered.length);
+
       locationSuggestions = filtered;
       showLocationSuggestions = true;
-      console.log('Fallback location suggestions set:', locationSuggestions.length);
-      console.log('Show location suggestions (fallback):', showLocationSuggestions);
+
+
     }
   }
   
   async function selectLocation(location: any) {
-    console.log('🔍 selectLocation called with:', location);
-    console.log('🔍 Location details:', {
+
+
       id: location.id,
       idType: typeof location.id,
       idLength: location.id?.length,
@@ -862,10 +862,10 @@
       selectedBranch = location.id;
       selectedBranchDisplay = location.name || 'Unknown Location';
       
-      console.log('Set selectedBranch (location ID):', selectedBranch);
-      console.log('Set selectedBranchDisplay (name):', selectedBranchDisplay);
-      console.log('Selected branch type:', typeof selectedBranch);
-      console.log('Selected branch value:', selectedBranch);
+
+
+
+
       
       showLocationSuggestions = false;
       locationSuggestions = [];
@@ -874,10 +874,10 @@
       // Review frequency check is now handled by the reactive statement
       // when both company and location are selected
       
-      console.log('Location selection completed successfully');
+
       
     } catch (err: any) {
-      console.error('Failed to select location:', err);
+
       error = 'Failed to select location. Please try again.';
     }
   }
@@ -894,7 +894,7 @@
   }
   
   function handleRatingChange(categoryId: string, questionId: string, rating: number) {
-    console.log('Rating changed:', { categoryId, questionId, rating });
+
     reviewCategories = reviewCategories.map(cat => {
       if (cat.id === categoryId) {
         return {
@@ -973,14 +973,14 @@
       
       // Show success message
       alert('Review submitted successfully!');
-      console.log('Review submitted:', response);
-      console.log('Review ID for email:', response.id);
+
+
       
       // Send thank you email
       try {
         // Verify we have a valid review ID
         if (!response.id) {
-          console.error('No review ID in response, cannot send email');
+
           return;
         }
         
@@ -1014,9 +1014,9 @@
           reviewWeight
         );
         
-        console.log('Thank you email sent successfully');
+
       } catch (emailError) {
-        console.error('Failed to send thank you email:', emailError);
+
         // Don't show error to user since review was submitted successfully
         // Email failure shouldn't affect the review submission
       }
@@ -1036,7 +1036,7 @@
       }, 1500); // Give user 1.5 seconds to see the success message
       
     } catch (err: any) {
-      console.error('Review submission failed:', err);
+
       
       // Provide more specific error messages
       if (err.message?.includes('405')) {
@@ -1064,7 +1064,7 @@
       }
       
       // Log additional details for debugging
-      console.error('Error details:', {
+
         message: err.message,
         status: err.status,
         response: err.response,
@@ -1074,38 +1074,38 @@
   }
 
   async function testSearch(query: string) {
-    console.log('Testing search with query:', query);
+
     try {
       const results = await apiClient.searchLocations(query);
-      console.log('Test search results:', results.length);
+
       if (results.length > 0) {
-        console.log('First result:', results[0]);
+
       } else {
-        console.log('No results found for query:', query);
+
       }
     } catch (error) {
-      console.error('Error during test search:', error);
+
     }
   }
 
   async function testAllSearches() {
-    console.log('Testing all search queries...');
+
     await testSearch('munchen');
     await testSearch('münchen');
     await testSearch('london');
     await testSearch('new york');
     await testSearch('germany');
-    console.log('All search tests completed.');
+
   }
 
   function inspectLocationData() {
-    console.log('🔍 INSPECTING LOCATION DATA:');
-    console.log('Total locations:', locations.length);
-    console.log('All locations:', locations);
+
+
+
     
     // Check for data structure issues
     locations.forEach((loc, index) => {
-      console.log(`Location ${index}:`, {
+
         id: loc.id,
         name: loc.name,
         city: loc.city,
@@ -1123,7 +1123,7 @@
 
   // Test function for comprehensive international character normalization
   function testInternationalCharacterNormalization() {
-    console.log('🧪 Testing comprehensive international character normalization:');
+
     const testCases = [
       // Polish characters
       'Gdańsk', 'Gdań', 'Warszawa', 'Kraków', 'Łódź', 'Poznań',
@@ -1147,7 +1147,7 @@
     
     testCases.forEach(test => {
       const normalized = normalizeText(test);
-      console.log(`"${test}" -> "${normalized}"`);
+
     });
   }
 
@@ -1176,18 +1176,18 @@
 
   // Debug computed properties
   $: if (selectedCountry) {
-    console.log('🔍 Debug computed properties:');
-    console.log('- selectedCountry:', selectedCountry);
-    console.log('- availableCities:', availableCities);
-    console.log('- availableLocations:', availableLocations);
-    console.log('- Total locations for country:', locations.filter(loc => loc.country === selectedCountry).length);
-    console.log('- Sample locations for country:', locations.filter(loc => loc.country === selectedCountry).slice(0, 3));
-    console.log('- Cities found for country:', [...new Set(locations.filter(loc => loc.country === selectedCountry).map(loc => loc.city).filter(Boolean))]);
+
+
+
+
+
+
+
   }
 
   // Hierarchical location selection functions
   async function selectCountry(country: string) {
-    console.log('🌍 selectCountry called with:', country);
+
     selectedCountry = country;
     selectedCity = '';
     selectedBranch = '';
@@ -1196,26 +1196,26 @@
     showCitySelector = true;
     showLocationSelector = false;
     
-    console.log('After selectCountry:');
-    console.log('- selectedCountry:', selectedCountry);
-    console.log('- selectedCity:', selectedCity);
-    console.log('- availableCities:', availableCities);
-    console.log('- availableLocations:', availableLocations);
+
+
+
+
+
     
     // Load cities for this country from database
     await loadCitiesForCountry(country);
   }
 
   async function selectCity(city: string) {
-    console.log('🏙️ selectCity called with:', city);
+
     selectedCity = city;
     
     // Debug: Check what data we have available
-    console.log('🔍 Debug selectCity:');
-    console.log('- searchedLocations length:', searchedLocations.length);
-    console.log('- searchedCities length:', searchedCities.length);
-    console.log('- selectedCountry:', selectedCountry);
-    console.log('- searchedLocations sample:', searchedLocations.slice(0, 2));
+
+
+
+
+
     
     // Find the actual location data for this city from the search results
     // We need the real location ID for the review submission
@@ -1230,22 +1230,22 @@
       if (locationData) {
         // Use the real location ID
         selectedBranch = locationData.id;
-        console.log('✅ Found real location ID:', selectedBranch);
-        console.log('✅ Location data:', locationData);
+
+
       } else {
-        console.warn('⚠️ No matching location found in searchedLocations');
-        console.warn('⚠️ Available cities in searchedLocations:', searchedLocations.map(loc => loc.city));
-        console.warn('⚠️ Available countries in searchedLocations:', searchedLocations.map(loc => loc.country));
+
+
+
       }
     } else {
-      console.warn('⚠️ searchedLocations is empty - no location data available');
+
     }
     
     // If we still don't have a real ID, create a fallback
     if (!locationData || !selectedBranch) {
       selectedBranch = `city-${city}-${selectedCountry}`;
-      console.warn('⚠️ Using fallback ID - review submission may fail');
-      console.warn('⚠️ This means the city search did not return location data');
+
+
     }
     
     selectedBranchDisplay = `${city}, ${selectedCountry}`;
@@ -1255,12 +1255,12 @@
     showLocationSelector = false;
     showLocationModal = false;
     
-    console.log('After selectCity:');
-    console.log('- selectedCountry:', selectedCountry);
-    console.log('- selectedCity:', selectedCity);
-    console.log('- selectedBranch:', selectedBranch);
-    console.log('- selectedBranchDisplay:', selectedBranchDisplay);
-    console.log('- locationData:', locationData);
+
+
+
+
+
+
     
     // Note: We need a real location ID for review submission to work
     // The fallback ID will cause 404 errors
@@ -1277,78 +1277,78 @@
   // Load available countries when country selector is opened
   async function loadAvailableCountries() {
     try {
-      console.log('🌍 Loading available countries...');
+
       
       // Get a sample of countries by searching with a common letter
       // This will give us a good starting point for country selection
       const searchResults = await apiClient.searchCountries('a');
       
-      console.log('🔍 Raw search results:', searchResults.length, 'items');
-      console.log('🔍 Sample search result:', searchResults[0]);
+
+
       
       // Extract unique countries from search results
       const uniqueCountries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
       
-      console.log(`✅ Found ${uniqueCountries.length} available countries:`, uniqueCountries.slice(0, 10));
+
       
       // Update the countries array which feeds into the availableCountries computed property
       countries = uniqueCountries;
       
-      console.log('🔍 Updated countries array:', countries.length, 'countries');
-      console.log('🔍 availableCountries computed property should now have:', availableCountries.length, 'countries');
+
+
       
     } catch (error) {
-      console.error('❌ Failed to load available countries:', error);
+
       availableCountries = [];
     }
   }
 
   // Real-time search functions
   async function searchCountries(query: string) {
-    console.log(`🔍 searchCountries called with: "${query}"`);
+
     
     if (!query || query.length < 2) {
-      console.log('❌ Query too short, clearing results');
+
       searchedCountries = [];
       isSearchingCountries = false;
       return;
     }
     
     try {
-      console.log('🔄 Setting isSearchingCountries = true');
+
       isSearchingCountries = true;
-      console.log(`🔍 Searching countries for: "${query}"`);
+
       
       // Search countries using the country parameter (accepts 2+ characters)
       const searchResults = await apiClient.searchCountries(query);
-      console.log(`📊 Search API returned ${searchResults.length} results:`, searchResults.slice(0, 3));
+
       
       // Extract unique countries from search results
       const countries = [...new Set(searchResults.map(loc => loc.country).filter((country): country is string => Boolean(country)))].sort();
-      console.log(`🏗️ Extracted ${countries.length} unique countries:`, countries);
+
       
       // Update the searchedCountries array
       searchedCountries = countries;
-      console.log(`✅ Updated searchedCountries array:`, searchedCountries);
+
       
     } catch (error) {
-      console.error('❌ Country search failed:', error);
+
       searchedCountries = [];
     } finally {
-      console.log('🔄 Setting isSearchingCountries = false');
+
       isSearchingCountries = false;
-      console.log(`🎯 Final state - searchedCountries: ${searchedCountries.length}, isSearching: ${isSearchingCountries}`);
+
     }
   }
 
   // Load cities for a specific country from database
   async function loadCitiesForCountry(country: string) {
     try {
-      console.log(`🏙️ Loading cities for country: ${country}`);
+
       
       // Don't load all cities upfront - let users search for cities they need
       // This prevents the 30-second loading issue
-      console.log(`✅ Cities will be loaded on-demand when user types 4+ characters`);
+
       
       // Clear any previous cities and let the search handle it
       availableCities = [];
@@ -1357,7 +1357,7 @@
       // This keeps the performance fast while still providing city selection
       
     } catch (error) {
-      console.error(`❌ Failed to load cities for ${country}:`, error);
+
       availableCities = [];
     }
   }
@@ -1371,18 +1371,18 @@
     
     try {
       isSearchingCities = true;
-      console.log(`🔍 Searching cities in ${country} for: "${query}"`);
+
       
       // Try multiple search strategies to find cities
       let searchResults: any[] = [];
       
       // Strategy 1: Search for city name with country
-      console.log(`🔍 Strategy 1: Searching for "${query} ${country}"`);
+
       searchResults = await apiClient.searchLocations(`${query} ${country}`);
       
       // Strategy 2: If no results, try searching just for the city name
       if (searchResults.length === 0) {
-        console.log(`🔍 Strategy 2: Searching for "${query}" only`);
+
         const cityOnlyResults = await apiClient.searchLocations(query);
         // Filter to only include results from the selected country
         searchResults = cityOnlyResults.filter(loc => loc.country === country);
@@ -1390,7 +1390,7 @@
       
       // Strategy 3: If still no results, try searching with country parameter
       if (searchResults.length === 0) {
-        console.log(`🔍 Strategy 3: Searching with country parameter "${country}"`);
+
         const countryResults = await apiClient.searchCountries(country);
         // Filter to cities that contain the search query using normalized text
         searchResults = countryResults.filter(loc => 
@@ -1400,7 +1400,7 @@
       
       // Strategy 4: Client-side fallback with normalized text if backend search fails
       if (searchResults.length === 0) {
-        console.log(`🔍 Strategy 4: Client-side fallback with normalized text`);
+
         // Use the existing locations array if available
         if (locations.length > 0) {
           searchResults = locations.filter(loc => 
@@ -1410,19 +1410,19 @@
         }
       }
       
-      console.log(`🔍 Final search results:`, searchResults.length, 'items');
-      console.log(`🔍 Sample search result:`, searchResults[0]);
-      console.log(`🔍 All search results:`, searchResults);
+
+
+
       
       // Store the full location data for later use
       searchedLocations = searchResults;
       
       // Debug: Check what we're storing
-      console.log(`🔍 Debug searchCities storage:`);
-      console.log(`- searchResults length:`, searchResults.length);
-      console.log(`- searchedLocations length:`, searchedLocations.length);
-      console.log(`- Sample location object:`, searchResults[0]);
-      console.log(`- Location IDs:`, searchResults.map(loc => loc.id).slice(0, 5));
+
+
+
+
+
       
       // Extract unique cities from search results for the specific country
       const cities = [...new Set(
@@ -1432,10 +1432,10 @@
       )].sort();
       
       searchedCities = cities;
-      console.log(`✅ Found ${cities.length} cities in ${country} for "${query}":`, cities);
-      console.log(`✅ Stored ${searchedLocations.length} location objects for city selection`);
+
+
     } catch (error) {
-      console.error('❌ City search failed:', error);
+
       searchedCities = [];
       searchedLocations = [];
     } finally {
@@ -1451,7 +1451,7 @@
     
     try {
       isSearchingLocations = true;
-      console.log(`🔍 Searching locations in ${city}, ${country} for: "${query}"`);
+
       
       // Search locations in database with specific filters
       const searchResults = await apiClient.searchLocations(`${query} ${city} ${country}`);
@@ -1462,9 +1462,9 @@
       );
       
       searchedLocations = locations;
-      console.log(`✅ Found ${locations.length} locations in ${city}, ${country} for "${query}":`, locations);
+
     } catch (error) {
-      console.error('❌ Location search failed:', error);
+
       searchedLocations = [];
     } finally {
       isSearchingLocations = false;
@@ -1474,18 +1474,18 @@
   // Load locations for a specific city from database
   async function loadLocationsForCity(country: string, city: string) {
     try {
-      console.log(`📍 Loading locations for city: ${city}, ${country}`);
+
       
       // Use the new API method to get all locations in this specific city and country
       const cityLocations = await apiClient.getLocationsByCity(country, city);
       
-      console.log(`✅ Found ${cityLocations.length} locations in ${city}, ${country}:`, cityLocations.slice(0, 5));
+
       
       // Update the availableLocations computed property
       availableLocations = cityLocations;
       
     } catch (error) {
-      console.error(`❌ Failed to load locations for ${city}, ${country}:`, error);
+
       availableLocations = [];
     }
   }
@@ -1551,8 +1551,8 @@
             <div class="form-group">
               <label for="company">Company *</label>
               <select id="company" bind:value={selectedCompany} on:change={() => {
-                console.log('🏢 Company selection changed to:', selectedCompany);
-                console.log('🏢 canSubmitReview will be checked...');
+
+
               }} required>
                 <option value="">Select a company</option>
                 {#each sortedFreightForwarders as company}
@@ -1827,7 +1827,7 @@
                   on:input={(e) => {
                     const target = e.target as HTMLInputElement;
                     const query = target.value;
-                    console.log('🔍 Country search input:', query);
+
                     searchCountries(query);
                   }}
                   class="location-search-input"

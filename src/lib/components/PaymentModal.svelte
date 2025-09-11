@@ -63,14 +63,14 @@
       cardElement.on('error', (event: any) => {
         // Ignore 401 errors from Stripe's internal API calls
         if (event.error && event.error.type === 'api_error' && event.error.code === 'resource_missing') {
-          console.log('Ignoring Stripe internal API error:', event.error.message);
+
           return;
         }
-        console.error('Stripe card element error:', event.error);
+
       });
       
     } catch (err) {
-      console.error('Failed to initialize Stripe:', err);
+
       error = 'Failed to initialize payment system. Please refresh and try again.';
     }
   });
@@ -102,16 +102,16 @@
       }
 
       // Ensure we have a valid token before proceeding
-      console.log('Validating token before payment...');
+
       const validToken = await authMethods.ensureValidToken();
       if (!validToken) {
-        console.error('Token validation failed');
+
         throw new Error('Authentication expired. Please sign in again.');
       }
-      console.log('Token validation successful');
+
 
       // Create payment method
-      console.log('Creating payment method...');
+
       const { paymentMethod, error: paymentError } = await createPaymentMethod(
         cardElement,
         {
@@ -121,11 +121,11 @@
       );
 
       if (paymentError) {
-        console.error('Payment method creation failed:', paymentError);
+
         throw new Error(getPaymentErrorMessage(paymentError));
       }
       
-      console.log('Payment method created successfully:', paymentMethod?.id);
+
 
       // Create subscription with payment method and trial (only for new users)
       // Send numeric plan ID to backend (backend will map to Stripe price ID internally)
@@ -161,7 +161,7 @@
       }, 2000);
     } catch (err: any) {
       error = err.message || 'Payment failed. Please try again.';
-      console.error('Payment error:', err);
+
     } finally {
       isLoading = false;
     }

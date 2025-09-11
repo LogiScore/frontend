@@ -15,7 +15,7 @@
   // Subscribe to auth store
   auth.subscribe(state => {
     authState = state;
-    console.log('Pricing page - Auth state updated:', { user: authState.user, hasToken: !!authState.token });
+
   });
 
   // Get plans based on user type
@@ -60,9 +60,9 @@
       isLoadingSubscription = true;
       const subscription = await apiClient.getCurrentSubscription(authState.token);
       currentSubscription = subscription;
-      console.log('Pricing page - Loaded subscription:', subscription);
+
     } catch (err: any) {
-      console.log('Pricing page - Failed to load subscription:', err);
+
       // Silently handle subscription loading errors
     } finally {
       isLoadingSubscription = false;
@@ -71,19 +71,19 @@
 
   // Function to check if a plan is the user's current plan
   function isCurrentPlan(plan: any): boolean {
-    console.log('isCurrentPlan called with:', { plan: plan.name, currentSubscription });
+
     
     if (!currentSubscription) {
-      console.log('No current subscription found');
+
       return false;
     }
     
     const tierName = currentSubscription.tier?.toLowerCase();
-    console.log('Checking tier:', tierName, 'against plan:', plan.name);
+
     
     // Handle free plans
     if (plan.price === 0 && (tierName === 'free' || tierName === 'free shipper' || tierName === 'free forwarder' || !tierName)) {
-      console.log('Matched free plan');
+
       return true;
     }
     
@@ -91,31 +91,31 @@
     // Backend returns: "Shipper Monthly", "Shipper Annual", "Forwarder Monthly", "Forwarder Annual", "Forwarder Annual Plus"
     
     if (tierName === 'shipper monthly' && plan.name === 'Subscription Monthly') {
-      console.log('Matched shipper monthly plan');
+
       return true;
     }
     
     if (tierName === 'shipper annual' && plan.name === 'Subscription Annual') {
-      console.log('Matched shipper annual plan');
+
       return true;
     }
     
     if (tierName === 'forwarder monthly' && plan.name === 'Subscription Monthly') {
-      console.log('Matched forwarder monthly plan');
+
       return true;
     }
     
     if (tierName === 'forwarder annual' && plan.name === 'Subscription Annual') {
-      console.log('Matched forwarder annual plan');
+
       return true;
     }
     
     if (tierName === 'forwarder annual plus' && plan.name === 'Subscription Annual Plus') {
-      console.log('Matched forwarder annual plus plan');
+
       return true;
     }
     
-    console.log('No match found');
+
     return false;
   }
 

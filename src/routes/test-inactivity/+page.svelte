@@ -41,7 +41,7 @@
   
   function debugTracking() {
     const debugInfo = authMethods.debugInactivityTracking();
-    console.log('Debug info:', debugInfo);
+
     alert('Check console for debug information');
   }
   

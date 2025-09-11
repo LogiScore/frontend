@@ -83,7 +83,7 @@
       
       subscriptionData = await apiClient.getCurrentSubscription(authState.token);
     } catch (err: any) {
-      console.error('Failed to load subscription:', err);
+
       subscriptionError = err.message || 'Failed to load subscription information';
     } finally {
       isLoadingSubscription = false;
@@ -147,15 +147,15 @@
       
       alert(result.message);
     } catch (err: any) {
-      console.error('Failed to toggle auto-renewal:', err);
+
       
       // Check if it's a "No active subscription found" error
       if (err.message && err.message.includes('No active subscription found')) {
-        console.log('ProfileModal: Backend reports no active subscription, but user has local subscription data');
+
         
         // Check if user has subscription data locally
         if (authState.user && authState.user.subscription_tier && authState.user.subscription_tier !== 'free') {
-          console.log('ProfileModal: User has local subscription data, updating locally');
+
           
           // Update local subscription data without backend call
           subscriptionData.auto_renew = newAutoRenewalState;
@@ -223,7 +223,7 @@
       await loadSubscriptionData();
       
     } catch (err: any) {
-      console.error('Failed to cancel subscription:', err);
+
       alert(err.message || 'Failed to cancel subscription');
     }
   }

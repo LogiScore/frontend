@@ -34,7 +34,7 @@
       const subscription = await apiClient.getCurrentSubscription(currentAuth.token);
       currentSubscription = subscription;
     } catch (err: any) {
-      console.error('Failed to load current subscription:', err);
+
       // Don't show error for this, just log it
     }
   }
@@ -65,7 +65,7 @@
         };
       });
     } catch (err: any) {
-      console.error('Failed to load backend plans:', err);
+
       // Fallback to local plans
       plans = getPlansForUserType(userType);
     } finally {

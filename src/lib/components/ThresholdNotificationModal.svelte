@@ -47,7 +47,7 @@
       isLoading = true;
       error = '';
       const result = await apiClient.getThresholdSubscriptions(authState.token);
-      console.log('Threshold Notifications Modal: API response:', result);
+
       
       // Handle both response formats: direct array or object with subscriptions property
       if (Array.isArray(result)) {
@@ -55,14 +55,14 @@
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
         subscriptions = result.subscriptions;
       } else {
-        console.error('Invalid API response format:', result);
+
         subscriptions = [];
         error = 'Invalid response from server';
       }
       
-      console.log('Threshold Notifications Modal: Loaded subscriptions:', subscriptions);
+
     } catch (err: any) {
-      console.error('Failed to load threshold subscriptions:', err);
+
       error = err.message || 'Failed to load threshold subscriptions';
       subscriptions = [];
     } finally {
@@ -71,7 +71,7 @@
   }
 
   function closeModal() {
-    console.log('ThresholdNotificationModal: closeModal called');
+
     try {
       dispatch('close');
       // Reset state
@@ -83,7 +83,7 @@
         notification_frequency: 'immediate'
       };
     } catch (err) {
-      console.error('Error in closeModal:', err);
+
     }
   }
 
@@ -113,7 +113,7 @@
         notification_frequency: 'immediate'
       };
     } catch (err: any) {
-      console.error('Failed to create threshold subscription:', err);
+
       error = err.message || 'Failed to create threshold subscription';
     } finally {
       isLoading = false;
@@ -121,7 +121,7 @@
   }
 
   async function toggleSubscription(subscriptionId: string) {
-    console.log('ThresholdNotificationModal: toggleSubscription called for ID:', subscriptionId);
+
     if (!authState.token) return;
     
     try {
@@ -129,7 +129,7 @@
       success = result.message;
       await loadSubscriptions(); // Reload to get updated status
     } catch (err: any) {
-      console.error('Failed to toggle subscription:', err);
+
       error = err.message || 'Failed to toggle subscription';
     }
   }
@@ -146,15 +146,15 @@
       success = result.message;
       await loadSubscriptions(); // Reload to get updated list
     } catch (err: any) {
-      console.error('Failed to delete subscription:', err);
+
       error = err.message || 'Failed to delete subscription';
     }
   }
 
   function formatThresholdValue(subscription: any): string {
-    console.log('formatThresholdValue - subscription:', subscription);
-    console.log('threshold_score:', subscription.threshold_score);
-    console.log('threshold_type:', subscription.threshold_type);
+
+
+
     
     return `Below ${subscription.threshold_score}/5.0`;
   }
