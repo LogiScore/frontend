@@ -3,7 +3,6 @@
   import { apiClient } from '$lib/api';
   import { onMount } from 'svelte';
   import AdminLoginForm from '$lib/components/AdminLoginForm.svelte';
-  import TrialReminderTest from '$lib/components/TrialReminderTest.svelte';
   
   let authState: { user: any; token: string | null; isLoading: boolean; error: string | null } = {
     user: null,
@@ -1427,11 +1426,6 @@
             </div>
           {/if}
           {/if}
-          
-          <!-- Trial Reminder Test Component -->
-          <div class="trial-test-section">
-            <TrialReminderTest />
-          </div>
         </div>
       {/if}
 
@@ -1987,14 +1981,6 @@
               <option value="enterprise">Enterprise</option>
             {/if}
           </select>
-          <!-- Debug info -->
-          {#if selectedUser}
-            <div class="debug-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;">
-              Debug: User type = "{selectedUser.user_type}", ID = "{selectedUser.id}"
-              <br>Current tier: "{selectedUser.subscription_tier || 'free'}"
-              <br>Selected tier: "{subscriptionData.tier}"
-            </div>
-          {/if}
           {#if selectedUser}
             <div class="pricing-note">
               {#if selectedUser.user_type === 'shipper'}
