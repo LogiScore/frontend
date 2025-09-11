@@ -1952,6 +1952,9 @@ class ApiClient {
     
     const response = await this.requestWithAuth<{ message: string }>('/api/subscriptions/cancel', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(requestData),
     }, token);
     
