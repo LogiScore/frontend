@@ -1130,8 +1130,21 @@
         durationInMonths = Number(subscriptionData.duration) * 12;
       }
       
+      // Format tier name based on user type
+      let formattedTier = subscriptionData.tier;
+      if (selectedUser) {
+        if (selectedUser.user_type === 'shipper') {
+          if (subscriptionData.tier === 'monthly') formattedTier = 'Shipper Monthly';
+          else if (subscriptionData.tier === 'annual') formattedTier = 'Shipper Annual';
+        } else if (selectedUser.user_type === 'forwarder') {
+          if (subscriptionData.tier === 'monthly') formattedTier = 'Forwarder Monthly';
+          else if (subscriptionData.tier === 'annual') formattedTier = 'Forwarder Annual';
+          else if (subscriptionData.tier === 'enterprise') formattedTier = 'Forwarder Enterprise';
+        }
+      }
+      
       const requestData = {
-        tier: subscriptionData.tier,
+        tier: formattedTier,
         comment: subscriptionData.comment,
         duration: durationInMonths,
         is_paid: subscriptionData.isPaid
@@ -1146,14 +1159,7 @@
       
       closeSubscriptionModal();
       
-      // Format the tier name for display
-      let tierDisplayName = subscriptionData.tier;
-      if (subscriptionData.tier === 'monthly') tierDisplayName = 'Monthly';
-      else if (subscriptionData.tier === 'annual') tierDisplayName = 'Annual';
-      else if (subscriptionData.tier === 'enterprise') tierDisplayName = 'Enterprise';
-      else if (subscriptionData.tier === 'free') tierDisplayName = 'Free';
-      
-      addNotification('success', `Subscription updated to ${tierDisplayName}`);
+      addNotification('success', `Subscription updated to ${formattedTier}`);
     } catch (error) {
       console.log('Error updating user subscription:', {
         message: error.message,
@@ -1707,6 +1713,16 @@
                             Annual
                           {:else if user.subscription_tier === 'enterprise'}
                             Enterprise
+                          {:else if user.subscription_tier === 'Shipper Monthly'}
+                            Shipper Monthly
+                          {:else if user.subscription_tier === 'Shipper Annual'}
+                            Shipper Annual
+                          {:else if user.subscription_tier === 'Forwarder Monthly'}
+                            Forwarder Monthly
+                          {:else if user.subscription_tier === 'Forwarder Annual'}
+                            Forwarder Annual
+                          {:else if user.subscription_tier === 'Forwarder Enterprise'}
+                            Forwarder Enterprise
                           {:else}
                             {user.subscription_tier}
                           {/if}
