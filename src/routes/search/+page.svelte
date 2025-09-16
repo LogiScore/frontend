@@ -932,6 +932,23 @@
       <div class="no-results">
         <p>No results found for "{getCurrentQuery()}".</p>
         <p>Try adjusting your search terms or search type.</p>
+        
+        <!-- Add New Forwarder Button for No Results -->
+        <div class="no-results-add-forwarder">
+          <p class="no-results-suggestion">Don't see the company you're looking for?</p>
+          <button 
+            class="add-forwarder-btn" 
+            on:click={handleAddForwarderClick}
+            disabled={isCreatingForwarder}
+          >
+            {#if isCreatingForwarder}
+              <span class="spinner"></span>
+              Adding...
+            {:else}
+              ➕ Add New Forwarder
+            {/if}
+          </button>
+        </div>
       </div>
     {/if}
   {/if}
@@ -1594,6 +1611,21 @@
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .no-results-add-forwarder {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+  }
+
+  .no-results-suggestion {
+    margin-bottom: 1rem;
+    color: #6c757d;
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .subscription-prompt {
