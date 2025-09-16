@@ -304,8 +304,17 @@
       };
       showAddForwarderForm = false;
 
-      // Show success message with review button
+      // Reset search page
+      companyQuery = '';
+      countryQuery = '';
+      searchResults = [];
+      companiesForLocation = [];
+      citiesWithReviews = [];
+      selectedCity = '';
+      selectedCountry = '';
       error = null;
+
+      // Show success message with review button
       successMessage = `Successfully added "${createdForwarder.name}" to the database!`;
       newlyAddedForwarderId = createdForwarder.id;
 
