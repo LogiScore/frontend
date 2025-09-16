@@ -40,6 +40,7 @@
     website: ''
   };
   let isCreatingForwarder = false;
+  let newlyAddedForwarderId: string | null = null;
 
   // Initialize search type from URL only once on mount
   let initialSearchTypeSet = false;
@@ -303,14 +304,16 @@
       };
       showAddForwarderForm = false;
 
-      // Show success message
+      // Show success message with review button
       error = null;
       successMessage = `Successfully added "${createdForwarder.name}" to the database!`;
+      newlyAddedForwarderId = createdForwarder.id;
 
-      // Clear success message after 5 seconds
+      // Clear success message after 10 seconds
       setTimeout(() => {
         successMessage = null;
-      }, 5000);
+        newlyAddedForwarderId = null;
+      }, 10000);
 
     } catch (err: any) {
       error = err.message || 'Failed to create new forwarder. Please try again.';
@@ -335,6 +338,12 @@
     // User is subscribed - show form
     showAddForwarderForm = true;
     error = null;
+  }
+
+  function navigateToReviews(forwarderId: string) {
+    if (typeof window !== 'undefined') {
+      window.location.href = `/reviews?forwarder=${forwarderId}`;
+    }
   }
 
   async function selectCompany(company: FreightForwarder) {
@@ -615,7 +624,17 @@
   <!-- Success Message Display -->
   {#if successMessage}
     <div class="success-message">
-      {successMessage}
+      <div class="success-content">
+        <p>{successMessage}</p>
+        {#if newlyAddedForwarderId}
+          <button 
+            class="btn btn-primary add-review-btn" 
+            on:click={() => navigateToReviews(newlyAddedForwarderId)}
+          >
+            ✍️ Add a Review
+          </button>
+        {/if}
+      </div>
     </div>
   {/if}
 
@@ -2043,7 +2062,7 @@
   .success-message {
     background: #d4edda;
     color: #155724;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 1rem;
     text-align: center;
@@ -2051,6 +2070,40 @@
     margin-left: auto;
     margin-right: auto;
     border: 1px solid #c3e6cb;
+  }
+
+  .success-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .success-content p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .add-review-btn {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .add-review-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
   }
 
   @media (max-width: 768px) {
