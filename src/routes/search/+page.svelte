@@ -11,6 +11,7 @@
   let searchResults: FreightForwarder[] = [];
   let isLoading = false;
   let error: string | null = null;
+  let successMessage: string | null = null;
   let selectedCity = '';
   let companiesForLocation: FreightForwarder[] = [];
   let citiesWithReviews: string[] = [];
@@ -31,6 +32,15 @@
     created_at: string;
   }> = [];
   let isTogglingNotification = false;
+
+  // Add new forwarder functionality
+  let showAddForwarderForm = false;
+  let newForwarder = {
+    name: '',
+    website: '',
+    description: ''
+  };
+  let isCreatingForwarder = false;
 
   // Initialize search type from URL only once on mount
   let initialSearchTypeSet = false;
@@ -147,7 +157,7 @@
       
       // Check if already subscribed to this city
       const result = await apiClient.getReviewSubscriptions(authToken);
-      let subscriptions = [];
+      let subscriptions: any[] = [];
       if (Array.isArray(result)) {
         subscriptions = result;
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
@@ -203,7 +213,7 @@
       
       // Check if already subscribed to this country
       const result = await apiClient.getReviewSubscriptions(authToken);
-      let subscriptions = [];
+      let subscriptions: any[] = [];
       if (Array.isArray(result)) {
         subscriptions = result;
       } else if (result && result.subscriptions && Array.isArray(result.subscriptions)) {
@@ -240,6 +250,93 @@
     selectedCity = '';
     companiesForLocation = [];
     searchResults = [];
+  }
+
+  async function createNewForwarder() {
+    try {
+      isCreatingForwarder = true;
+      error = null;
+
+      // Check authentication first
+      if (!user || !auth) {
+        error = 'You must be logged in to add new forwarders. Please sign in first.';
+        return;
+      }
+
+      // Get auth token
+      let authToken = '';
+      auth.subscribe(state => {
+        authToken = state.token || '';
+      })();
+
+      if (!authToken) {
+        error = 'Authentication required. Please sign in again.';
+        return;
+      }
+
+      if (!newForwarder.name.trim()) {
+        error = 'Company name is required';
+        return;
+      }
+
+      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authToken);
+
+      // Send admin notification about new freight forwarder
+      try {
+        if (user) {
+          await apiClient.sendAdminNewForwarderNotification(
+            createdForwarder.name,
+            newForwarder.website,
+            newForwarder.description,
+            user.full_name || user.username || 'Unknown User',
+            user.email || 'No email provided'
+          );
+        }
+      } catch (notificationError) {
+        // Don't fail the entire operation if notification fails
+        console.warn('Failed to send admin notification:', notificationError);
+      }
+
+      // Reset form
+      newForwarder = {
+        name: '',
+        website: '',
+        description: ''
+      };
+      showAddForwarderForm = false;
+
+      // Show success message
+      error = null;
+      successMessage = `Successfully added "${createdForwarder.name}" to the database!`;
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        successMessage = null;
+      }, 5000);
+
+    } catch (err: any) {
+      error = err.message || 'Failed to create new forwarder. Please try again.';
+    } finally {
+      isCreatingForwarder = false;
+    }
+  }
+
+  function handleAddForwarderClick() {
+    if (!user) {
+      // User not logged in - show sign in prompt
+      error = 'Please sign in to add new forwarders.';
+      return;
+    }
+
+    if (userSubscription === 'free') {
+      // User not subscribed - show subscription prompt
+      error = 'This feature is only available for subscribed users. Please upgrade your subscription to add new forwarders.';
+      return;
+    }
+
+    // User is subscribed - show form
+    showAddForwarderForm = true;
+    error = null;
   }
 
   async function selectCompany(company: FreightForwarder) {
@@ -517,6 +614,13 @@
     </div>
   {/if}
 
+  <!-- Success Message Display -->
+  {#if successMessage}
+    <div class="success-message">
+      {successMessage}
+    </div>
+  {/if}
+
   <!-- Loading State -->
   {#if isLoading}
     <div class="loading">
@@ -560,6 +664,25 @@
               </div>
             </div>
           {/each}
+        </div>
+        
+        <!-- Add New Forwarder Button -->
+        <div class="add-forwarder-section">
+          <button 
+            class="add-forwarder-btn" 
+            on:click={handleAddForwarderClick}
+            disabled={isCreatingForwarder}
+          >
+            {#if isCreatingForwarder}
+              <span class="spinner"></span>
+              Adding...
+            {:else}
+              ➕ Add New Forwarder
+            {/if}
+          </button>
+          <p class="add-forwarder-note">
+            Don't see the company you're looking for? Add it to our database.
+          </p>
         </div>
       </div>
     {:else if searchType === 'country' && citiesWithReviews.length > 0}
@@ -794,6 +917,79 @@
         <p>Try adjusting your search terms or search type.</p>
       </div>
     {/if}
+  {/if}
+
+  <!-- Add New Forwarder Form -->
+  {#if showAddForwarderForm}
+    <div class="add-forwarder-form-container">
+      <div class="add-forwarder-form">
+        <h3>Add New Freight Forwarder</h3>
+        <p class="form-description">Help expand our database by adding a new freight forwarder company.</p>
+        
+        <div class="form-group">
+          <label for="newCompanyName">Company Name *</label>
+          <input 
+            type="text" 
+            id="newCompanyName" 
+            bind:value={newForwarder.name} 
+            placeholder="Enter company name"
+            required
+            class="form-input"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="newCompanyWebsite">Website</label>
+          <input 
+            type="url" 
+            id="newCompanyWebsite" 
+            bind:value={newForwarder.website} 
+            placeholder="https://example.com"
+            class="form-input"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="newCompanyDescription">Description (Optional)</label>
+          <textarea 
+            id="newCompanyDescription" 
+            bind:value={newForwarder.description} 
+            placeholder="Brief description of the company..."
+            class="form-textarea"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            on:click={createNewForwarder}
+            disabled={isCreatingForwarder}
+          >
+            {#if isCreatingForwarder}
+              <span class="spinner"></span>
+              Adding Company...
+            {:else}
+              Add Company
+            {/if}
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            on:click={() => {
+              showAddForwarderForm = false;
+              newForwarder = { name: '', website: '', description: '' };
+              error = null;
+            }}
+            disabled={isCreatingForwarder}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   {/if}
 
   <!-- Subscription Prompt -->
@@ -1697,6 +1893,184 @@
     min-width: 40px;
     height: 32px;
     padding: 0.25rem 0.5rem;
+  }
+
+  /* Add New Forwarder Styles */
+  .add-forwarder-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .add-forwarder-btn {
+    padding: 12px 24px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .add-forwarder-btn:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  }
+
+  .add-forwarder-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .add-forwarder-note {
+    margin-top: 1rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
+
+  .add-forwarder-form-container {
+    margin-top: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .add-forwarder-form {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+  }
+
+  .add-forwarder-form h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .form-description {
+    color: #6c757d;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .btn-primary {
+    padding: 12px 24px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #c3e6cb;
   }
 
   @media (max-width: 768px) {
