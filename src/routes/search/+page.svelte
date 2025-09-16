@@ -37,8 +37,7 @@
   let showAddForwarderForm = false;
   let newForwarder = {
     name: '',
-    website: '',
-    description: ''
+    website: ''
   };
   let isCreatingForwarder = false;
 
@@ -287,7 +286,7 @@
           await apiClient.sendAdminNewForwarderNotification(
             createdForwarder.name,
             newForwarder.website,
-            newForwarder.description,
+            '', // No description field
             user.full_name || user.username || 'Unknown User',
             user.email || 'No email provided'
           );
@@ -300,8 +299,7 @@
       // Reset form
       newForwarder = {
         name: '',
-        website: '',
-        description: ''
+        website: ''
       };
       showAddForwarderForm = false;
 
@@ -949,17 +947,6 @@
           />
         </div>
         
-        <div class="form-group">
-          <label for="newCompanyDescription">Description (Optional)</label>
-          <textarea 
-            id="newCompanyDescription" 
-            bind:value={newForwarder.description} 
-            placeholder="Brief description of the company..."
-            class="form-textarea"
-            rows="3"
-          ></textarea>
-        </div>
-        
         <div class="form-actions">
           <button 
             type="button" 
@@ -980,7 +967,7 @@
             class="btn btn-secondary" 
             on:click={() => {
               showAddForwarderForm = false;
-              newForwarder = { name: '', website: '', description: '' };
+              newForwarder = { name: '', website: '' };
               error = null;
             }}
             disabled={isCreatingForwarder}
@@ -1982,8 +1969,7 @@
     color: #2c3e50;
   }
 
-  .form-input,
-  .form-textarea {
+  .form-input {
     width: 100%;
     padding: 12px;
     border: 2px solid #e0e0e0;
@@ -1993,15 +1979,9 @@
     box-sizing: border-box;
   }
 
-  .form-input:focus,
-  .form-textarea:focus {
+  .form-input:focus {
     outline: none;
     border-color: #667eea;
-  }
-
-  .form-textarea {
-    resize: vertical;
-    min-height: 80px;
   }
 
   .form-actions {
