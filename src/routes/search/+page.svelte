@@ -4,6 +4,7 @@
   import { auth } from '$lib/auth';
   import { apiClient } from '$lib/api';
   import type { FreightForwarder } from '$lib/api';
+  import AddForwarderModal from '$lib/components/AddForwarderModal.svelte';
 
   let searchType: 'company' | 'country' = 'company';
   let companyQuery = '';
@@ -33,14 +34,10 @@
   }> = [];
   let isTogglingNotification = false;
 
-  // Add new forwarder functionality
-  let showAddForwarderForm = false;
-  let newForwarder = {
-    name: '',
-    website: ''
-  };
-  let isCreatingForwarder = false;
+  // Add new forwarder modal
+  let showAddForwarderModal = false;
   let newlyAddedForwarderId: string | null = null;
+  let isCreatingForwarder = false;
 
   // Initialize search type from URL only once on mount
   let initialSearchTypeSet = false;
@@ -252,83 +249,28 @@
     searchResults = [];
   }
 
-  async function createNewForwarder() {
-    try {
-      isCreatingForwarder = true;
-      error = null;
+  function handleAddForwarderSuccess(event: CustomEvent) {
+    const { forwarder } = event.detail;
+    
+    // Reset search page
+    companyQuery = '';
+    countryQuery = '';
+    searchResults = [];
+    companiesForLocation = [];
+    citiesWithReviews = [];
+    selectedCity = '';
+    selectedCountry = '';
+    error = null;
 
-      // Check authentication first
-      if (!user || !auth) {
-        error = 'You must be logged in to add new forwarders. Please sign in first.';
-        return;
-      }
+    // Show success message with review button
+    successMessage = `Successfully added "${forwarder.name}" to the database!`;
+    newlyAddedForwarderId = forwarder.id;
 
-      // Get auth token
-      let authToken = '';
-      auth.subscribe(state => {
-        authToken = state.token || '';
-      })();
-
-      if (!authToken) {
-        error = 'Authentication required. Please sign in again.';
-        return;
-      }
-
-      if (!newForwarder.name.trim()) {
-        error = 'Company name is required';
-        return;
-      }
-
-      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authToken);
-
-      // Send admin notification about new freight forwarder
-      try {
-        if (user) {
-          await apiClient.sendAdminNewForwarderNotification(
-            createdForwarder.name,
-            newForwarder.website,
-            '', // No description field
-            user.full_name || user.username || 'Unknown User',
-            user.email || 'No email provided'
-          );
-        }
-      } catch (notificationError) {
-        // Don't fail the entire operation if notification fails
-        console.warn('Failed to send admin notification:', notificationError);
-      }
-
-      // Reset form
-      newForwarder = {
-        name: '',
-        website: ''
-      };
-      showAddForwarderForm = false;
-
-      // Reset search page
-      companyQuery = '';
-      countryQuery = '';
-      searchResults = [];
-      companiesForLocation = [];
-      citiesWithReviews = [];
-      selectedCity = '';
-      selectedCountry = '';
-      error = null;
-
-      // Show success message with review button
-      successMessage = `Successfully added "${createdForwarder.name}" to the database!`;
-      newlyAddedForwarderId = createdForwarder.id;
-
-      // Clear success message after 10 seconds
-      setTimeout(() => {
-        successMessage = null;
-        newlyAddedForwarderId = null;
-      }, 10000);
-
-    } catch (err: any) {
-      error = err.message || 'Failed to create new forwarder. Please try again.';
-    } finally {
-      isCreatingForwarder = false;
-    }
+    // Clear success message after 10 seconds
+    setTimeout(() => {
+      successMessage = null;
+      newlyAddedForwarderId = null;
+    }, 10000);
   }
 
   function handleAddForwarderClick() {
@@ -339,7 +281,7 @@
     }
 
     // All registered users can add new forwarders - no subscription required
-    showAddForwarderForm = true;
+    showAddForwarderModal = true;
     error = null;
   }
 
@@ -632,7 +574,7 @@
         {#if newlyAddedForwarderId}
           <button 
             class="btn btn-primary add-review-btn" 
-            on:click={() => navigateToReviews(newlyAddedForwarderId)}
+            on:click={() => navigateToReviews(newlyAddedForwarderId!)}
           >
             ✍️ Add a Review
           </button>
@@ -956,67 +898,12 @@
     {/if}
   {/if}
 
-  <!-- Add New Forwarder Form -->
-  {#if showAddForwarderForm}
-    <div class="add-forwarder-form-container">
-      <div class="add-forwarder-form">
-        <h3>Add New Freight Forwarder</h3>
-        <p class="form-description">Help expand our database by adding a new freight forwarder company.</p>
-        
-        <div class="form-group">
-          <label for="newCompanyName">Company Name *</label>
-          <input 
-            type="text" 
-            id="newCompanyName" 
-            bind:value={newForwarder.name} 
-            placeholder="Enter company name"
-            required
-            class="form-input"
-          />
-        </div>
-        
-        <div class="form-group">
-          <label for="newCompanyWebsite">Website</label>
-          <input 
-            type="url" 
-            id="newCompanyWebsite" 
-            bind:value={newForwarder.website} 
-            placeholder="https://example.com"
-            class="form-input"
-          />
-        </div>
-        
-        <div class="form-actions">
-          <button 
-            type="button" 
-            class="btn btn-primary" 
-            on:click={createNewForwarder}
-            disabled={isCreatingForwarder}
-          >
-            {#if isCreatingForwarder}
-              <span class="spinner"></span>
-              Adding Company...
-            {:else}
-              Add Company
-            {/if}
-          </button>
-          
-          <button 
-            type="button" 
-            class="btn btn-secondary" 
-            on:click={() => {
-              showAddForwarderForm = false;
-              newForwarder = { name: '', website: '' };
-              error = null;
-            }}
-            disabled={isCreatingForwarder}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
+  <!-- Add New Forwarder Modal -->
+  <AddForwarderModal 
+    bind:isOpen={showAddForwarderModal}
+    on:close={() => showAddForwarderModal = false}
+    on:success={handleAddForwarderSuccess}
+  />
 
   <!-- Subscription Prompt -->
   {#if showSubscriptionPrompt}
@@ -1984,33 +1871,6 @@
     margin-bottom: 0;
   }
 
-  .add-forwarder-form-container {
-    margin-top: 2rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .add-forwarder-form {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e9ecef;
-  }
-
-  .add-forwarder-form h3 {
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-    text-align: center;
-  }
-
-  .form-description {
-    color: #6c757d;
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
-  }
 
   .form-group {
     margin-bottom: 1.5rem;

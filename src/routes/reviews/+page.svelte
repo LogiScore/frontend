@@ -5,6 +5,7 @@
   import { apiClient } from '$lib/api';
   import { auth, authMethods } from '$lib/auth';
   import type { ReviewCategory, ReviewCreate } from '$lib/api';
+  import AddForwarderModal from '$lib/components/AddForwarderModal.svelte';
   
   // Note: Branch locations use generated UUIDs to satisfy backend validation requirements.
   // The backend expects branch_id to be a valid UUID format, so we generate deterministic
@@ -34,13 +35,8 @@
   let successMessage: string | null = null;
   let showLocationModal = false;
   
-  // New forwarder creation - RE-ENABLED after backend implementation
-  let showNewForwarderForm = false;
-  let newForwarder = {
-    name: '',
-    website: '',
-    description: ''
-  };
+  // New forwarder modal
+  let showNewForwarderModal = false;
   
   // Branch location autopopulation
   let locations: any[] = [];
@@ -537,104 +533,16 @@
     }
   }
 
-  async function createNewForwarder() {
-    try {
-
-      
-      // Check authentication first
-      if (!authState.token) {
-        error = 'You must be logged in to create companies. Please sign in or create an account.';
-        return;
-      }
-
-      // Debug: Log authentication details
-      console.log('Authentication details:', {
-        hasToken: !!authState.token,
-        tokenLength: authState.token?.length,
-        tokenStart: authState.token?.substring(0, 20) + '...',
-        user: authState.user
-      });
-
-      if (!newForwarder.name.trim()) {
-        error = 'Company name is required';
-        return;
-      }
-
-
-      const createdForwarder = await apiClient.createFreightForwarder(newForwarder, authState.token);
-
-      
-      // Send admin notification about new freight forwarder
-      try {
-        if (authState.user) {
-          await apiClient.sendAdminNewForwarderNotification(
-            createdForwarder.name,
-            newForwarder.website,
-            newForwarder.description,
-            authState.user.full_name || authState.user.username || 'Unknown User',
-            authState.user.email || 'No email provided'
-          );
-
-        }
-      } catch (notificationError) {
-
-        // Don't fail the entire operation if notification fails
-      }
-      
-      // Add to the list and select it
-      freightForwarders.push(createdForwarder);
-      // Force reactive update by reassigning the array
-      freightForwarders = [...freightForwarders];
-      selectedCompany = createdForwarder.id;
-      
-      // Reset form
-      newForwarder = {
-        name: '',
-        website: '',
-        description: ''
-      };
-      showNewForwarderForm = false;
-      
-      // Clear any previous errors and set success message
-      error = null;
-      successMessage = `Company "${createdForwarder.name}" created successfully!`;
-      
-
-      
-    } catch (err: any) {
-
-      
-      // Handle specific backend error responses
-      if (err.message && err.message.includes('API request failed:')) {
-        const statusMatch = err.message.match(/API request failed: (\d+)/);
-        if (statusMatch) {
-          const statusCode = parseInt(statusMatch[1]);
-          switch (statusCode) {
-            case 400:
-              error = 'Invalid company data. Please check all fields and try again.';
-              break;
-            case 401:
-              error = 'Authentication required. Please log in again.';
-              break;
-            case 403:
-              error = 'Permission denied. Only admins and shippers can create companies.';
-              break;
-            case 409:
-              error = 'A company with this name already exists. Please use a different name.';
-              break;
-            case 500:
-              error = 'Server error. Please try again later.';
-              break;
-            default:
-              error = err.message || 'Failed to create new freight forwarder';
-          }
-        } else {
-          error = err.message || 'Failed to create new freight forwarder';
-        }
-      } else {
-        error = err.message || 'Failed to create new freight forwarder';
-      }
-    }
+  function handleAddForwarderSuccess(event: CustomEvent) {
+    const { forwarder } = event.detail;
+    
+    // Add to the list and select it
+    freightForwarders.push(forwarder);
+    // Force reactive update by reassigning the array
+    freightForwarders = [...freightForwarders];
+    selectedCompany = forwarder.id;
+    
+    successMessage = `Company "${forwarder.name}" created successfully!`;
   }
 
   async function loadReviewQuestions() {
@@ -1564,43 +1472,11 @@
               <button 
                 type="button" 
                 class="btn btn-secondary" 
-                on:click={() => showNewForwarderForm = !showNewForwarderForm}
+                on:click={() => showNewForwarderModal = true}
               >
-                                  {showNewForwarderForm ? 'Cancel' : 'Add New Company'}
+                Add New Company
               </button>
             </div>
-
-            <!-- New Company Form -->
-                          {#if showNewForwarderForm}
-              <div class="new-company-form">
-                <div class="form-group">
-                  <label for="newCompanyName">Company Name *</label>
-                  <input 
-                    type="text" 
-                    id="newCompanyName" 
-                    bind:value={newForwarder.name} 
-                    placeholder="Enter company name"
-                    required
-                    class="new-company-input"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="newCompanyWebsite">Website</label>
-                  <input 
-                    type="url" 
-                    id="newCompanyWebsite" 
-                    bind:value={newForwarder.website} 
-                    placeholder="https://example.com"
-                    class="new-company-input"
-                  />
-                </div>
-                
-                <button type="button" class="btn btn-primary" on:click={createNewForwarder}>
-                  Create Company
-                </button>
-              </div>
-            {/if}
 
 
 
@@ -2044,7 +1920,14 @@
       </div>
     </div>
   {/if}
-</main>
+  </main>
+
+  <!-- Add New Forwarder Modal -->
+  <AddForwarderModal 
+    bind:isOpen={showNewForwarderModal}
+    on:close={() => showNewForwarderModal = false}
+    on:success={handleAddForwarderSuccess}
+  />
 
 <style>
   .container {
