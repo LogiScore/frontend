@@ -338,13 +338,7 @@
       return;
     }
 
-    if (userSubscription === 'free') {
-      // User not subscribed - show subscription prompt
-      error = 'This feature is only available for subscribed users. Please upgrade your subscription to add new forwarders.';
-      return;
-    }
-
-    // User is subscribed - show form
+    // All registered users can add new forwarders - no subscription required
     showAddForwarderForm = true;
     error = null;
   }
